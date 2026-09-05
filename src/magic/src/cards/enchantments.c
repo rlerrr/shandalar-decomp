@@ -107,19 +107,19 @@ int card_artifact_ward(int player, int card, event_t event)
           (is_selected_target_already_attached(player, card, PLAYER_CARD_INSTANCE(player, card).internal_card_id) != 0 ||
            (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                                  PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                .card_color &
-            COLOR_TEST_ARTIFACT) != 0))
+                .regen_status &
+            KEYWORD_PROT_ARTIFACTS) != 0))
       {
         g_ai_modifier -= 0x60;
       }
-      if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == g_other_player)
+      if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_other_player)
       {
-        g_ai_modifier += C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                         PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+        g_ai_modifier += C_get_abilities((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                         PLAYER_CARD_INSTANCE(player, card).damage_target_card,
                                          EVENT_POWER, -1) *
                          (g_duel_summary.artifact_counts[0] + 1) * 3;
       }
-      if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == g_active_player)
+      if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_active_player)
       {
         g_ai_modifier -= 0x60;
       }
@@ -149,11 +149,11 @@ int card_artifact_ward(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
-  if (event == EVENT_ABILITIES &&
-      PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
+  if (PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
       g_affected_card != -1 &&
-      (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0)
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0 &&
+      event == EVENT_ABILITIES)
   {
     g_event_result |= 0x10000;
   }

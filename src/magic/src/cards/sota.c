@@ -207,91 +207,90 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
   if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
-  else
+
+  if (event == EVENT_ACTIVATE)
   {
-    if (event == EVENT_ACTIVATE)
+    load_text("promptsX1.txt", "ASHNODS_TRANSMORGRANT");
+    if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_ARTIFACT,
+                             0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                             -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
     {
-      load_text("promptsX1.txt", "ASHNODS_TRANSMORGRANT");
-      if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_ARTIFACT,
-                               0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                               -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+      kill_card(player, card, KILL_SACRIFICE);
+      if (target.player == g_active_player)
       {
-        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
-        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-        kill_card(player, card, KILL_SACRIFICE);
-        if (target.player == g_active_player)
-        {
-          g_ai_modifier -= 0x18;
-        }
-        target_instance = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                                PLAYER_CARD_INSTANCE(player, card).targets[0].card);
-        if (global_cards_data[target_instance->internal_card_id].subtype == 0 &&
-            (target_instance->token_status & 0x800) == 0)
-        {
-          g_ai_modifier -= 0x18;
-        }
+        g_ai_modifier -= 0x18;
       }
-      else
+      target_instance = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                              PLAYER_CARD_INSTANCE(player, card).targets[0].card);
+      if (global_cards_data[target_instance->internal_card_id].subtype == 0 &&
+          (target_instance->token_status & 0x800) == 0)
       {
-        g_spell_fizzled = 1;
+        g_ai_modifier -= 0x18;
       }
     }
-
-    if (event == EVENT_RESOLVE_ACTIVATION)
+    else
     {
-      SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
-      if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
-                                 TYPE_CREATURE, TYPE_ARTIFACT, 0, get_protections_from(player, card),
-                                 COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0))
-      {
-        legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_22,
-                                           target.player, target.card);
-        if (legacy_card != -1)
-        {
-          dynamic_internal_card_id = create_a_card_type(PLAYER_CARD_INSTANCE(target.player, target.card).internal_card_id);
-          if (dynamic_internal_card_id != -1)
-          {
-            global_cards_data[dynamic_internal_card_id].type |= TYPE_CREATURE | TYPE_ARTIFACT;
-            PLAYER_CARD_INSTANCE(player, legacy_card).dummy3 = dynamic_internal_card_id;
-            PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x20;
-          }
-        }
+      g_spell_fizzled = 1;
+    }
+  }
 
-        target_instance = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                                PLAYER_CARD_INSTANCE(player, card).targets[0].card);
-        if ((target_instance->counters & 0xff00) < 0xff01)
-        {
-          target_instance->counters = ((target_instance->counters + 0x100) & 0xff00) |
-                                      (target_instance->counters & 0xffff00ff);
-        }
-        if (g_duel_ai_mode_state != 1)
-        {
-          play_sound_effect(WAV_COUNTER);
-        }
-      }
-      else
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+    if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE, TYPE_ARTIFACT, 0, get_protections_from(player, card),
+                               COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0))
+    {
+      legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_22,
+                                         target.player, target.card);
+      if (legacy_card != -1)
       {
-        g_spell_fizzled = 1;
+        dynamic_internal_card_id = create_a_card_type(PLAYER_CARD_INSTANCE(target.player, target.card).internal_card_id);
+        if (dynamic_internal_card_id != -1)
+        {
+          global_cards_data[dynamic_internal_card_id].type |= TYPE_CREATURE | TYPE_ARTIFACT;
+          PLAYER_CARD_INSTANCE(player, legacy_card).dummy3 = dynamic_internal_card_id;
+          PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x20;
+        }
       }
+
+      target_instance = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                              PLAYER_CARD_INSTANCE(player, card).targets[0].card);
+      if ((target_instance->counters & 0xff00) < 0xff01)
+      {
+        target_instance->counters = ((target_instance->counters + 0x100) & 0xff00) |
+                                    (target_instance->counters & 0xffff00ff);
+      }
+      if (g_duel_ai_mode_state != 1)
+      {
+        play_sound_effect(WAV_COUNTER);
+      }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
 #ifdef MODERN_FIXES
-      /* The original clears the selected creature's target count here. */
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
+    /* The original clears the selected creature's target count here. */
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
 #else
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                         PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+        .number_of_targets = 0;
 #endif
-    }
+  }
 
-    if (event == EVENT_CHECK_PUMP && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
-    {
-      ++g_global_power_bonus[player];
-      ++g_global_toughness_bonus[player];
-    }
+  if (event == EVENT_CHECK_PUMP && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+  {
+    ++g_global_power_bonus[player];
+    ++g_global_toughness_bonus[player];
   }
 
   return 0;
@@ -480,10 +479,10 @@ int card_cyclopean_tomb(int player, int card, event_t event)
       {
         load_text("promptsX1.txt", "CYCLOPEAN_TOMB");
         if (C_real_select_target(player, 2, player, TARGET_ZONE_IN_PLAY, TYPE_LAND, TYPE_NONE, 0,
-                                  get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                  chosen_land_type, ~SUB_WALL, -1, -1,
-                                  TARGET_SPECIAL_NOT_LAND_SUBTYPE, 0, 0, g_text_lines[0], 1,
-                                  &target))
+                                 get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                                 chosen_land_type, ~SUB_WALL, -1, -1,
+                                 TARGET_SPECIAL_NOT_LAND_SUBTYPE, 0, 0, g_text_lines[0], 1,
+                                 &target))
         {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
@@ -695,25 +694,25 @@ int card_icy_manipulator(int player, int card, event_t event)
         load_text("promptsX1.txt", "ICY_MANIPULATOR");
         illegal_abilities = get_protections_from(player, card);
         if (C_real_select_target(player,
-                                  2,
-                                  2,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_ARTIFACT | TYPE_CREATURE | TYPE_LAND,
-                                  TYPE_NONE,
-                                  0,
-                                  illegal_abilities,
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 2,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_ARTIFACT | TYPE_CREATURE | TYPE_LAND,
+                                 TYPE_NONE,
+                                 0,
+                                 illegal_abilities,
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &target))
         {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;

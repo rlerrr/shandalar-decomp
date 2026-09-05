@@ -3289,13 +3289,10 @@ int card_phyrexian_gremlins(int player, int card, event_t event)
 int card_priest_of_yawgmoth(int player, int card, event_t event)
 {
   target_t artifact;
-  int internal_card_id;
-  int mana_value;
-  int color;
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return CAN_TAP(player, card) &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0 &&
            real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -3320,6 +3317,7 @@ int card_priest_of_yawgmoth(int player, int card, event_t event)
   if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
 
   if (event == EVENT_ACTIVATE)
@@ -3362,14 +3360,17 @@ int card_priest_of_yawgmoth(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    internal_card_id =
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                             PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-            .original_internal_card_id;
-    mana_value = (int)global_cards_data[internal_card_id].cc[0] +
-                 (int)global_cards_data[internal_card_id].cc[1];
-    color = get_sleighted_color(player, card, COLOR_BLACK);
-    produce_mana(player, color, mana_value);
+    produce_mana(
+        player,
+        get_sleighted_color(player, card, COLOR_BLACK),
+        (int)global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                                    PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+                                   .original_internal_card_id]
+                .cc[0] +
+            (int)global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                                        PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+                                       .original_internal_card_id]
+                .cc[1]);
   }
 
   return 0;

@@ -814,8 +814,8 @@ int card_xenic_poltergeist(int player, int card, event_t event)
   {
     target_t target;
     int legacy_card;
+    int animated_internal_card_id;
   } s;
-  int animated_internal_card_id;
 
   if (event == EVENT_CAN_ACTIVATE)
   {
@@ -874,7 +874,7 @@ int card_xenic_poltergeist(int player, int card, event_t event)
                              1,
                              &s.target) != 0)
     {
-      PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
     }
@@ -916,17 +916,17 @@ int card_xenic_poltergeist(int player, int card, event_t event)
                                            s.target.card);
       if (s.legacy_card != -1)
       {
-        animated_internal_card_id =
+        s.animated_internal_card_id =
             create_a_card_type(PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id);
-        if (animated_internal_card_id != -1)
+        if (s.animated_internal_card_id != -1)
         {
           PLAYER_CARD_INSTANCE(player, s.legacy_card).dummy3 =
-              animated_internal_card_id;
-          global_cards_data[animated_internal_card_id].type = TYPE_ARTIFACT | TYPE_CREATURE;
-          global_cards_data[animated_internal_card_id].toughness =
+              s.animated_internal_card_id;
+          global_cards_data[s.animated_internal_card_id].type = TYPE_ARTIFACT | TYPE_CREATURE;
+          global_cards_data[s.animated_internal_card_id].toughness =
               global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].cc[1];
-          global_cards_data[animated_internal_card_id].power =
-              global_cards_data[animated_internal_card_id].toughness;
+          global_cards_data[s.animated_internal_card_id].power =
+              global_cards_data[s.animated_internal_card_id].toughness;
         }
       }
     }
@@ -937,6 +937,7 @@ int card_xenic_poltergeist(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .number_of_targets = 0;
+    return 0;
   }
 
   return 0;
@@ -1271,8 +1272,8 @@ int card_personal_incarnation(int player, int card, event_t event)
       }
 
       if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0,
-                                COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id, ~SUB_WALL,
-                                -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
+                               COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id, ~SUB_WALL,
+                               -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
       {
         selected = &PLAYER_CARD_INSTANCE(target.player, target.card);
         if (selected->damage_target_player == player && selected->damage_target_card == card)
@@ -2189,25 +2190,25 @@ int card_gaea_s_liege(int player, int card, event_t event)
     }
 
     if (C_real_select_target(player,
-                              2,
-                              1 - player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_LAND,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &selected_target))
+                             2,
+                             1 - player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_LAND,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &selected_target))
     {
       SET_TARGET(instance->targets[0], selected_target);
       instance->number_of_targets = 1;
@@ -3766,25 +3767,25 @@ int card_sorceress_queen(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_CANNOT_TARGET;
     TENTATIVE_reassess_all_cards(0, 0x20);
     if (C_real_select_target(player,
-                              2,
-                              1 - player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_CREATURE,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
+                             2,
+                             1 - player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_CREATURE,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -3881,77 +3882,85 @@ int card_sorceress_queen(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00495851
 int card_stone_giant(int player, int card, event_t event)
 {
-  unsigned int target_result;
-  unsigned int illegal_abilities;
-  int legacy_card;
-  unsigned char player_byte;
-  target_t selected_target;
+  struct
+  {
+    int result;
+    target_t selected_target;
+    int legacy_card;
+  } s;
 
-  player_byte = (unsigned char)player;
   if (event == EVENT_CAN_ACTIVATE)
   {
-    legacy_card = 0;
-    if ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0)
+    s.result = 1;
+    if ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) != 0)
     {
-      illegal_abilities = get_protections_from(player, card);
-      legacy_card = real_target_available((int *)0,
-                                          TARGET_SCAN_DIRECT,
-                                          player,
-                                          player_byte,
-                                          player_byte,
-                                          TARGET_ZONE_IN_PLAY,
-                                          TYPE_CREATURE,
-                                          0,
-                                          0,
-                                          illegal_abilities,
-                                          0,
-                                          0,
-                                          -1,
-                                          -1,
-                                          (int)PLAYER_CARD_INSTANCE(player, card).power - 1U | 0x2000,
-                                          0xffffffff,
-                                          0,
-                                          0,
-                                          0);
+      s.result = 0;
     }
-    return legacy_card;
+    if (s.result)
+    {
+      s.result = real_target_available((int *)0,
+                                       TARGET_SCAN_DIRECT,
+                                       player,
+                                       player,
+                                       player,
+                                       TARGET_ZONE_IN_PLAY,
+                                       TYPE_CREATURE,
+                                       0,
+                                       0,
+                                       get_protections_from(player, card),
+                                       0,
+                                       0,
+                                       -1,
+                                       -1,
+                                       (int)PLAYER_CARD_INSTANCE(player, card).power - 1U | 0x2000,
+                                       0xffffffff,
+                                       0,
+                                       0,
+                                       0);
+    }
+    return s.result;
   }
-  else if (event == EVENT_GET_SELECTED_CARD)
+
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
     return 0;
   }
-  else if ((event == EVENT_ACTIVATE) && ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0))
+
+  if ((event == EVENT_ACTIVATE) && ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0))
   {
     if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "STONE_GIANT");
     }
-    legacy_card = C_real_select_target(player,
-                                       player,
-                                       player,
-                                       TARGET_ZONE_IN_PLAY,
-                                       TYPE_CREATURE,
-                                       TYPE_NONE,
-                                       0,
-                                       get_protections_from(player, card),
-                                       COLOR_TEST_0,
-                                       COLOR_TEST_0,
-                                       -1,
-                                       ~SUB_WALL,
-                                       -1,
-                                       C_get_abilities(player, card, EVENT_POWER, -1) - 1U | 0x2000,
-                                       0,
-                                       0,
-                                       0,
-                                       g_text_lines[0],
-                                       1,
-                                       &selected_target);
-    if (legacy_card != 0)
+    if (C_real_select_target(player,
+                             player,
+                             player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_CREATURE,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             C_get_abilities(player, card, EVENT_POWER, -1) - 1U | 0x2000,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &s.selected_target))
     {
-      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.selected_target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-      if ((g_other_player == player) && ((PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).regen_status & 0x20) != 0))
+      if ((g_other_player == player) &&
+          ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                 PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+                .regen_status &
+            0x20) != 0))
       {
         g_ai_modifier += -0x60;
       }
@@ -3963,41 +3972,41 @@ int card_stone_giant(int player, int card, event_t event)
     }
     return 0;
   }
-  else if (event == EVENT_RESOLVE_ACTIVATION)
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    SET_TARGET(selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
-    target_result = C_real_validate_target(selected_target.player,
-                                           selected_target.card,
-                                           (char *)0,
-                                           player,
-                                           player_byte,
-                                           player_byte,
-                                           TARGET_ZONE_IN_PLAY,
-                                           TYPE_CREATURE,
-                                           TYPE_NONE,
-                                           0,
-                                           get_protections_from(player, card),
-                                           COLOR_TEST_0,
-                                           COLOR_TEST_0,
-                                           -1,
-                                           ~SUB_WALL,
-                                           -1,
-                                           (int)PLAYER_CARD_INSTANCE(player, card).power - 1U | TARGET_PT_LESSER_OR_EQUAL,
-                                           0,
-                                           0,
-                                           0);
-    if (target_result != 0)
+    SET_TARGET(s.selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+    if (C_real_validate_target(s.selected_target.player,
+                               s.selected_target.card,
+                               (char *)0,
+                               player,
+                               player,
+                               player,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               (int)PLAYER_CARD_INSTANCE(player, card).power - 1U | TARGET_PT_LESSER_OR_EQUAL,
+                               0,
+                               0,
+                               0))
     {
-      legacy_card = create_legacy_effect(g_card_on_stack_controller,
-                                         g_card_on_stack,
-                                         g_duel_generated_internal_card_id_03,
-                                         selected_target.player,
-                                         selected_target.card);
-      if (legacy_card != -1)
+      s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
+                                           g_card_on_stack,
+                                           g_duel_generated_internal_card_id_03,
+                                           s.selected_target.player,
+                                           s.selected_target.card);
+      if (s.legacy_card != -1)
       {
-        PLAYER_CARD_INSTANCE(player, legacy_card).kill_code = 5;
-        PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x20;
-        PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).regen_status = 0x8000000;
+        PLAYER_CARD_INSTANCE(player, s.legacy_card).kill_code = 5;
+        PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 0x20;
+        PLAYER_CARD_INSTANCE(s.selected_target.player, s.selected_target.card).regen_status = 0x8000000;
       }
     }
     else
@@ -4058,25 +4067,25 @@ int card_dwarven_warriors(int player, int card, event_t event)
       load_text("prompts.txt", "DWARVEN_WARRIORS");
     }
     if (C_real_select_target(player,
-                              2,
-                              player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_CREATURE,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              ~SUB_WALL,
-                              0x2002,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
+                             2,
+                             player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_CREATURE,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             0x2002,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
       SET_TARGET(instance->targets[0], target);
       instance->number_of_targets = 1;
@@ -4191,25 +4200,25 @@ int card_cave_people(int player, int card, event_t event)
           load_text("prompts.txt", "CAVE_PEOPLE");
         }
         if (C_real_select_target(player,
-                                  2,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_CREATURE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  ~SUB_WALL,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &target))
         {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -4348,25 +4357,25 @@ int card_pradesh_gypsies(int player, int card, event_t event)
         }
 
         if (C_real_select_target(player,
-                                  2,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_CREATURE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  ~SUB_WALL,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &target))
         {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -4888,10 +4897,10 @@ int TENTATIVE_sacrifice_leviathan_lands(int player, int card, int allow_cancel)
   while (s.selected_count < 2 && g_spell_fizzled != 1)
   {
     if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY,
-                              TYPE_NONE, TYPE_NONE, 0, 0,
-                              COLOR_TEST_0, COLOR_TEST_0, s.land_type, -1, -1, -1,
-                              0, 0, 0, s.prompt, allow_cancel != 0,
-                              &s.selected_targets[s.selected_count]))
+                             TYPE_NONE, TYPE_NONE, 0, 0,
+                             COLOR_TEST_0, COLOR_TEST_0, s.land_type, -1, -1, -1,
+                             0, 0, 0, s.prompt, allow_cancel != 0,
+                             &s.selected_targets[s.selected_count]))
     {
       PLAYER_CARD_INSTANCE(s.selected_targets[s.selected_count].player,
                            s.selected_targets[s.selected_count].card)
@@ -5306,25 +5315,25 @@ int select_damage_target(int player, int card, int damage_unused)
     if (g_duel_ai_mode_state != 1)
     {
       if (C_real_select_target(player,
-                                2,
-                                1 - player,
-                                TARGET_ZONE_PLAYERS | TARGET_ZONE_IN_PLAY,
-                                TYPE_CREATURE,
-                                TYPE_NONE,
-                                0,
-                                get_protections_from(player, card),
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                -1,
-                                ~SUB_WALL,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                g_text_lines[0],
-                                1,
-                                &s.target))
+                               2,
+                               1 - player,
+                               TARGET_ZONE_PLAYERS | TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               g_text_lines[0],
+                               1,
+                               &s.target))
       {
         s.target_card = s.target.card;
         g_target_player_choice = s.target.player;
@@ -6064,49 +6073,48 @@ int card_llanowar_elves(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0049b392
 int card_birds_of_paradise(int player, int card, event_t event)
 {
-  unsigned int available_colors;
-  color_t choice_hint;
-  color_t color;
-  int current_color;
-  card_instance_t *instance;
-  char message[300];
+  struct
+  {
+    char message[300];
+    color_t choice_hint;
+    int current_color;
+    unsigned int available_colors;
+  } s;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (instance->state & 0x20010) == 0;
+    return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0;
   }
-  else if ((event == EVENT_ACTIVATE) && ((instance->state & STATE_TAPPED) == 0))
+
+  if ((event == EVENT_ACTIVATE) && ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0))
   {
-    available_colors = instance->mana_color;
+    s.available_colors = PLAYER_CARD_INSTANCE(player, card).mana_color;
     if ((((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
     {
-      choice_hint = -1;
-      current_color = 1;
-      while ((current_color < 6) && (choice_hint == -1))
+      s.choice_hint = -1;
+      for (s.current_color = 1; (s.current_color <= 5) && (s.choice_hint == -1); ++s.current_color)
       {
-        if (((g_required_mana_color_mask & (1 << (((unsigned char)current_color)))) != 0) && ((available_colors & (1 << (((unsigned char)current_color)))) != 0))
+        if (((g_required_mana_color_mask & (1 << (((unsigned char)s.current_color)))) != 0) && ((s.available_colors & (1 << (((unsigned char)s.current_color)))) != 0))
         {
-          choice_hint = current_color;
+          s.choice_hint = s.current_color;
         }
-        ++current_color;
       }
-      if ((choice_hint == -1) && ((g_required_mana_color_mask & 1) != 0))
+      if ((s.choice_hint == -1) && ((g_required_mana_color_mask & 1) != 0))
       {
-        choice_hint = COLOR_BLACK;
+        s.choice_hint = COLOR_BLACK;
       }
-      if ((choice_hint == -1) && ((g_required_mana_color_mask & 0x40) != 0))
+      if ((s.choice_hint == -1) && ((g_required_mana_color_mask & 0x40) != 0))
       {
-        choice_hint = COLOR_BLACK;
+        s.choice_hint = COLOR_BLACK;
       }
-      if (choice_hint == -1)
+      if (s.choice_hint == -1)
       {
         g_spell_fizzled = 1;
       }
     }
     else
     {
-      choice_hint = -1;
+      s.choice_hint = -1;
     }
     if (g_spell_fizzled != 1)
     {
@@ -6114,59 +6122,66 @@ int card_birds_of_paradise(int player, int card, event_t event)
       {
         load_text("prompts.txt", "BIRDS_OF_PARADISE");
       }
-      color = choose_a_color(player, g_text_lines[0], 1, choice_hint, instance->mana_color);
-      if (color == ~COLOR_COLORLESS)
+      s.choice_hint = choose_a_color(player, g_text_lines[0], 1, s.choice_hint, PLAYER_CARD_INSTANCE(player, card).mana_color);
+      if (s.choice_hint == ~COLOR_COLORLESS)
       {
         g_spell_fizzled = 1;
       }
       else
       {
-        produce_mana(player, color, 1);
-        undeclare_mana_available_hex(player, instance->mana_color, 1);
-        instance->state |= STATE_TAPPED;
-        g_produced_mana_color = color;
+        produce_mana(player, s.choice_hint, 1);
+        undeclare_mana_available_hex(player, PLAYER_CARD_INSTANCE(player, card).mana_color, 1);
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        g_produced_mana_color = s.choice_hint;
         if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
         {
           load_text("prompts.txt", "BIRDS_OF_PARADISE");
-          if (color == COLOR_BLACK)
+          if (s.choice_hint == COLOR_BLACK)
           {
-            strcpy(message, g_text_lines[1]);
+            strcpy(s.message, g_text_lines[1]);
           }
-          else if (color == COLOR_BLUE)
+          else if (s.choice_hint == COLOR_BLUE)
           {
-            strcpy(message, g_text_lines[2]);
+            strcpy(s.message, g_text_lines[2]);
           }
-          else if (color == COLOR_GREEN)
+          else if (s.choice_hint == COLOR_GREEN)
           {
-            strcpy(message, g_text_lines[3]);
+            strcpy(s.message, g_text_lines[3]);
           }
-          else if (color == COLOR_RED)
+          else if (s.choice_hint == COLOR_RED)
           {
-            strcpy(message, g_text_lines[4]);
+            strcpy(s.message, g_text_lines[4]);
           }
           else
           {
-            strcpy(message, g_text_lines[5]);
+            strcpy(s.message, g_text_lines[5]);
           }
-          do_dialog(player, player, card, -1, -1, message, 0);
+          do_dialog(player, player, card, -1, -1, s.message, 0);
         }
       }
     }
+    return 0;
   }
-  else if ((event == EVENT_COUNT_MANA) && (card == g_affected_card) && (player == g_affected_card_controller))
+
+  if ((event == EVENT_COUNT_MANA) && (card == g_affected_card) && (player == g_affected_card_controller))
   {
-    if ((instance->state & 0x20010) == 0)
+    if ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0)
     {
-      declare_mana_available_hex(player, instance->mana_color, 1);
+      declare_mana_available_hex(player, PLAYER_CARD_INSTANCE(player, card).mana_color, 1);
     }
+    return 0;
   }
-  else if ((event == 0x8a) && (card == g_affected_card) && (player == g_affected_card_controller))
+
+  if ((event == 0x8a) && (card == g_affected_card) && (player == g_affected_card_controller))
   {
     g_ai_score += 0x60 / (g_basiclandtypes_controlled[player][7] + 2);
+    return 0;
   }
-  else if ((event == 0x8b) && (card == g_affected_card) && (player == g_affected_card_controller))
+
+  if ((event == 0x8b) && (card == g_affected_card) && (player == g_affected_card_controller))
   {
     g_ai_score -= 0x60 / (g_basiclandtypes_controlled[player][7] + 2);
+    return 0;
   }
 
   return 0;
@@ -6585,25 +6600,25 @@ int card_ali_baba(int player, int card, event_t event)
           load_text("prompts.txt", "ALI_BABA");
         }
         if (C_real_select_target(player,
-                                  2,
-                                  1 - player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_CREATURE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  TARGET_SPECIAL_WALL,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 1 - player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 TARGET_SPECIAL_WALL,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &target))
         {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;

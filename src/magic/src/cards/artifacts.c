@@ -1519,9 +1519,14 @@ int card_urza_s_avenger(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00513d22
 int card_millstone(int player, int card, event_t event)
 {
-  target_t target;
-  int target_player;
-  int count;
+  struct
+  {
+    int target_player;
+    target_t target;
+    int internal_card_id;
+    int count;
+    int hand_card;
+  } s;
 
   if (event == EVENT_CAN_ACTIVATE)
   {
@@ -1531,12 +1536,6 @@ int card_millstone(int player, int card, event_t event)
     {
       return 1;
     }
-    return 0;
-  }
-
-  if (event == EVENT_GET_SELECTED_CARD)
-  {
-    load_recorded_action_target(0);
     return 0;
   }
 
@@ -1553,27 +1552,27 @@ int card_millstone(int player, int card, event_t event)
           load_text("prompts.txt", "MILLSTONE");
         }
         if (C_real_select_target(player,
-                                  2,
-                                  1 - player,
-                                  TARGET_ZONE_PLAYERS,
-                                  TYPE_NONE,
-                                  TYPE_NONE,
-                                  0,
-                                  0,
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  ~SUB_WALL,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 1 - player,
+                                 TARGET_ZONE_PLAYERS,
+                                 TYPE_NONE,
+                                 TYPE_NONE,
+                                 0,
+                                 0,
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &s.target))
         {
-          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         }
@@ -1583,18 +1582,35 @@ int card_millstone(int player, int card, event_t event)
         }
       }
     }
-    return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
+    s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .number_of_targets = 0;
-    target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    for (count = 0; count < 2; ++count)
+    for (s.count = 0; s.count < 2; ++s.count)
     {
-      put_top_library_card_into_graveyard(target_player);
+      s.internal_card_id = global_library[s.target_player][0];
+      if (s.internal_card_id != -1)
+      {
+        remove_card_from_deck(s.target_player, 0);
+        s.hand_card = add_card_to_hand(s.target_player, s.internal_card_id);
+        if (s.hand_card != -1)
+        {
+          move_card_to_graveyard(s.target_player, s.hand_card);
+          PLAYER_CARD_INSTANCE(s.target_player, s.hand_card).internal_card_id = -1;
+        }
+      }
+      if (g_duel_ai_mode_state != 1)
+      {
+        play_sound_effect(0x18);
+      }
+      if (g_current_phase == 0x1f && g_active_player == g_current_player)
+      {
+        g_ai_modifier += 0x18;
+      }
     }
   }
 
@@ -1924,90 +1940,91 @@ int card_ashnod_s_battle_gear(int player, int card, event_t event)
     {
       return 1;
     }
+    return 0;
   }
-  else if (event == EVENT_GET_SELECTED_CARD)
+
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
-  else
+
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
-    if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
-    {
-      PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
-    }
+    PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
+  }
 
-    if (event == EVENT_ACTIVATE &&
-        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
-        has_mana(player, COLOR_ANY, 2))
+  if (event == EVENT_ACTIVATE &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+      has_mana(player, COLOR_ANY, 2))
+  {
+    charge_mana(player, COLOR_COLORLESS, 2);
+    if (g_spell_fizzled != 1)
     {
-      charge_mana(player, COLOR_COLORLESS, 2);
-      if (g_spell_fizzled != 1)
+      if (g_duel_ai_mode_state != 1)
       {
-        if (g_duel_ai_mode_state != 1)
-        {
-          load_text("prompts.txt", "ASHNODS_BATTLEGEAR");
-        }
-
-        if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE,
-                                  0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                  -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
-        {
-          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
-          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-        }
-        else
-        {
-          g_spell_fizzled = 1;
-        }
+        load_text("prompts.txt", "ASHNODS_BATTLEGEAR");
       }
-    }
 
-    if (event == EVENT_RESOLVE_ACTIVATION)
-    {
-      SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
-      if (C_real_validate_target(target.player, target.card, (char *)0, player, player, player,
-                                 TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
-                                 get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
-                                 -1, -1, -1, -1, 0, 0, 0))
+      if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE,
+                               0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                               -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
       {
-        legacy_card = create_legacy_effect(g_card_on_stack_controller,
-                                           g_card_on_stack,
-                                           LEGACY_EFFECT_PUMP,
-                                           target.player,
-                                           target.card);
-        if (legacy_card != -1)
-        {
-          PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                               PLAYER_CARD_INSTANCE(player, card).parent_card)
-              .info_slot = legacy_card;
-          PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= STATUS_PERMANENT;
-          PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = 2;
-          PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = -2;
-        }
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
       else
       {
         g_spell_fizzled = 1;
       }
     }
+  }
 
-    if (event == EVENT_GRAVEYARD_FROM_PLAY &&
-        card == g_affected_card &&
-        player == g_affected_card_controller &&
-        PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
+    if (C_real_validate_target(target.player, target.card, (char *)0, player, player, player,
+                               TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
+                               get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
+                               -1, -1, -1, -1, 0, 0, 0))
     {
-      kill_card(player, PLAYER_CARD_INSTANCE(player, card).info_slot, KILL_BURY);
+      legacy_card = create_legacy_effect(g_card_on_stack_controller,
+                                         g_card_on_stack,
+                                         LEGACY_EFFECT_PUMP,
+                                         target.player,
+                                         target.card);
+      if (legacy_card != -1)
+      {
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                             PLAYER_CARD_INSTANCE(player, card).parent_card)
+            .info_slot = legacy_card;
+        PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= STATUS_PERMANENT;
+        PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = 2;
+        PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = -2;
+      }
     }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
+  }
 
-    if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
-    {
-      kill_card(player, PLAYER_CARD_INSTANCE(player, card).info_slot, KILL_BURY);
-      PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
-    }
+  if (event == EVENT_GRAVEYARD_FROM_PLAY &&
+      card == g_affected_card &&
+      player == g_affected_card_controller &&
+      PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
+  {
+    kill_card(player, PLAYER_CARD_INSTANCE(player, card).info_slot, KILL_BURY);
+  }
+
+  if (PLAYER_CARD_INSTANCE(player, card).info_slot != -1 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+  {
+    kill_card(player, PLAYER_CARD_INSTANCE(player, card).info_slot, KILL_BURY);
+    PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
   }
 
   return 0;
@@ -2516,16 +2533,16 @@ int card_forcefield(int player, int card, event_t event)
                                &target))
       {
         if ((global_cards_data[PLAYER_CARD_INSTANCE(
-                                        (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
-                                        PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
-                                        .internal_card_id]
-                      .type &
-                  TYPE_CREATURE) != 0 &&
-                 (PLAYER_CARD_INSTANCE(
-                      (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
-                      PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
-                      .state &
-                  0x200) == 0)
+                                   (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
+                                   PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
+                                   .internal_card_id]
+                 .type &
+             TYPE_CREATURE) != 0 &&
+            (PLAYER_CARD_INSTANCE(
+                 (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
+                 PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
+                 .state &
+             0x200) == 0)
         {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -2606,8 +2623,8 @@ int card_disrupting_scepter(int player, int card, event_t event)
         load_text("prompts.txt", "DISRUPTING_SCEPTER");
       }
       if (C_real_select_target(player, 2, 1 - player, TARGET_ZONE_PLAYERS, TYPE_NONE, TYPE_NONE,
-                                0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1,
-                                0, 0, 0, g_text_lines[0], 1, &target))
+                               0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1,
+                               0, 0, 0, g_text_lines[0], 1, &target))
       {
         SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -2890,25 +2907,25 @@ int card_conservator(int player, int card, event_t event)
           load_text("prompts.txt", "CONSERVATOR");
         }
         if (C_real_select_target(player,
-                                  player,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_NONE,
-                                  TYPE_NONE,
-                                  0,
-                                  0,
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  g_damage_card_internal_card_id,
-                                  ~SUB_WALL,
-                                  -1,
-                                  -1,
-                                  TARGET_SPECIAL_DAMAGE_PLAYER,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  3,
-                                  &selected_target))
+                                 player,
+                                 player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_NONE,
+                                 TYPE_NONE,
+                                 0,
+                                 0,
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 g_damage_card_internal_card_id,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 TARGET_SPECIAL_DAMAGE_PLAYER,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 3,
+                                 &selected_target))
         {
           PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |= 0x200000;
           TENTATIVE_reassess_all_cards(0, TARGET_SPECIAL_DAMAGE_PLAYER);
@@ -3362,10 +3379,7 @@ int card_soul_net(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051a01c
 int card_ebony_horse(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
@@ -3374,9 +3388,9 @@ int card_ebony_horse(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (((instance->state & STATE_SUMMONSICK_BOTH) == 0) ||
-            (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0) &&
-           (instance->state & STATE_TAPPED) == 0 &&
+    return (((PLAYER_CARD_INSTANCE(player, card).state & STATE_SUMMONSICK_BOTH) == 0) ||
+            (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
+           (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
            has_mana(player, COLOR_ANY, 2) &&
            real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
@@ -3398,93 +3412,95 @@ int card_ebony_horse(int player, int card, event_t event)
                                  TARGET_STATE_ATTACKING,
                                  0);
   }
-  else if (event == EVENT_GET_SELECTED_CARD)
+
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
-  else
-  {
-    if (event == EVENT_ACTIVATE &&
-        (instance->state & STATE_TAPPED) == 0 &&
-        has_mana(player, COLOR_ANY, 2) &&
-        player == g_current_player &&
-        g_attacking_creature_count != 0)
-    {
-      charge_mana(player, COLOR_COLORLESS, 2);
-      if (g_spell_fizzled != 1)
-      {
-        if (g_duel_ai_mode_state != 1)
-        {
-          load_text("prompts.txt", "EBONYHORSE");
-        }
-        if (C_real_select_target(player,
-                                  player,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_CREATURE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  0,
-                                  TARGET_STATE_ATTACKING,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
-        {
-          SET_TARGET(instance->targets[0], target);
-          instance->number_of_targets = 1;
-          instance->state |= STATE_TAPPED;
-        }
-        else
-        {
-          g_spell_fizzled = 1;
-        }
-      }
-    }
 
-    if (event == EVENT_RESOLVE_ACTIVATION)
+  if (event == EVENT_ACTIVATE &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+      has_mana(player, COLOR_ANY, 2) &&
+      player == g_current_player &&
+      g_attacking_creature_count != 0)
+  {
+    charge_mana(player, COLOR_COLORLESS, 2);
+    if (g_spell_fizzled != 1)
     {
-      SET_TARGET(target, instance->targets[0]);
-      PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
-      if (C_real_validate_target(target.player,
-                                 target.card,
-                                 (char *)0,
-                                 player,
-                                 player,
-                                 player,
-                                 TARGET_ZONE_IN_PLAY,
-                                 TYPE_CREATURE,
-                                 TYPE_NONE,
-                                 0,
-                                 get_protections_from(player, card),
-                                 COLOR_TEST_0,
-                                 COLOR_TEST_0,
-                                 -1,
-                                 -1,
-                                 -1,
-                                 -1,
-                                 0,
-                                 TARGET_STATE_ATTACKING,
-                                 0))
+      if (g_duel_ai_mode_state != 1)
       {
-        PLAYER_CARD_INSTANCE(target.player, target.card).state &= ~STATE_TAPPED;
-        create_legacy_effect(g_card_on_stack_controller,
-                             g_card_on_stack,
-                             g_duel_generated_internal_card_id_15,
-                             target.player,
-                             target.card);
+        load_text("prompts.txt", "EBONYHORSE");
+      }
+      if (C_real_select_target(player,
+                               player,
+                               player,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               -1,
+                               -1,
+                               -1,
+                               0,
+                               TARGET_STATE_ATTACKING,
+                               0,
+                               g_text_lines[0],
+                               1,
+                               &target))
+      {
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
       else
       {
         g_spell_fizzled = 1;
       }
+    }
+  }
+
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
+    if (C_real_validate_target(target.player,
+                               target.card,
+                               (char *)0,
+                               player,
+                               player,
+                               player,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_CREATURE,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               -1,
+                               -1,
+                               -1,
+                               0,
+                               TARGET_STATE_ATTACKING,
+                               0))
+    {
+      PLAYER_CARD_INSTANCE(target.player, target.card).state &= ~STATE_TAPPED;
+      create_legacy_effect(g_card_on_stack_controller,
+                           g_card_on_stack,
+                           g_duel_generated_internal_card_id_15,
+                           target.player,
+                           target.card);
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
   }
 
@@ -4067,25 +4083,25 @@ int card_amulet_of_kroog(int player, int card, event_t event)
           load_text("prompts.txt", "AMULET_KROOG");
         }
         if (C_real_select_target(player,
-                                  2,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_NONE,
-                                  TYPE_NONE,
-                                  0,
-                                  0,
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  g_damage_card_internal_card_id,
-                                  ~SUB_WALL,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_NONE,
+                                 TYPE_NONE,
+                                 0,
+                                 0,
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 g_damage_card_internal_card_id,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &target))
         {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -4320,25 +4336,25 @@ int card_bronze_tablet(int player, int card, event_t event)
           load_text("prompts.txt", "BRONZE_TABLET");
         }
         if (C_real_select_target(player,
-                                  1 - player,
-                                  1 - player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  0x7f,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &s.target))
+                                 1 - player,
+                                 1 - player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 0x7f,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &s.target))
         {
           PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -5159,25 +5175,25 @@ int card_flying_carpet(int player, int card, event_t event)
           load_text("prompts.txt", "FLYING_CARPET");
         }
         if (C_real_select_target(player,
-                                  2,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_CREATURE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  ~SUB_WALL,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &target))
         {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
@@ -5246,7 +5262,11 @@ int card_flying_carpet(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0051fd11
 int card_helm_of_chatzuk(int player, int card, event_t event)
 {
-  target_t selected_target;
+  struct
+  {
+    target_t selected_target;
+    int legacy_card;
+  } s;
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
@@ -5259,10 +5279,12 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
     {
       return 1;
     }
+    return 0;
   }
   else if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
   else
   {
@@ -5276,29 +5298,33 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
           load_text("prompts.txt", "HELM_OF_CHATZUK");
         }
         if (C_real_select_target(player,
-                                  2,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_CREATURE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  ~SUB_WALL,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &selected_target))
+                                 2,
+                                 player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &s.selected_target))
         {
-          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.selected_target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-          if (g_other_player == player && (((PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).regen_status & 0x40) != 0) || selected_target.player == g_active_player))
+          if (g_other_player == player && (((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                                                  PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+                                                 .regen_status &
+                                             0x40) != 0) ||
+                                           PLAYER_CARD_INSTANCE(player, card).targets[0].player == g_active_player))
           {
             g_ai_modifier -= 0x30;
           }
@@ -5313,12 +5339,12 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
 
     if (event == EVENT_RESOLVE_ACTIVATION)
     {
-      SET_TARGET(selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+      SET_TARGET(s.selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
           .number_of_targets = 0;
-      if (C_real_validate_target(selected_target.player,
-                                 selected_target.card,
+      if (C_real_validate_target(s.selected_target.player,
+                                 s.selected_target.card,
                                  (char *)0,
                                  player,
                                  2,
@@ -5338,15 +5364,13 @@ int card_helm_of_chatzuk(int player, int card, event_t event)
                                  0,
                                  0))
       {
-        int legacy_card;
-
-        legacy_card =
-            create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_03, selected_target.player, selected_target.card);
-        if (legacy_card != -1)
+        s.legacy_card =
+            create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_03, s.selected_target.player, s.selected_target.card);
+        if (s.legacy_card != -1)
         {
-          PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x40;
+          PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 0x40;
         }
-        PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).regen_status = 0x8000000;
+        PLAYER_CARD_INSTANCE(s.selected_target.player, s.selected_target.card).regen_status = 0x8000000;
       }
       else
       {
@@ -5417,25 +5441,25 @@ int card_coral_helm(int player, int card, event_t event)
           load_text("prompts.txt", "CORAL_HELM");
         }
         if (C_real_select_target(player,
-                                  2,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_CREATURE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  ~SUB_WALL,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &target))
         {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
@@ -5542,25 +5566,25 @@ int card_tawnos_s_wand(int player, int card, event_t event)
           load_text("prompts.txt", "TAWNOS_WAND");
         }
         if (C_real_select_target(player,
-                                  2,
-                                  player,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_CREATURE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  -1,
-                                  ~SUB_WALL,
-                                  TARGET_PT_LESSER_OR_EQUAL | 2,
-                                  -1,
-                                  0,
-                                  0,
-                                  0,
-                                  g_text_lines[0],
-                                  1,
-                                  &target))
+                                 2,
+                                 player,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_CREATURE,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 -1,
+                                 ~SUB_WALL,
+                                 TARGET_PT_LESSER_OR_EQUAL | 2,
+                                 -1,
+                                 0,
+                                 0,
+                                 0,
+                                 g_text_lines[0],
+                                 1,
+                                 &target))
         {
           SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
