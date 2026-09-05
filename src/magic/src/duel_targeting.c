@@ -1760,7 +1760,7 @@ int select_target_creature_and_store_without_protection(int player, unsigned int
                            1,
                            &selected_target) != 0)
   {
-    PLAYER_CARD_INSTANCE(player, card).targets[(char)PLAYER_CARD_INSTANCE(player, card).number_of_targets] = selected_target;
+    SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[(char)PLAYER_CARD_INSTANCE(player, card).number_of_targets], selected_target);
     ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
     return 1;
   }
@@ -1858,7 +1858,7 @@ int select_target_land_and_store(int player, int preferred_controller, int card)
                            1,
                            &selected_target) != 0)
   {
-    PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets] = selected_target;
+    SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], selected_target);
     ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
     return 1;
   }

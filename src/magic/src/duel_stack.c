@@ -1206,7 +1206,7 @@ int can_block_attacker_with_abilities(int blocker_player,
                                       unsigned int attacker_abilities,
                                       unsigned int land_bits)
 {
-#define BLOCKER_INSTANCE (*(card_instance_t *)((char *)&global_card_instances[0][blocker_card] + blocker_player * sizeof(global_card_instances[0])))
+#define BLOCKER_INSTANCE global_card_instances[blocker_player][blocker_card]
   struct
   {
     int result;

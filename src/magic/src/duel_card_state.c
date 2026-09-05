@@ -278,9 +278,9 @@ int card_two_headed_giant_of_foriys_legacy(int player, int card, int event)
       kill_card(player, card, KILL_BURY);
       g_battlefield_extra_ability_flags &= 0xfffffffb;
 
-      *(unsigned int *)((char *)&PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                                                      PLAYER_CARD_INSTANCE(player, card).damage_source_card) +
-                        0x18) &= 0xf7ffffff;
+      PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
+                           PLAYER_CARD_INSTANCE(player, card).damage_source_card)
+          .token_status &= ~STATUS_SPECIAL_BLOCKER;
     }
   }
 
@@ -477,6 +477,7 @@ int has_effect_source_type(int player, int card, unsigned int flags)
 }
 
 // FUNCTION: MAGIC 0x00483190
+// FUNCTION: SHANDALAR 0x00486ca1
 int find_matching_active_control_effect(int player, int card, int source_player, int source_card, int internal_card_id)
 {
   int result = 0;
@@ -493,6 +494,7 @@ int find_matching_active_control_effect(int player, int card, int source_player,
 }
 
 // FUNCTION: MAGIC 0x00483242
+// FUNCTION: SHANDALAR 0x00486d53
 int find_matching_inactive_control_effect(int player, int card, int source_player, int source_card, int internal_card_id)
 {
   int result = 0;
@@ -604,7 +606,8 @@ int is_basic_land_internal_card_id_of_color(int internal_card_id, color_t color)
   {
     result = 1;
   }
-  if ((char)global_cards_data[internal_card_id].subtype == 12 && ((1 << color) & (int)*(char *)&PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).mana_color) != 0)
+  if ((char)global_cards_data[internal_card_id].subtype == 12 &&
+      ((1 << color) & (int)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).mana_color) != 0)
   {
     result = 1;
   }

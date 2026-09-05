@@ -373,12 +373,12 @@ int charge_mana(int player, color_t color, int amount)
             s.current_internal_card_id = (global_card_instances[player] + s.selected_card)->internal_card_id;
             if ((global_cards_data[s.current_internal_card_id].extra_ability & EA_MANA_SOURCE) != 0 &&
                 ((global_cards_data[s.current_internal_card_id].type & TYPE_INTERRUPT) != 0 ||
-                  ((((global_card_instances[player] + s.selected_card)->state & STATE_IN_PLAY) != 0) &&
-                   ((global_card_instances[player] + s.selected_card)->state & STATE_OUBLIETTED) == 0 &&
-                   ((global_card_instances[player] + s.selected_card)->state & STATE_TAPPED) == 0 &&
-                   ((((global_card_instances[player] + s.selected_card)->state &
-                       (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0) ||
-                    (global_cards_data[(global_card_instances[player] + s.selected_card)->internal_card_id].type & TYPE_CREATURE) == 0))))
+                 ((((global_card_instances[player] + s.selected_card)->state & STATE_IN_PLAY) != 0) &&
+                  ((global_card_instances[player] + s.selected_card)->state & STATE_OUBLIETTED) == 0 &&
+                  ((global_card_instances[player] + s.selected_card)->state & STATE_TAPPED) == 0 &&
+                  ((((global_card_instances[player] + s.selected_card)->state &
+                     (STATE_SUMMONSICK_NOATTACK | STATE_SUMMONSICK_NOTAP)) == 0) ||
+                   (global_cards_data[(global_card_instances[player] + s.selected_card)->internal_card_id].type & TYPE_CREATURE) == 0))))
             {
               for (s.idx8 = 0; s.idx8 <= 7; ++s.idx8)
               {
@@ -1626,31 +1626,32 @@ void count_mana(void)
 void C_count_colors_of_lands_in_play(void)
 {
   int player;
-  int card;
-  int color;
   int internal_card_id;
+  int color;
 
   for (color = 0; color <= 7; ++color)
   {
     g_landwalk_basiclandtypes_controlled[0][color] = 0;
     g_basiclandtypes_controlled[0][color] = g_landwalk_basiclandtypes_controlled[0][color];
   }
+
   g_mana_pool_colorless_components[1] = 0;
   g_mana_pool_colorless_components[0] = g_mana_pool_colorless_components[1];
 
   for (player = 0; player < 2; ++player)
   {
+    int card;
     for (card = 0; card < g_active_cards_count[player]; ++card)
     {
       internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
       if (is_in_play(player, card) && (global_cards_data[internal_card_id].type & TYPE_LAND) != 0)
       {
         g_mana_pool_colorless_components[player] |= PLAYER_CARD_INSTANCE(player, card).mana_color;
-        if (internal_card_id < 5)
+        if (internal_card_id <= 4)
         {
-          ++g_basiclandtypes_controlled[player][internal_card_id];
+          ++g_basiclandtypes_controlled[player][internal_card_id + 1];
         }
-        else if (internal_card_id > 0xe && internal_card_id < g_card_count)
+        else if (internal_card_id > 0xe && g_card_count > internal_card_id)
         {
           ++g_basiclandtypes_controlled[player][0];
         }
@@ -1658,64 +1659,64 @@ void C_count_colors_of_lands_in_play(void)
         {
           switch (global_cards_data[internal_card_id].id)
           {
-            case 0xc:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
-              break;
-            case 9:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
-              break;
-            case 0xbd:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
-              break;
-            case 0xd4:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
-              break;
-            case 0xd8:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
-              break;
-            case 0xf1:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
-              break;
-            case 0xfc:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
-              break;
-            case 0xfe:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
-              break;
-            case 0x102:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
-              break;
-            case 0x10a:
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
-              ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
-              break;
-            case 0xef:
-              ++g_basiclandtypes_controlled[player][1];
-              break;
-            case 0x7e:
-              ++g_basiclandtypes_controlled[player][2];
-              break;
-            case 0x5b:
-              ++g_basiclandtypes_controlled[player][3];
-              break;
-            case 0xa4:
-              ++g_basiclandtypes_controlled[player][4];
-              break;
-            case 0xbc:
-              ++g_basiclandtypes_controlled[player][5];
-              break;
-            default:
-              ++g_basiclandtypes_controlled[player][0];
-              break;
+          case 9:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
+            break;
+          case 0xc:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
+            break;
+          case 0xbd:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
+            break;
+          case 0xd4:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
+            break;
+          case 0xd8:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
+            break;
+          case 0xf1:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
+            break;
+          case 0xfc:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 3)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
+            break;
+          case 0xfe:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 5)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
+            break;
+          case 0x102:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 1)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
+            break;
+          case 0x10a:
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 2)];
+            ++g_basiclandtypes_controlled[player][get_hacked_color(player, card, 4)];
+            break;
+          case 0xef:
+            ++g_basiclandtypes_controlled[player][1];
+            break;
+          case 0x7e:
+            ++g_basiclandtypes_controlled[player][2];
+            break;
+          case 0x5b:
+            ++g_basiclandtypes_controlled[player][3];
+            break;
+          case 0xa4:
+            ++g_basiclandtypes_controlled[player][4];
+            break;
+          case 0xbc:
+            ++g_basiclandtypes_controlled[player][5];
+            break;
+          default:
+            ++g_basiclandtypes_controlled[player][0];
+            break;
           }
         }
         ++g_basiclandtypes_controlled[player][7];

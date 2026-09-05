@@ -74,8 +74,7 @@ int card_darkpact(int player, int card, event_t event)
     }
     else
     {
-      PLAYER_CARD_INSTANCE(player, card).targets[0].player = s.target.player;
-      PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.target.card;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }
@@ -167,8 +166,7 @@ int card_drafna_s_restoration(int player, int card, event_t event)
     }
     else
     {
-      PLAYER_CARD_INSTANCE(player, card).targets[0].player = s.target.player;
-      PLAYER_CARD_INSTANCE(player, card).targets[0].card = s.target.card;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
   }

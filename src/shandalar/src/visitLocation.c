@@ -2663,7 +2663,7 @@ void RemoveCardFromDeckById(unsigned int card_id)
 }
 
 // FUNCTION: SHANDALAR 0x0053114a
-void WisemanChooseLairCreatureAndSetupDuel(unsigned char amulet_color)
+void WisemanChooseLairCreatureAndSetupDuel(int amulet_color)
 {
   struct
   {
@@ -2673,15 +2673,14 @@ void WisemanChooseLairCreatureAndSetupDuel(unsigned char amulet_color)
     int count;
   } s;
 
-  /* The original overwrites the param stack slot with a precomputed bitmask. */
-  *(int *)&amulet_color = 1 << amulet_color;
+  amulet_color = 1 << (unsigned char)amulet_color;
 
   strcpy(g_ui_message_buffer, gs_lair_0077e180[0x11]);
   s.count = 0;
 
   for (s.i = 1; s.i < (int)gs_creature_name_count_00593934; s.i = s.i + 1)
   {
-    if ((*(int *)&amulet_color & (int)(signed char)g_shandalar_monster_definitions[s.i].plural[0x36]) != 0)
+    if ((amulet_color & (int)(signed char)g_shandalar_monster_definitions[s.i].color_mask) != 0)
     {
       s.aiStack_50[s.count] = s.i;
       s.count = s.count + 1;

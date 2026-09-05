@@ -910,7 +910,7 @@ int card_asterisk_FX(int player, int card, event_t event)
       }
       else
       {
-        count = ((unsigned char *)&PLAYER_CARD_INSTANCE(player, card).info_slot)[1];
+        count = BYTE1(PLAYER_CARD_INSTANCE(player, card).info_slot);
       }
     }
     else if (mode == 0x800)

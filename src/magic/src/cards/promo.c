@@ -244,8 +244,7 @@ int card_aswan_jaguar(int player, int card, event_t event)
         }
         else
         {
-          s.instance->targets[0].player = s.target.player;
-          s.instance->targets[0].card = s.target.card;
+          SET_TARGET(s.instance->targets[0], s.target);
           s.instance->number_of_targets = 1;
           s.selected_monster = *(int *)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].id].subtype;
           s.instance->state |= STATE_TAPPED;

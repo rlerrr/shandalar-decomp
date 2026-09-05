@@ -187,7 +187,7 @@ int card_oasis(int player, int card, event_t event)
     while (!done)
     {
       load_text("prompts.txt", "OASIS");
-      if (!C_real_select_target(player,
+      if (C_real_select_target(player,
                                 2,
                                 2,
                                 TARGET_ZONE_IN_PLAY,
@@ -223,7 +223,7 @@ int card_oasis(int player, int card, event_t event)
       else
       {
         done = 1;
-        PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         g_produced_mana_color = -1;
@@ -235,7 +235,7 @@ int card_oasis(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_ACTIVATION &&
       PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
   {
-    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(target.player,
                                target.card,
                                (char *)0,
@@ -257,13 +257,13 @@ int card_oasis(int player, int card, event_t event)
                                0,
                                0))
     {
-      if (PLAYER_CARD_INSTANCE(target.player, target.card).info_slot < 1)
+      if (PLAYER_CARD_INSTANCE(target.player, target.card).info_slot > 0)
       {
-        g_spell_fizzled = 1;
+        --PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
       }
       else
       {
-        --PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
+        g_spell_fizzled = 1;
       }
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
@@ -374,7 +374,7 @@ int card_strip_mine(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION && PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
   {
-    s.target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(s.target.player,
                                 s.target.card,
                                 (char *)0,
@@ -767,8 +767,8 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
     }
     else if (instance->info_slot == 2 && instance->number_of_targets != 0)
     {
-      s.target = instance->targets[0];
-      if (!C_real_validate_target(s.target.player,
+      SET_TARGET(s.target, instance->targets[0]);
+      if (C_real_validate_target(s.target.player,
                                   s.target.card,
                                   (char *)0,
                                   player,
@@ -789,10 +789,6 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
                                   0,
                                   0))
       {
-        g_spell_fizzled = 1;
-      }
-      else
-      {
         s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                              g_card_on_stack,
                                              LEGACY_EFFECT_PUMP,
@@ -803,6 +799,10 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
           PLAYER_CARD_INSTANCE(player, s.legacy_card).counter_power = 1;
           PLAYER_CARD_INSTANCE(player, s.legacy_card).counter_toughness = 1;
         }
+      }
+      else
+      {
+        g_spell_fizzled = 1;
       }
     }
     parent->number_of_targets = 0;
@@ -1076,8 +1076,8 @@ int card_mishra_s_factory(int player, int card, event_t event)
       }
       else if (s.choice == 2 && PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
       {
-        s.target = PLAYER_CARD_INSTANCE(player, card).targets[0];
-        if (!C_real_validate_target(s.target.player,
+        SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+        if (C_real_validate_target(s.target.player,
                                     s.target.card,
                                     (char *)0,
                                     player,
@@ -1098,10 +1098,6 @@ int card_mishra_s_factory(int player, int card, event_t event)
                                     0,
                                     0))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                                g_card_on_stack,
                                                LEGACY_EFFECT_PUMP,
@@ -1112,6 +1108,10 @@ int card_mishra_s_factory(int player, int card, event_t event)
             PLAYER_CARD_INSTANCE(player, s.legacy_card).counter_power = 1;
             PLAYER_CARD_INSTANCE(player, s.legacy_card).counter_toughness = 1;
           }
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
@@ -1420,8 +1420,8 @@ int card_assembly_worker(int player, int card, event_t event)
       }
       else if (s.choice == 2 && PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
       {
-        s.target = PLAYER_CARD_INSTANCE(player, card).targets[0];
-        if (!C_real_validate_target(s.target.player,
+        SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+        if (C_real_validate_target(s.target.player,
                                     s.target.card,
                                     (char *)0,
                                     player,
@@ -1442,10 +1442,6 @@ int card_assembly_worker(int player, int card, event_t event)
                                     0,
                                     0))
         {
-          g_spell_fizzled = 1;
-        }
-        else
-        {
           s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                                g_card_on_stack,
                                                LEGACY_EFFECT_PUMP,
@@ -1460,6 +1456,10 @@ int card_assembly_worker(int player, int card, event_t event)
           {
             g_spell_fizzled = 1;
           }
+        }
+        else
+        {
+          g_spell_fizzled = 1;
         }
       }
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,

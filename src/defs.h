@@ -447,12 +447,10 @@ typedef enum
 	TYPE_ARTIFACT = 1 << 6,
 	TYPE_EFFECT = 1 << 7, // All legacy / effect cards
 	TYPE_SPELL = TYPE_SORCERY | TYPE_INSTANT | TYPE_INTERRUPT,
-#ifndef SHANDALAR
 	TYPE_PERMANENT = TYPE_LAND | TYPE_CREATURE | TYPE_ENCHANTMENT | TYPE_ARTIFACT,
 	TYPE_NONEFFECT = TYPE_PERMANENT | TYPE_SPELL,
 	TYPE_ANY = TYPE_NONEFFECT | TYPE_EFFECT,
 
-#endif
 #ifdef SHANDALAR
 	DAMAGE_TYPE_ACTIVATION = 1 << 11, // Set only on damage cards' source type
 #endif
@@ -463,12 +461,7 @@ typedef enum
 	TARGET_TYPE_DRAW_CARD_LEGACY = 1 << 15,	   // Checked for but unused by exe
 	TARGET_TYPE_PLANESWALKER = 1 << 16,		   // Works for targetting, is_what(), and the make_test() family, but not much else.  All will also accept planeswalkers if all of land/creature/enchantment/artifact are set.
 	TARGET_TYPE_NONCREATURE_CAN_BLOCK = 1 << 25,
-#ifdef SHANDALAR
-	TYPE_PLANESWALKER = TARGET_TYPE_PLANESWALKER,
-	TYPE_PERMANENT = TYPE_LAND | TYPE_CREATURE | TYPE_ENCHANTMENT | TYPE_ARTIFACT | TARGET_TYPE_PLANESWALKER,
-	TYPE_NONEFFECT = TYPE_PERMANENT | TYPE_SPELL,
-	TYPE_ANY = TYPE_NONEFFECT | TYPE_EFFECT,
-#endif
+	TARGET_TYPE_PERMANENT = TYPE_LAND | TYPE_CREATURE | TYPE_ENCHANTMENT | TYPE_ARTIFACT | TARGET_TYPE_TOKEN,
 } type_t;
 
 /* Flags for boost_subtype(), boost_creature_type(), and boost_creature_by_color() */
@@ -592,6 +585,13 @@ typedef struct target_struct
 	int32_t player;
 	int32_t card;
 } target_t;
+
+#define SET_TARGET(destination_, source_)         \
+	do                                            \
+	{                                             \
+		(destination_).player = (source_).player; \
+		(destination_).card = (source_).card;     \
+	} while (0)
 
 typedef enum
 {
@@ -821,11 +821,11 @@ typedef struct card_instance_struct
 		struct
 		{
 			uint16_t display_pic_csv_id; /*  0x64 */
-			uint16_t display_pic_num;	/*  0x66 */
+			uint16_t display_pic_num;	 /*  0x66 */
 		};
 		uint32_t display_pic_info;
 	};
-	int8_t kill_code;				   /*  0x68 */
+	int8_t kill_code; /*  0x68 */
 
 	uint8_t unk69; /*  0x69 */ // Entirely untouched by exe.
 	uint8_t unk6A; /*  0x6A */ // Entirely untouched by exe.

@@ -304,11 +304,7 @@ int card_prismatic_dragon(int player, int card, event_t event)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id == -1)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+            .internal_card_id != -1)
     {
       if (g_duel_ai_mode_state != 1)
       {
@@ -337,13 +333,11 @@ int card_prismatic_dragon(int player, int card, event_t event)
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
           .info_slot |= 1 << (unsigned char)g_current_player;
     }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
   }
-  else if (g_affected_card == card &&
-           g_affected_card_controller == player)
-  {
-    PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
-  }
-
   return 0;
 }
 
@@ -680,9 +674,9 @@ int card_tempest_efreet(int player, int card, event_t event)
       sprintf(prompt, " %s\n %s\n %s", g_text_lines[0], g_text_lines[1], g_text_lines[2]);
     }
 
-    PLAYER_CARD_INSTANCE(player, card).targets[0].player = 1 - player;
-    PLAYER_CARD_INSTANCE(player, card).targets[0].card =
-        do_dialog(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1 - player;
+    PLAYER_CARD_INSTANCE(player, card).info_slot =
+        do_dialog(PLAYER_CARD_INSTANCE(player, card).eot_toughness,
                   player,
                   card,
                   -1,
@@ -695,8 +689,8 @@ int card_tempest_efreet(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    opponent = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    choice = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    opponent = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+    choice = PLAYER_CARD_INSTANCE(player, card).info_slot;
 
     if (choice == 0)
     {
@@ -882,22 +876,22 @@ int card_xenic_poltergeist(int player, int card, event_t event)
                              0,
                              g_text_lines[0],
                              1,
-                             &s.target) == 0)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+                             &s.target) != 0)
     {
       PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    s.target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(s.target.player,
                                s.target.card,
                                (char *)0,
@@ -917,11 +911,7 @@ int card_xenic_poltergeist(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0) == 0)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+                                0) != 0)
     {
       s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                            g_card_on_stack,
@@ -934,7 +924,7 @@ int card_xenic_poltergeist(int player, int card, event_t event)
             create_a_card_type(PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id);
         if (animated_internal_card_id != -1)
         {
-          PLAYER_CARD_INSTANCE(player, s.legacy_card).original_internal_card_id =
+          PLAYER_CARD_INSTANCE(player, s.legacy_card).dummy3 =
               animated_internal_card_id;
           global_cards_data[animated_internal_card_id].type = TYPE_ARTIFACT | TYPE_CREATURE;
           global_cards_data[animated_internal_card_id].toughness =
@@ -943,6 +933,10 @@ int card_xenic_poltergeist(int player, int card, event_t event)
               global_cards_data[animated_internal_card_id].toughness;
         }
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -1079,9 +1073,8 @@ int card_marsh_viper(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card == card &&
         PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot != 0)
     {
-      PLAYER_CARD_INSTANCE(player, card).damage_source_player =
-          PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player;
-      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 2;
+      PLAYER_CARD_INSTANCE(player, card).damage_source_player = (char)g_affected_card_controller;
+      PLAYER_CARD_INSTANCE(player, card).damage_source_card = g_affected_card;
     }
     return 0;
   }
@@ -1098,10 +1091,8 @@ int card_marsh_viper(int player, int card, event_t event)
     }
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      g_poison_counters[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player] +=
-          PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+      g_poison_counters[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player] += 2;
       PLAYER_CARD_INSTANCE(player, card).damage_source_player = -1;
-      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
       check_duel_finished();
     }
   }
@@ -1122,9 +1113,8 @@ int card_pit_scorpion(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card == card &&
         PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).info_slot != 0)
     {
-      PLAYER_CARD_INSTANCE(player, card).damage_source_player =
-          PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player;
-      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
+      PLAYER_CARD_INSTANCE(player, card).damage_source_player = (char)g_affected_card_controller;
+      PLAYER_CARD_INSTANCE(player, card).damage_source_card = g_affected_card;
     }
     return 0;
   }
@@ -1141,10 +1131,8 @@ int card_pit_scorpion(int player, int card, event_t event)
     }
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      g_poison_counters[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player] +=
-          PLAYER_CARD_INSTANCE(player, card).eot_toughness;
+      ++g_poison_counters[(int)PLAYER_CARD_INSTANCE(player, card).damage_source_player];
       PLAYER_CARD_INSTANCE(player, card).damage_source_player = -1;
-      PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
       check_duel_finished();
     }
   }
@@ -1315,8 +1303,7 @@ int card_personal_incarnation(int player, int card, event_t event)
                                         selected->damage_source_player, selected->damage_source_card);
           if (damage_card != -1)
           {
-            *(int *)((char *)&PLAYER_CARD_INSTANCE(player, damage_card) + 0x60) =
-                *(int *)((char *)selected + 0x60);
+            PLAYER_CARD_INSTANCE(player, damage_card).display_pic_info = selected->display_pic_info;
             instance->info_slot &= ~1;
             selected->info_slot -= damage_to_deal;
           }
@@ -1336,9 +1323,9 @@ int card_personal_incarnation(int player, int card, event_t event)
     replacement_card = add_card_to_hand(player, g_duel_generated_internal_card_id_12);
     if (replacement_card != -1)
     {
-      *(int *)((char *)&PLAYER_CARD_INSTANCE(player, replacement_card) + 0x38) = instance->internal_card_id;
+      PLAYER_CARD_INSTANCE(player, replacement_card).original_internal_card_id = instance->internal_card_id;
       PLAYER_CARD_INSTANCE(player, replacement_card).state |= (instance->state & 0x1000) | STATE_IN_PLAY;
-      *(int *)((char *)&PLAYER_CARD_INSTANCE(player, replacement_card) + 0x60) = 0xb5;
+      PLAYER_CARD_INSTANCE(player, replacement_card).display_pic_info = 0xb5;
       TENTATIVE_set_timestamps(player, replacement_card);
     }
   }
@@ -1552,11 +1539,7 @@ int card_carrion_ants(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
       }
 
-      if (g_spell_fizzled == 1)
-      {
-        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      }
-      else
+      if (g_spell_fizzled != 1)
       {
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
         PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
@@ -1566,6 +1549,10 @@ int card_carrion_ants(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x80000;
         }
       }
+      else
+      {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      }
     }
     return 0;
   }
@@ -1574,11 +1561,7 @@ int card_carrion_ants(int player, int card, event_t event)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id == -1)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+            .internal_card_id != -1)
     {
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -1609,6 +1592,10 @@ int card_carrion_ants(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, legacy_card).info_slot |= 0x80000;
         }
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     return 0;
   }
@@ -1746,10 +1733,6 @@ int card_shivan_dragon(int player, int card, event_t event)
         }
       }
     }
-    else
-    {
-      g_spell_fizzled = 1;
-    }
 
     return 0;
   }
@@ -1881,7 +1864,7 @@ int card_dragon_whelp(int player, int card, event_t event)
            0x80000) != 0)
       {
         *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                              PLAYER_CARD_INSTANCE(player, card).parent_card)
+                                               PLAYER_CARD_INSTANCE(player, card).parent_card)
              .info_slot &= 0xfff7ffff;
         legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                            g_card_on_stack,
@@ -2071,7 +2054,6 @@ int card_whirling_dervish(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048f983
 int card_nightmare(int player, int card, event_t event)
 {
-  unsigned int *state_ptr;
   int legacy_effect_card;
 
   if (event == EVENT_RESOLVE_SPELL)
@@ -2082,8 +2064,7 @@ int card_nightmare(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, legacy_effect_card).info_slot = 1;
       PLAYER_CARD_INSTANCE(player, legacy_effect_card).eot_toughness = 0x10d;
       PLAYER_CARD_INSTANCE(player, legacy_effect_card).token_status = 0x10020;
-      state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(player, legacy_effect_card).token_status;
-      *state_ptr |= 0x2000000;
+      PLAYER_CARD_INSTANCE(player, legacy_effect_card).token_status |= 0x2000000;
       PLAYER_CARD_INSTANCE(player, card).damage_source_player = (char)player;
       PLAYER_CARD_INSTANCE(player, card).damage_source_card = legacy_effect_card;
     }
@@ -2233,18 +2214,16 @@ int card_gaea_s_liege(int player, int card, event_t event)
     }
     else
     {
-      instance->targets[0].player = selected_target.player;
-      instance->targets[0].card = selected_target.card;
+      SET_TARGET(instance->targets[0], selected_target);
       instance->number_of_targets = 1;
       instance->state |= 0x10;
     }
   }
   else if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    selected_target.player = instance->targets[0].player;
-    selected_target.card = instance->targets[0].card;
+    SET_TARGET(selected_target, instance->targets[0]);
 
-    if (!C_real_validate_target(selected_target.player,
+    if (C_real_validate_target(selected_target.player,
                                 selected_target.card,
                                 (char *)0,
                                 player,
@@ -2265,10 +2244,6 @@ int card_gaea_s_liege(int player, int card, event_t event)
                                 0,
                                 0))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
       PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot = 3;
       effect_card = create_legacy_effect(g_card_on_stack_controller,
                                          g_card_on_stack,
@@ -2277,8 +2252,12 @@ int card_gaea_s_liege(int player, int card, event_t event)
                                          selected_target.card);
       if (effect_card != -1)
       {
-        PLAYER_CARD_INSTANCE(g_card_on_stack_controller, effect_card).token_status |= 0x11020;
+        PLAYER_CARD_INSTANCE(g_card_on_stack_controller, effect_card).state |= 0x10;
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
 
     PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
@@ -2672,11 +2651,7 @@ int card_frozen_shade(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
       }
 
-      if (g_spell_fizzled == 1)
-      {
-        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      }
-      else
+      if (g_spell_fizzled != 1)
       {
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
         PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
@@ -2686,6 +2661,10 @@ int card_frozen_shade(int player, int card, event_t event)
           *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x80000;
         }
       }
+      else
+      {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      }
     }
     return 0;
   }
@@ -2694,11 +2673,7 @@ int card_frozen_shade(int player, int card, event_t event)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id == -1)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+            .internal_card_id != -1)
     {
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -2729,6 +2704,10 @@ int card_frozen_shade(int player, int card, event_t event)
           *(unsigned int *)&PLAYER_CARD_INSTANCE(player, u.legacy_effect_card).info_slot |= 0x80000;
         }
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     return 0;
   }
@@ -2836,15 +2815,18 @@ int card_killer_bees(int player, int card, event_t event)
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
             .internal_card_id != -1)
     {
-      *(int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                    PLAYER_CARD_INSTANCE(player, card).parent_card)
-           .info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
-      *(int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                    PLAYER_CARD_INSTANCE(player, card).parent_card)
-           .info_slot += (PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff) * 0x100;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
+
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .info_slot += (PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff) * 0x100;
+
       PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                            PLAYER_CARD_INSTANCE(player, card).parent_card)
           .number_of_targets = 0;
+
       if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                 PLAYER_CARD_INSTANCE(player, card).parent_card)
                .info_slot &
@@ -2852,7 +2834,7 @@ int card_killer_bees(int player, int card, event_t event)
       {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .info_slot &= 0xfff7ffff;
+            .info_slot &= ~0x80000;
         legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                            g_card_on_stack,
                                            LEGACY_EFFECT_PUMP,
@@ -2862,16 +2844,13 @@ int card_killer_bees(int player, int card, event_t event)
         {
           PLAYER_CARD_INSTANCE(player, legacy_card).info_slot |= 0x80000;
         }
-        else
-        {
-          g_spell_fizzled = 1;
-        }
       }
     }
     else
     {
       g_spell_fizzled = 1;
     }
+
     return 0;
   }
   if (event == EVENT_POW_BOOST)
@@ -2891,11 +2870,11 @@ int card_killer_bees(int player, int card, event_t event)
   {
     if (player == g_other_player)
     {
-      g_ai_modifier += (g_basiclandtypes_controlled[player][COLOR_GREEN] * 3 + 6) * 4;
+      g_ai_modifier += (g_basiclandtypes_controlled[player][COLOR_GREEN] + 2) * 3 * 4;
     }
     else
     {
-      g_ai_modifier -= (g_basiclandtypes_controlled[player][COLOR_GREEN] * 3 + 6) * 4;
+      g_ai_modifier -= (g_basiclandtypes_controlled[player][COLOR_GREEN] + 2) * 3 * 4;
     }
   }
 
@@ -2962,11 +2941,7 @@ int card_wall_of_water(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
       }
 
-      if (g_spell_fizzled == 1)
-      {
-        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      }
-      else
+      if (g_spell_fizzled != 1)
       {
         PLAYER_CARD_INSTANCE(player, card).targets[0].player = player;
         PLAYER_CARD_INSTANCE(player, card).targets[0].card = card;
@@ -2976,6 +2951,10 @@ int card_wall_of_water(int player, int card, event_t event)
           *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).info_slot |= 0x80000;
         }
       }
+      else
+      {
+        PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+      }
     }
     return 0;
   }
@@ -2983,11 +2962,7 @@ int card_wall_of_water(int player, int card, event_t event)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id == -1)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+            .internal_card_id != -1)
     {
       *(int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -3014,6 +2989,10 @@ int card_wall_of_water(int player, int card, event_t event)
           *(unsigned int *)&PLAYER_CARD_INSTANCE(player, legacy_card).info_slot |= 0x80000;
         }
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     return 0;
   }
@@ -3272,21 +3251,21 @@ int card_time_elemental(int player, int card, event_t event)
                                0x40,
                                g_text_lines[0],
                                1,
-                               &target) == 0)
+                               &target) != 0)
       {
-        g_spell_fizzled = 1;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
       else
       {
-        PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
-        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+        g_spell_fizzled = 1;
       }
     }
   }
   else if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(target.player,
                                target.card,
                                (char *)0,
@@ -3306,7 +3285,7 @@ int card_time_elemental(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0x40) == 0)
+                                0x40) == 0)
     {
       g_spell_fizzled = 1;
     }
@@ -3437,16 +3416,15 @@ int card_northern_paladin(int player, int card, event_t event)
                                  0,
                                  g_text_lines[0],
                                  1,
-                                 &target) == 0)
+                                 &target) != 0)
         {
-          g_spell_fizzled = 1;
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         }
         else
         {
-          PLAYER_CARD_INSTANCE(player, card).targets[0].player = target.player;
-          PLAYER_CARD_INSTANCE(player, card).targets[0].card = target.card;
-          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+          g_spell_fizzled = 1;
         }
       }
     }
@@ -3454,8 +3432,7 @@ int card_northern_paladin(int player, int card, event_t event)
   }
   else if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target.player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    target.card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(target.player,
                                target.card,
                                (char *)0,
@@ -3475,13 +3452,13 @@ int card_northern_paladin(int player, int card, event_t event)
                                -1,
                                0,
                                0,
-                               0) == 0)
+                                0) != 0)
     {
-      g_spell_fizzled = 1;
+      kill_card(target.player, target.card, KILL_DESTROY);
     }
     else
     {
-      kill_card(target.player, target.card, KILL_DESTROY);
+      g_spell_fizzled = 1;
     }
 
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
@@ -3563,8 +3540,7 @@ int card_royal_assassin(int player, int card, event_t event)
     }
     else
     {
-      PLAYER_CARD_INSTANCE(player, card).targets[0].player = selected_target.player;
-      PLAYER_CARD_INSTANCE(player, card).targets[0].card = selected_target.card;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
     }
@@ -3577,8 +3553,7 @@ int card_royal_assassin(int player, int card, event_t event)
   }
   else if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    selected_target.player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    selected_target.card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    SET_TARGET(selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(selected_target.player,
                                selected_target.card,
                                (char *)0,
@@ -3821,7 +3796,7 @@ int card_sorceress_queen(int player, int card, event_t event)
     }
     else
     {
-      PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
     }
@@ -3831,8 +3806,8 @@ int card_sorceress_queen(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
-    if (!C_real_validate_target(target.player,
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+    if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
                                 player,
@@ -3852,10 +3827,6 @@ int card_sorceress_queen(int player, int card, event_t event)
                                 0,
                                 0,
                                 0))
-    {
-      g_spell_fizzled = 1;
-    }
-    else
     {
       for (current_player = 0; current_player < 2; ++current_player)
       {
@@ -3887,6 +3858,10 @@ int card_sorceress_queen(int player, int card, event_t event)
             2 - (global_cards_data[PLAYER_CARD_INSTANCE(target.player, target.card).internal_card_id].toughness &
                  0xbfff);
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -3978,27 +3953,25 @@ int card_stone_giant(int player, int card, event_t event)
                                        g_text_lines[0],
                                        1,
                                        &selected_target);
-    if (legacy_card == 0)
+    if (legacy_card != 0)
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
-      PLAYER_CARD_INSTANCE(player, card).targets[0].player = selected_target.player;
-      PLAYER_CARD_INSTANCE(player, card).targets[0].card = selected_target.card;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-      if ((g_other_player == player) && ((PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).token_status & 0x20) != 0))
+      if ((g_other_player == player) && ((PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).regen_status & 0x20) != 0))
       {
         g_ai_modifier += -0x60;
       }
       PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
     }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
     return 0;
   }
   else if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    selected_target.player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    selected_target.card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    SET_TARGET(selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     target_result = C_real_validate_target(selected_target.player,
                                            selected_target.card,
                                            (char *)0,
@@ -4019,11 +3992,7 @@ int card_stone_giant(int player, int card, event_t event)
                                            0,
                                            0,
                                            0);
-    if (target_result == 0)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+    if (target_result != 0)
     {
       legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                          g_card_on_stack,
@@ -4036,6 +4005,10 @@ int card_stone_giant(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x20;
         PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).regen_status = 0x8000000;
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -4115,15 +4088,15 @@ int card_dwarven_warriors(int player, int card, event_t event)
     }
     else
     {
-      instance->targets[0] = target;
+      SET_TARGET(instance->targets[0], target);
       instance->number_of_targets = 1;
       instance->state |= STATE_TAPPED;
     }
   }
   else if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
-    if (!C_real_validate_target(target.player,
+    SET_TARGET(target, instance->targets[0]);
+    if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
                                 player,
@@ -4144,11 +4117,11 @@ int card_dwarven_warriors(int player, int card, event_t event)
                                 0,
                                 0))
     {
-      g_spell_fizzled = 1;
+      create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_02, target.player, target.card);
     }
     else
     {
-      create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_02, target.player, target.card);
+      g_spell_fizzled = 1;
     }
     parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
     parent->number_of_targets = 0;
@@ -4248,7 +4221,7 @@ int card_cave_people(int player, int card, event_t event)
         }
         else
         {
-          PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           if (player == g_other_player &&
               ((PLAYER_CARD_INSTANCE(target.player, target.card).regen_status &
@@ -4266,8 +4239,8 @@ int card_cave_people(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
-    if (!C_real_validate_target(target.player,
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+    if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
                                 player,
@@ -4288,10 +4261,6 @@ int card_cave_people(int player, int card, event_t event)
                                 0,
                                 0))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
       legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                          g_card_on_stack,
                                          g_duel_generated_internal_card_id_03,
@@ -4303,6 +4272,10 @@ int card_cave_people(int player, int card, event_t event)
             1 << (unsigned char)(get_hacked_color(player, card, COLOR_RED) - 1);
       }
       PLAYER_CARD_INSTANCE(target.player, target.card).regen_status = KEYWORD_RECALC_ABILITIES;
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -4405,7 +4378,7 @@ int card_pradesh_gypsies(int player, int card, event_t event)
         }
         else
         {
-          PLAYER_CARD_INSTANCE(player, card).targets[0] = target;
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
           PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         }
@@ -4416,8 +4389,8 @@ int card_pradesh_gypsies(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = PLAYER_CARD_INSTANCE(player, card).targets[0];
-    if (!C_real_validate_target(target.player,
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+    if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
                                 player,
@@ -4438,10 +4411,6 @@ int card_pradesh_gypsies(int player, int card, event_t event)
                                 0,
                                 0))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
       legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                          g_card_on_stack,
                                          LEGACY_EFFECT_PUMP,
@@ -4452,6 +4421,10 @@ int card_pradesh_gypsies(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = -2;
         PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = 0;
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -4571,8 +4544,7 @@ int card_samite_healer(int player, int card, event_t event)
                              1,
                              &target))
     {
-      PLAYER_CARD_INSTANCE(player, card).targets[0].player = target.player;
-      PLAYER_CARD_INSTANCE(player, card).targets[0].card = target.card;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
     }
@@ -4585,8 +4557,7 @@ int card_samite_healer(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target.player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    target.card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(target.player,
                                target.card,
                                (char *)0,
@@ -5204,8 +5175,7 @@ int card_crimson_manticore(int player, int card, event_t event)
                                1,
                                &target) != 0)
       {
-        PLAYER_CARD_INSTANCE(player, card).targets[0].player = target.player;
-        PLAYER_CARD_INSTANCE(player, card).targets[0].card = target.card;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
@@ -5219,8 +5189,7 @@ int card_crimson_manticore(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target.player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    target.card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(target.player,
                                target.card,
                                (char *)0,
@@ -5477,7 +5446,7 @@ int deal_damage_to_selected_target(int player, int card, event_t event, int amou
   if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == -1 && PLAYER_CARD_INSTANCE(player, card).targets[0].card == -1)
     return 0;
 
-  if (!C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+  if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                               PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                               NULL,
                               player,
@@ -5498,24 +5467,24 @@ int deal_damage_to_selected_target(int player, int card, event_t event, int amou
                               0,
                               0))
   {
-    g_spell_fizzled = 1;
-    return 0;
+    if (PLAYER_CARD_INSTANCE(player, card).targets[0].card == -1)
+    {
+      damage_player(PLAYER_CARD_INSTANCE(player, card).targets[0].player, amount, source_player, source_card);
+    }
+    else
+    {
+      damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+                      amount,
+                      source_player,
+                      source_card);
+    }
+
+    return 1;
   }
 
-  if (PLAYER_CARD_INSTANCE(player, card).targets[0].card == -1)
-  {
-    damage_player(PLAYER_CARD_INSTANCE(player, card).targets[0].player, amount, source_player, source_card);
-  }
-  else
-  {
-    damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                    PLAYER_CARD_INSTANCE(player, card).targets[0].card,
-                    amount,
-                    source_player,
-                    source_card);
-  }
-
-  return 1;
+  g_spell_fizzled = 1;
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x0054b1ad
@@ -5659,13 +5628,13 @@ int card_island_fish_jasconius(int player, int card, event_t event)
       if (do_dialog(player, player, card, -1, -1, prompt, 0) == 0)
       {
         charge_mana(player, COLOR_BLUE, 3);
-        if (g_spell_fizzled == 1)
+        if (g_spell_fizzled != 1)
         {
-          g_spell_fizzled = -1;
+          PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_TAPPED;
         }
         else
         {
-          PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_TAPPED;
+          g_spell_fizzled = -1;
         }
       }
     }
@@ -5828,23 +5797,27 @@ int card_psionic_entity(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0049a1eb
 int card_scavenging_ghoul(int player, int card, event_t event)
 {
-  int result;
+  struct
+  {
+    int activate_result;
+    int can_activate_result;
+  } s;
 
   if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & 0x200) != 0)
   {
-    result = generic_regeneration_ability(player, card, event, 0, 0);
+    s.can_activate_result = generic_regeneration_ability(player, card, event, 0, 0);
     if (C_get_special_counters(player, card) == 0)
     {
-      result = 0;
+      s.can_activate_result = 0;
     }
-    return result;
+    return s.can_activate_result;
   }
 
   if (event == EVENT_ACTIVATE && (g_land_can_be_played & 0x200) != 0)
   {
-    result = generic_regeneration_ability(player, card, event, 0, 0);
+    s.activate_result = generic_regeneration_ability(player, card, event, 0, 0);
     remove_special_counters(player, card, 1);
-    return result;
+    return s.activate_result;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & 0x200) != 0)
@@ -6111,7 +6084,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
   }
   else if ((event == EVENT_ACTIVATE) && ((instance->state & STATE_TAPPED) == 0))
   {
-    available_colors = (unsigned int)(unsigned char)instance->damage_source_card;
+    available_colors = instance->mana_color;
     if ((((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) || (g_duel_ai_mode_state == 1)) || (g_duel_network_state != 0))
     {
       choice_hint = -1;
@@ -6147,7 +6120,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
       {
         load_text("prompts.txt", "BIRDS_OF_PARADISE");
       }
-      color = choose_a_color(player, g_text_lines[0], 1, choice_hint, (unsigned char)instance->damage_source_card);
+      color = choose_a_color(player, g_text_lines[0], 1, choice_hint, instance->mana_color);
       if (color == ~COLOR_COLORLESS)
       {
         g_spell_fizzled = 1;
@@ -6155,7 +6128,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
       else
       {
         produce_mana(player, color, 1);
-        undeclare_mana_available_hex(player, (unsigned char)instance->damage_source_card, 1);
+        undeclare_mana_available_hex(player, instance->mana_color, 1);
         instance->state |= STATE_TAPPED;
         g_produced_mana_color = color;
         if (((player == g_other_player) && ((g_duel_network_flags & 2) == 0)) && (g_duel_ai_mode_state != 1))
@@ -6190,7 +6163,7 @@ int card_birds_of_paradise(int player, int card, event_t event)
   {
     if ((instance->state & 0x20010) == 0)
     {
-      declare_mana_available_hex(player, (unsigned char)instance->damage_source_card, 1);
+      declare_mana_available_hex(player, instance->mana_color, 1);
     }
   }
   else if ((event == 0x8a) && (card == g_affected_card) && (player == g_affected_card_controller))
@@ -6216,8 +6189,8 @@ int card_cosmic_horror(int player, int card, event_t event)
     if (g_current_player == player && player == g_event_player)
     {
       PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 1;
-      PLAYER_CARD_INSTANCE(player, card).upkeep_colorless += 3;
       PLAYER_CARD_INSTANCE(player, card).upkeep_black += 3;
+      PLAYER_CARD_INSTANCE(player, card).upkeep_colorless += 3;
     }
     return 0;
   }
@@ -6278,7 +6251,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
   {
     if (has_other_creature_in_play(player, card) == 0)
     {
-      ++g_ai_modifier;
+      ++g_ai_speculation_depth;
     }
     return 0;
   }
@@ -6442,7 +6415,7 @@ int card_nether_shadow(int player, int card, event_t event)
     if (hand_card != -1)
     {
       *(unsigned int *)&PLAYER_CARD_INSTANCE(hand_player, hand_card).state |= 2;
-      *(int *)((char *)&PLAYER_CARD_INSTANCE(hand_player, hand_card) + 0x64) =
+      PLAYER_CARD_INSTANCE(hand_player, hand_card).display_pic_info =
           global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].id;
     }
   }
@@ -6642,7 +6615,7 @@ int card_ali_baba(int player, int card, event_t event)
         }
         else
         {
-          instance->targets[0] = target;
+          SET_TARGET(instance->targets[0], target);
           instance->number_of_targets = 1;
         }
       }
@@ -6652,8 +6625,8 @@ int card_ali_baba(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
-    if (!C_real_validate_target(target.player,
+    SET_TARGET(target, instance->targets[0]);
+    if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
                                 player,
@@ -6674,11 +6647,11 @@ int card_ali_baba(int player, int card, event_t event)
                                 0,
                                 0))
     {
-      g_spell_fizzled = 1;
+      PLAYER_CARD_INSTANCE(target.player, target.card).state |= STATE_TAPPED;
     }
     else
     {
-      PLAYER_CARD_INSTANCE(target.player, target.card).state |= STATE_TAPPED;
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
     return 0;
@@ -6697,29 +6670,25 @@ int card_ley_druid(int player, int card, event_t event)
   instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((instance->state & 0x20010) == 0 && real_target_available((int *)0,
-                                                                  TARGET_SCAN_DIRECT,
-                                                                  player,
-                                                                  2,
-                                                                  2,
-                                                                  0x200,
-                                                                  TYPE_LAND,
-                                                                  0,
-                                                                  0,
-                                                                  get_protections_from(player, card),
-                                                                  0,
-                                                                  0,
-                                                                  -1,
-                                                                  -1,
-                                                                  -1,
-                                                                  -1,
-                                                                  0,
-                                                                  0,
-                                                                  0) != 0)
-    {
-      return 1;
-    }
-    return 0;
+    return (instance->state & 0x20010) == 0 && real_target_available((int *)0,
+                                                                     TARGET_SCAN_DIRECT,
+                                                                     player,
+                                                                     2,
+                                                                     2,
+                                                                     0x200,
+                                                                     TYPE_LAND,
+                                                                     0,
+                                                                     0,
+                                                                     get_protections_from(player, card),
+                                                                     0,
+                                                                     0,
+                                                                     -1,
+                                                                     -1,
+                                                                     -1,
+                                                                     -1,
+                                                                     0,
+                                                                     0,
+                                                                     0) != 0;
   }
 
   if (event == 0x90)
@@ -6761,7 +6730,7 @@ int card_ley_druid(int player, int card, event_t event)
     else
     {
       instance->state |= STATE_TAPPED;
-      instance->targets[0] = target;
+      SET_TARGET(instance->targets[0], target);
       instance->number_of_targets = 1;
     }
     return 0;
@@ -6769,7 +6738,7 @@ int card_ley_druid(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
+    SET_TARGET(target, instance->targets[0]);
     if (C_real_validate_target(target.player,
                                target.card,
                                (char *)0,
@@ -7202,32 +7171,28 @@ int card_radjan_spirit(int player, int card, event_t event)
       load_text("prompts.txt", "RADJAN_SPIRIT");
     }
 
-    if (!C_real_select_target(player,
-                              2,
-                              1 - player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_CREATURE,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
+    if (C_real_select_target(player,
+                             2,
+                             1 - player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_CREATURE,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
-      instance->targets[0] = target;
+      SET_TARGET(instance->targets[0], target);
       instance->number_of_targets = 1;
       instance->state |= STATE_TAPPED;
       if (g_other_player == player &&
@@ -7237,13 +7202,17 @@ int card_radjan_spirit(int player, int card, event_t event)
         g_ai_modifier -= 0x48;
       }
     }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
     return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
-    if (!C_real_validate_target(target.player,
+    SET_TARGET(target, instance->targets[0]);
+    if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
                                 player,
@@ -7264,10 +7233,6 @@ int card_radjan_spirit(int player, int card, event_t event)
                                 0,
                                 0))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
       legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                          g_card_on_stack,
                                          g_duel_generated_internal_card_id_03,
@@ -7278,6 +7243,10 @@ int card_radjan_spirit(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = KEYWORD_FLYING;
       }
       PLAYER_CARD_INSTANCE(target.player, target.card).regen_status = KEYWORD_RECALC_ABILITIES;
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
     return 0;
@@ -7333,33 +7302,29 @@ int card_hurr_jackal(int player, int card, event_t event)
       load_text("prompts.txt", "HURR_JACKAL");
     }
 
-    if (!C_real_select_target(player,
-                              2,
-                              1 - player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_CREATURE,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+    if (C_real_select_target(player,
+                             2,
+                             1 - player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_CREATURE,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
       instance->state |= STATE_TAPPED;
-      instance->targets[0] = target;
+      SET_TARGET(instance->targets[0], target);
       instance->number_of_targets = 1;
       if ((PLAYER_CARD_INSTANCE(target.player, target.card).regen_status & 0x200) == 0)
       {
@@ -7370,13 +7335,17 @@ int card_hurr_jackal(int player, int card, event_t event)
         g_ai_modifier += 0x18;
       }
     }
+    else
+    {
+      g_spell_fizzled = 1;
+    }
     return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    target = instance->targets[0];
-    if (!C_real_validate_target(target.player,
+    SET_TARGET(target, instance->targets[0]);
+    if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
                                 player,
@@ -7397,10 +7366,6 @@ int card_hurr_jackal(int player, int card, event_t event)
                                 0,
                                 0))
     {
-      g_spell_fizzled = 1;
-    }
-    else
-    {
       legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                          g_card_on_stack,
                                          g_duel_generated_internal_card_id_0f,
@@ -7411,6 +7376,10 @@ int card_hurr_jackal(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x800000;
         PLAYER_CARD_INSTANCE(target.player, target.card).regen_status = 0x8000000;
       }
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
     return 0;
