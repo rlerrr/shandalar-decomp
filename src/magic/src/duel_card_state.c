@@ -1465,7 +1465,7 @@ void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *o
 
   for (color = 1; color <= 5; ++color)
   {
-    if (g_landwalk_basiclandtypes_controlled[0][color] > 0)
+    if (g_basiclandtypes_controlled[1][color] > 0)
     {
       bits1 |= 1u << (color - 1);
     }

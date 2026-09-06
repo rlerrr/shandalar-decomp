@@ -46,371 +46,188 @@ int HandleWorldMagicChoiceControlEvent(AdvMenuControl *control_ptr, int event_ty
 int ActivateWorldMagicChoiceControl(AdvMenuControl *control);
 int ActivateMainMenuControl(AdvMenuControl *control);
 
-// GLOBAL: SHANDALAR 0x007483f8
 extern HDC global_main_hdc;
-// GLOBAL: SHANDALAR 0x005863b8
 extern int global_screen_width;
-// GLOBAL: SHANDALAR 0x005863bc
 extern int global_screen_height;
-// GLOBAL: SHANDALAR 0x005862d8
 extern int g_neighbor_dx[9];
-// GLOBAL: SHANDALAR 0x00586340
 extern int g_neighbor_dy[9];
-// GLOBAL: SHANDALAR 0x00589de8
 extern char *PTR_s_advinter800_pic_00589de8;
-// GLOBAL: SHANDALAR 0x00583290
 extern FacemakerWindowBounds g_page0_window_bounds_storage;
-// GLOBAL: SHANDALAR 0x005832b4
 extern FacemakerWindowBounds *g_page0_window_bounds;
-// GLOBAL: SHANDALAR 0x005832b8
 extern FacemakerWindowBounds g_page1_window_bounds_storage;
-// GLOBAL: SHANDALAR 0x005832dc
 extern FacemakerWindowBounds *g_page1_window_bounds;
-// GLOBAL: SHANDALAR 0x005832e0
 extern FacemakerWindowBounds g_page2_window_bounds_storage;
-// GLOBAL: SHANDALAR 0x00583304
 extern FacemakerWindowBounds *g_page2_window_bounds;
-// GLOBAL: SHANDALAR 0x00583308
 extern FacemakerWindowBounds g_page3_window_bounds_storage;
-// GLOBAL: SHANDALAR 0x0058332c
 extern FacemakerWindowBounds *g_page3_window_bounds;
-// GLOBAL: SHANDALAR 0x00583330
 extern FacemakerWindowBounds g_page5_window_bounds_storage;
-// GLOBAL: SHANDALAR 0x00583354
 extern FacemakerWindowBounds *g_page5_window_bounds;
-// GLOBAL: SHANDALAR 0x00939160
 extern HINSTANCE g_app_instance;
-// GLOBAL: SHANDALAR 0x00591210
 extern int g_skip_world_sfx_preload;
-// GLOBAL: SHANDALAR 0x00591224
 extern int g_loadsave_skip_esc;
-// GLOBAL: SHANDALAR 0x00748418
 extern UINT g_timer_resolution_ms;
-// GLOBAL: SHANDALAR 0x007483fc
 extern UINT g_timer_event_handle;
-// GLOBAL: SHANDALAR 0x0078cefc
 extern int g_cursor_visibility_depth;
-// GLOBAL: SHANDALAR 0x00589de4
 extern UINT g_timer_period_ms;
-// GLOBAL: SHANDALAR 0x00589df0
 extern int g_ui_tick_count;
-// GLOBAL: SHANDALAR 0x00589dec
 extern int g_default_palette_fade_steps;
-// GLOBAL: SHANDALAR 0x00748400
 extern int g_sound_loader_busy;
-// GLOBAL: SHANDALAR 0x00748404
 extern HANDLE g_main_thread_handle;
-// GLOBAL: SHANDALAR 0x00748424
 extern HANDLE g_timer_thread_handle;
-// GLOBAL: SHANDALAR 0x00748408
 extern int g_local_sound_missing;
-// GLOBAL: SHANDALAR 0x0074840c
 extern int g_local_sound_state;
-// GLOBAL: SHANDALAR 0x00748410
 extern HANDLE g_loader_thread_handle;
-// GLOBAL: SHANDALAR 0x005b7d90
 extern int g_palette_class_registered;
-// GLOBAL: SHANDALAR 0x005b7d94
 extern int g_timer_thread_handle_ready;
-// GLOBAL: SHANDALAR 0x005b7d98
 extern HWND g_palette_window_hwnd;
-// GLOBAL: SHANDALAR 0x00986d94
 extern int g_mouse_button_down_mask;
-// GLOBAL: SHANDALAR 0x00986d98
 extern int g_mouse_y;
-// GLOBAL: SHANDALAR 0x00986d9c
 extern int g_mouse_x;
-// GLOBAL: SHANDALAR 0x00986da0
 extern int g_mouse_button_released_mask;
-// GLOBAL: SHANDALAR 0x00669704
 extern int g_cached_cwd_initialized;
-// GLOBAL: SHANDALAR 0x0066970c
 extern int g_sound_drive_initialized;
-// GLOBAL: SHANDALAR 0x0073e890
 extern char g_cached_cwd[0x100];
-// GLOBAL: SHANDALAR 0x0073e9d8
 extern char g_sound_drive_letter;
-// GLOBAL: SHANDALAR 0x0067a3b8
 extern char *g_advblocks_file_buffer;
-// GLOBAL: SHANDALAR 0x0078cf08
 extern FILE *g_advbuttons_ini_file;
-// GLOBAL: SHANDALAR 0x0078df10
 extern char g_ini_string_scratch[0x28];
-// GLOBAL: SHANDALAR 0x0078df38
 extern int g_done_text_table_entry;
-// GLOBAL: SHANDALAR 0x00586494
 extern int g_legacy_mouse_active;
-// GLOBAL: SHANDALAR 0x00586498
 extern int g_hide_world_map_overlays;
-// GLOBAL: SHANDALAR 0x007486d0
 extern EncodedImage *g_ttsprite_special_sprite_a;
-// GLOBAL: SHANDALAR 0x007486e0
 extern EncodedImage *g_world_magic_avatar_sprites[5];
-// GLOBAL: SHANDALAR 0x00781728
 extern EncodedImage *g_face_preview_sprite_selected;
-// GLOBAL: SHANDALAR 0x0078172c
 extern EncodedImage *g_face_preview_sprite_group[6];
-// GLOBAL: SHANDALAR 0x0073e9dc
 extern int g_world_scene_reveal_effect_pending;
-// GLOBAL: SHANDALAR 0x00591214
 extern int g_world_location_entry_enabled;
-// GLOBAL: SHANDALAR 0x00591218
 extern int g_world_move_dir_index;
-// GLOBAL: SHANDALAR 0x0059121c
 extern int g_world_location_music_active;
-// GLOBAL: SHANDALAR 0x00591220
 extern int g_world_location_music_track_id;
-// GLOBAL: SHANDALAR 0x0059126c
 extern int g_world_location_music_town_index;
-// GLOBAL: SHANDALAR 0x0073ea70
 extern int g_world_magic_town_flags[5];
-// GLOBAL: SHANDALAR 0x0073ea84
 extern int g_world_player_animation_direction;
-// GLOBAL: SHANDALAR 0x0073ea8c
 extern int g_world_player_animation_frame;
-// GLOBAL: SHANDALAR 0x006696f4
 extern int g_world_location_entry_latched;
-// GLOBAL: SHANDALAR 0x006696f8
 extern int g_advfac64_load_state;
-// GLOBAL: SHANDALAR 0x006696fc
 extern int g_adventure_demo_enabled;
-// GLOBAL: SHANDALAR 0x00669700
 extern int g_adventure_demo_idle_ticks;
-// GLOBAL: SHANDALAR 0x00669710
 extern int g_world_scene_force_redraw;
-// GLOBAL: SHANDALAR 0x00789938
 extern int g_deck_total_card_count;
-// GLOBAL: SHANDALAR 0x0078df68
 extern int g_deck_active_card_count;
-// GLOBAL: SHANDALAR 0x0097db40
 extern long g_hint_text_offsets[0x100];
-// GLOBAL: SHANDALAR 0x0097df40
 extern int g_hint_difficulty_masks[0x100];
-// GLOBAL: SHANDALAR 0x0097e340
 extern char g_last_parsed_deck_path[0x110];
-// GLOBAL: SHANDALAR 0x0097e450
 extern HintPair g_hint_card_pairs[0x100];
-// GLOBAL: SHANDALAR 0x007898f4
 extern int g_mouse_x_snapshot;
-// GLOBAL: SHANDALAR 0x007898f8
 extern int g_mouse_y_snapshot;
-// GLOBAL: SHANDALAR 0x007898f0
 extern int g_mouse_button_mask_snapshot;
-// GLOBAL: SHANDALAR 0x007490f0
 extern DialogBoxSpriteBank g_dialog_box_sprite_bank;
-// GLOBAL: SHANDALAR 0x0058e050
 extern HANDLE g_statwin_dll_module;
-// GLOBAL: SHANDALAR 0x0058c5ec
 extern int g_dungeon_card_effect_by_color[4];
-// GLOBAL: SHANDALAR 0x0058c5fc
 extern int g_dungeon_card_effect_by_monster_flags[9];
-// GLOBAL: SHANDALAR 0x0058c620
 extern int g_mana_castle_card_effect_by_difficulty[5][4];
-// GLOBAL: SHANDALAR 0x00746e00
 extern int g_statwin_exports_by_ordinal[3];
-// GLOBAL: SHANDALAR 0x00747ee0
 extern int g_menu_render_guard;
-// GLOBAL: SHANDALAR 0x00747ef0
 extern AnimatedNoiseGridPlane g_animated_noise_grid[2];
-// GLOBAL: SHANDALAR 0x00746ec0
 extern FacemakerWindowBounds g_menu_saved_window_bounds;
-// GLOBAL: SHANDALAR 0x00746ef0
 extern int g_menu_control_count_by_context[50];
-// GLOBAL: SHANDALAR 0x00746f40
 extern AdvMenuControl *g_menu_controls_by_context[50][50];
-// GLOBAL: SHANDALAR 0x00748d10
 extern EncodedImage *g_main_menu_button_sprites_normal[4];
-// GLOBAL: SHANDALAR 0x00748d20
 extern EncodedImage *g_main_menu_button_sprites_highlight[4];
-// GLOBAL: SHANDALAR 0x007491c0
 extern WorldMagicChoiceButtonSpriteBank g_world_magic_choice_button_sprite_bank;
-// GLOBAL: SHANDALAR 0x00748440
 extern EncodedImage *g_road_sprite_entries[0xc];
-// GLOBAL: SHANDALAR 0x00748470
 extern EncodedImage *g_location07_sprite_entries[0xc];
-// GLOBAL: SHANDALAR 0x007484a0
 extern EncodedImage *g_land_sprite_entries[22][5];
-// GLOBAL: SHANDALAR 0x00748660
 extern EncodedImage *g_tsprite2_grid_sprite_entries[0xc];
-// GLOBAL: SHANDALAR 0x00748690
 extern EncodedImage *g_land_tile_sprite_entries[0x10];
-// GLOBAL: SHANDALAR 0x00748700
 extern EncodedImage *g_ttsprite_alt_sprite_entries[8];
-// GLOBAL: SHANDALAR 0x00748720
 extern EncodedImage *g_cstline1_sprite_entries[12][7];
-// GLOBAL: SHANDALAR 0x00748870
 extern EncodedImage *g_ttsprite_aux_sprite_entries[8];
-// GLOBAL: SHANDALAR 0x00748890
 extern int g_world_lair_monster_sprite_top_clips[0x10];
-// GLOBAL: SHANDALAR 0x007488d0
 extern int g_ego_sprite_draw_height;
-// GLOBAL: SHANDALAR 0x007488d4
 extern int g_sego_sprite_draw_height;
-// GLOBAL: SHANDALAR 0x00748910
 extern EncodedImage *g_location_marker_sprite_entries[0x9e];
-// GLOBAL: SHANDALAR 0x00748d30
 extern EncodedImage *g_questnew_sprite_entries[4];
-// GLOBAL: SHANDALAR 0x00748d40
 extern EncodedImage *g_asprite_sprite_entries[0x3c];
-// GLOBAL: SHANDALAR 0x00748e30
 extern EncodedImage *g_tsprite2_extra_sprite_entries[0xd];
-// GLOBAL: SHANDALAR 0x00748e64
 extern EncodedImage *g_gsprite_sprite_entries[3];
-// GLOBAL: SHANDALAR 0x00748e70
 extern EncodedImage *g_sunmoon_sprite_entries[0x14];
-// GLOBAL: SHANDALAR 0x00748ec0
 extern EncodedImage *g_worlds_extra_sprite_entries[4];
-// GLOBAL: SHANDALAR 0x00748ed0
 extern EncodedImage *g_tips_frame_sprite;
-// GLOBAL: SHANDALAR 0x00748ee0
 extern EncodedImage *g_clocknew_sprite_entries[9];
-// GLOBAL: SHANDALAR 0x00748f04
 extern EncodedImage *g_tips_icon_sprite;
-// GLOBAL: SHANDALAR 0x00748f10
 extern EncodedImage *g_wizard_controlled_town_sprite_entries[5];
-// GLOBAL: SHANDALAR 0x00748f30
 extern EncodedImage *g_sland_sprite_entries[22][5];
-// GLOBAL: SHANDALAR 0x00749280
 extern EncodedImage *g_daysnew_sprite_entries[0xc];
-// GLOBAL: SHANDALAR 0x007492b0
 extern EncodedImage *g_icons_sprite_entries[0x18];
-// GLOBAL: SHANDALAR 0x00749310
 extern int g_world_lair_monster_sprite_widths[0x10];
-// GLOBAL: SHANDALAR 0x00749350
 extern int g_ego_sprite_width;
-// GLOBAL: SHANDALAR 0x00749354
 extern int g_sego_sprite_width;
-// GLOBAL: SHANDALAR 0x00749390
 extern int g_world_lair_monster_sprite_heights[0x10];
-// GLOBAL: SHANDALAR 0x007493d0
 extern int g_ego_sprite_height;
-// GLOBAL: SHANDALAR 0x007493d4
 extern int g_sego_sprite_height;
-// GLOBAL: SHANDALAR 0x00749410
 extern EncodedImage *g_ttsprite_special_sprite_b;
-// GLOBAL: SHANDALAR 0x00749414
 extern EncodedImage *g_ttsprite_special_sprite_c;
-// GLOBAL: SHANDALAR 0x00749418
 extern EncodedImage *g_current_location_marker_sprite;
-// GLOBAL: SHANDALAR 0x00749420
 extern EncodedImage *g_compnew_sprite_entries[5];
-// GLOBAL: SHANDALAR 0x00749434
 extern EncodedImage *g_endtop_banner_sprite;
-// GLOBAL: SHANDALAR 0x00749440
 extern EncodedImage *g_tsprite2_overlay_sprite_entries[8];
-// GLOBAL: SHANDALAR 0x00749460
 extern EncodedImage *g_ttsprite_grid_sprite_entries[0x40];
-// GLOBAL: SHANDALAR 0x00749560
 extern EncodedImage *g_castles_sprite_entries[20];
-// GLOBAL: SHANDALAR 0x007496a0
 extern OpeningMenuSpriteWorkEntry g_opening_menu_sprite_work_buffer[0x20];
-// GLOBAL: SHANDALAR 0x0078df40
 extern EncodedImage *g_ttsprite_extra_sprite_entries[10];
-// GLOBAL: SHANDALAR 0x0058b584
 extern int g_menu_context_index;
-// GLOBAL: SHANDALAR 0x0058b588
 extern AdvMenuControl g_main_menu_controls[4];
-// GLOBAL: SHANDALAR 0x0058b6d8
 extern AdvMenuControl g_world_magic_choice_controls[5];
-// GLOBAL: SHANDALAR 0x0058b580
 extern FacemakerWindowBounds *g_menu_control_draw_target_page;
-// GLOBAL: SHANDALAR 0x0058b87c
 extern int g_world_magic_icon_rect_table_padding;
-// GLOBAL: SHANDALAR 0x0058b880
 extern AdvMenuRect g_world_magic_icon_rects[0xc];
-// GLOBAL: SHANDALAR 0x0058b940
 extern char *g_world_magic_sound_paths[5];
-// GLOBAL: SHANDALAR 0x0058b954
 extern int g_menu_current_control_index;
-// GLOBAL: SHANDALAR 0x0058b958
 extern int g_menu_prev_control_index;
-// GLOBAL: SHANDALAR 0x005b80d8
 extern int g_menu_input_unhandled;
-// GLOBAL: SHANDALAR 0x005b80e0
 extern int g_menu_allow_arrow_nav_by_context[50];
-// GLOBAL: SHANDALAR 0x008c7408
 extern int g_duel_special_rules_by_color[7];
-// GLOBAL: SHANDALAR 0x0073e990
 extern jmp_buf g_adventure_session_restart_jump_buffer;
-// GLOBAL: SHANDALAR 0x0073e9e0
 extern jmp_buf g_adventure_world_exit_jump_buffer;
-// GLOBAL: SHANDALAR 0x006527b0
 extern int g_pending_world_location;
-// GLOBAL: SHANDALAR 0x00590764
 extern int g_current_world_location;
-// GLOBAL: SHANDALAR 0x00590768
 extern int g_adventure_ui_layout_dirty;
-// GLOBAL: SHANDALAR 0x00650f28
 extern int g_adventure_ui_edge_pages_initialized;
-// GLOBAL: SHANDALAR 0x0073eaa0
 extern int g_world_scroll_cache_ready;
-// GLOBAL: SHANDALAR 0x0073e880
 extern int g_pending_ui_action_code;
-// GLOBAL: SHANDALAR 0x005a6074
 extern int g_text_menu_left;
-// GLOBAL: SHANDALAR 0x005a6078
 extern int g_text_menu_top;
-// GLOBAL: SHANDALAR 0x00580d80
 extern int g_text_menu_initial_selection;
-// GLOBAL: SHANDALAR 0x00580d84
 extern int g_text_menu_mouse_released;
-// GLOBAL: SHANDALAR 0x00580d88
 extern int g_text_menu_last_selection;
-// GLOBAL: SHANDALAR 0x00580d8c
 extern int g_text_menu_show_ok_button;
-// GLOBAL: SHANDALAR 0x00580d90
 extern int g_text_menu_mouse_active;
-// GLOBAL: SHANDALAR 0x00580d94
 extern int g_text_menu_timeout_seconds;
-// GLOBAL: SHANDALAR 0x00580d98
 extern int g_text_menu_line_height;
-// GLOBAL: SHANDALAR 0x00580d9c
 extern int g_text_menu_color_normal;
-// GLOBAL: SHANDALAR 0x00580da0
 extern int g_text_menu_color_selected;
-// GLOBAL: SHANDALAR 0x005a5fe8
 extern int g_text_menu_line_offsets[0x20];
-// GLOBAL: SHANDALAR 0x005a6068
 extern int g_text_menu_color_base;
-// GLOBAL: SHANDALAR 0x005a606c
 extern int g_text_menu_finish_flash;
-// GLOBAL: SHANDALAR 0x005a6070
 extern int g_text_menu_line_count;
-// GLOBAL: SHANDALAR 0x005a607c
 extern int g_text_menu_hovered_selection;
-// GLOBAL: SHANDALAR 0x0078cef0
 extern char g_text_menu_timer_itoa_buffer[0xc];
-// GLOBAL: SHANDALAR 0x00789934
 extern int g_shandalar_state_00789934;
-// GLOBAL: SHANDALAR 0x0097ec50
 extern signed char g_text_menu_hotkey_by_option[0x20];
-// GLOBAL: SHANDALAR 0x0097ec70
 extern int g_text_menu_caret_prefix_mask;
-// GLOBAL: SHANDALAR 0x0097ec74
 extern int g_text_menu_force_cancel;
-// GLOBAL: SHANDALAR 0x0097ec78
 extern int g_text_menu_needs_layout;
-// GLOBAL: SHANDALAR 0x0097ec7c
 extern int g_text_menu_abort_requested;
-// GLOBAL: SHANDALAR 0x0097ec80
 extern int g_text_menu_option_count;
-// GLOBAL: SHANDALAR 0x0097ec84
 extern int g_text_menu_right;
-// GLOBAL: SHANDALAR 0x0097ec88
 extern int g_text_menu_max_line_width;
-// GLOBAL: SHANDALAR 0x0097ec8c
 extern int g_text_menu_ok_mode;
-// GLOBAL: SHANDALAR 0x0097ec90
 extern int g_text_menu_first_option_line;
-// GLOBAL: SHANDALAR 0x0097ec94
 extern int g_text_box_frame_color_override;
-// GLOBAL: SHANDALAR 0x0097ec98
 extern int g_text_menu_disabled_option_mask;
-// GLOBAL: SHANDALAR 0x005aa414
 extern int g_shandalar_state_005aa414;
-// GLOBAL: SHANDALAR 0x005aa62c
 extern int g_last_matching_deck_card_index;
-// GLOBAL: SHANDALAR 0x005873d4
 extern int g_shandalar_initialized;
 
 extern DIBSurface *g_graphics_pages[10];

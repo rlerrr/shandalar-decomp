@@ -1631,8 +1631,8 @@ void C_count_colors_of_lands_in_play(void)
 
   for (color = 0; color <= 7; ++color)
   {
-    g_landwalk_basiclandtypes_controlled[0][color] = 0;
-    g_basiclandtypes_controlled[0][color] = g_landwalk_basiclandtypes_controlled[0][color];
+    g_basiclandtypes_controlled[1][color] = 0;
+    g_basiclandtypes_controlled[0][color] = g_basiclandtypes_controlled[1][color];
   }
 
   g_mana_pool_colorless_components[1] = 0;

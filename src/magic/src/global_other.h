@@ -106,10 +106,6 @@ GLOBAL_OTHERS_EXTERN int g_target_selection_status_code;
 // GLOBAL: SHANDALAR 0x00765420
 GLOBAL_OTHERS_EXTERN int g_mana_cost_modifiers_by_color[8];
 
-// GLOBAL: MAGIC 0x00743000
-// GLOBAL: SHANDALAR 0x0077eda0
-GLOBAL_OTHERS_EXTERN int g_landwalk_basiclandtypes_controlled[2][8];
-
 // GLOBAL: MAGIC 0x007ab290
 // GLOBAL: SHANDALAR 0x007bf490
 GLOBAL_OTHERS_EXTERN int g_duel_cached_raw_mana_player_1[7];
