@@ -690,25 +690,25 @@ int card_kismet(int player, int card, event_t event)
       load_text("prompts.txt", "KISMET");
     }
     if (C_real_select_target(player,
-                              2,
-                              1 - player,
-                              TARGET_ZONE_PLAYERS,
-                              TYPE_NONE,
-                              TYPE_NONE,
-                              0,
-                              0,
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
+                             2,
+                             1 - player,
+                             TARGET_ZONE_PLAYERS,
+                             TYPE_NONE,
+                             TYPE_NONE,
+                             0,
+                             0,
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             -1,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
       PLAYER_CARD_INSTANCE(player, card).info_slot = target.player;
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
@@ -1071,25 +1071,25 @@ int card_animate_artifact(int player, int card, event_t event)
       load_text("prompts.txt", "ANIMATE_ARTIFACT");
     }
     if (C_real_select_target(player,
-                              2,
-                              2,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_ARTIFACT,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              0,
-                              0,
-                              -1,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &selected_target))
+                             2,
+                             2,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_ARTIFACT,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             0,
+                             0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &selected_target))
     {
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -1358,25 +1358,25 @@ int card_animate_wall(int player, int card, event_t event)
       load_text("prompts.txt", "ANIMATE_WALL");
     }
     if (C_real_select_target(player,
-                              2,
-                              player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_CREATURE,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              TARGET_SPECIAL_WALL,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
+                             2,
+                             player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_CREATURE,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             TARGET_SPECIAL_WALL,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
       SET_TARGET(instance->targets[0], target);
       instance->number_of_targets = 1;
@@ -2062,25 +2062,25 @@ int card_spirit_shackle(int player, int card, event_t event)
       load_text("prompts.txt", "SPIRIT_SHACKLE");
     }
     if (C_real_select_target(player,
-                              2,
-                              1 - player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_CREATURE,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
+                             2,
+                             1 - player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_CREATURE,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             -1,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -2222,25 +2222,25 @@ int card_relic_bind(int player, int card, event_t event)
       load_text("prompts.txt", "RELIC_BIND");
     }
     if (C_real_select_target(player,
-                              1 - player,
-                              1 - player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_ARTIFACT,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              -1,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
+                             1 - player,
+                             1 - player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_ARTIFACT,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             -1,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
       SET_TARGET(instance->targets[0], target);
       instance->number_of_targets = 1;
@@ -2388,25 +2388,25 @@ int card_power_leak(int player, int card, event_t event)
       load_text("prompts.txt", "POWERLEAK");
     }
     if (C_real_select_target(player,
-                              2,
-                              1 - player,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_ENCHANTMENT,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &target))
+                             2,
+                             1 - player,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_ENCHANTMENT,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &target))
     {
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -3826,7 +3826,12 @@ int card_crusade(int player, int card, event_t event)
     return 0;
   }
 
-  return event == EVENT_CAN_CAST;
+  if (event == EVENT_CAN_CAST)
+  {
+    return 1;
+  }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x00523a60
@@ -8673,11 +8678,11 @@ int card_co_p_artifacts(int player, int card, event_t event)
         load_text("prompts.txt", "CIRCLE_OF_PROTECTION");
       }
       if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY,
-                                TYPE_NONE, TYPE_NONE, 0, 0,
-                                COLOR_TEST_ARTIFACT, COLOR_TEST_0,
-                                g_damage_card_internal_card_id, -1, -1, -1,
-                                TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0,
-                                g_text_lines[0], 1, &target))
+                               TYPE_NONE, TYPE_NONE, 0, 0,
+                               COLOR_TEST_ARTIFACT, COLOR_TEST_0,
+                               g_damage_card_internal_card_id, -1, -1, -1,
+                               TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0,
+                               g_text_lines[0], 1, &target))
       {
         SET_TARGET(instance->targets[0], target);
         instance->number_of_targets = 1;

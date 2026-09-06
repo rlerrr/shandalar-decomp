@@ -2492,13 +2492,12 @@ int card_king_suleiman(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
     SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
-    if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 1 - player,
+    if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2,
                                TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                -1, -1, -1, -1, TARGET_SPECIAL_DJINN_OR_EFREET, 0, 0) != 0)
@@ -2512,7 +2511,6 @@ int card_king_suleiman(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
         .number_of_targets = 0;
-    return 0;
   }
 
   return 0;
@@ -2585,31 +2583,51 @@ int card_martyrs_of_korlis(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004792c1
 int card_merchant_ship(int player, int card, event_t event)
 {
-  card_instance_t *damage;
-
-  if (is_in_play(player, card) &&
-      g_basiclandtypes_controlled[1 - player][get_hacked_color(player, card, COLOR_BLUE)] == 0)
+  struct
   {
-    kill_card(player, card, KILL_SACRIFICE);
-  }
+    int unblocked;
+    int opponent;
+    int current_card;
+  } s;
 
-  if (event == EVENT_ATTACK_LEGALITY &&
-      g_basiclandtypes_controlled[1 - player][get_hacked_color(player, card, COLOR_BLUE)] == 0)
+  if (event == EVENT_DECLARE_BLOCKERS &&
+      g_current_player == player &&
+      ((global_card_instances[player] + card)->state & STATE_ATTACKING) != 0)
   {
-    g_event_result = 1;
-  }
+    s.unblocked = 1;
+    s.opponent = 1 - player;
+    for (s.current_card = 0; s.current_card < g_active_cards_count[s.opponent]; ++s.current_card)
+    {
+      if (is_in_play(s.opponent, s.current_card) &&
+          PLAYER_CARD_INSTANCE(s.opponent, s.current_card).blocking == card)
+      {
+        s.unblocked = 0;
+        break;
+      }
+    }
 
-  if (event == EVENT_DEAL_DAMAGE &&
-      PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id == g_damage_card_internal_card_id)
-  {
-    damage = &PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card);
-    if (damage->damage_source_player == player &&
-        damage->damage_source_card == card &&
-        damage->damage_target_card == -1 &&
-        damage->damage_target_player == 1 - player &&
-        damage->info_slot != 0)
+    if (s.unblocked != 0)
     {
       gain_life(player, 2, player, card);
+    }
+  }
+
+  card_sea_serpent(player, card, event);
+
+  if (event == EVENT_ATTACK_RATING &&
+      card == g_affected_card &&
+      g_affected_card_controller == player)
+  {
+    g_ai_score -= 12;
+    return 0;
+  }
+
+  if (event == EVENT_SHOULD_AI_PLAY)
+  {
+    // TODO: The original has an unreachable AI-modifier instruction for some reason?
+    if (0)
+    {
+      g_ai_modifier += 48;
     }
   }
 
@@ -4183,25 +4201,25 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
   {
     load_text("promptsX1.txt", "VESUVAN_DOPPELGANGER");
     if (C_real_select_target(player,
-                              2,
-                              2,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_CREATURE,
-                              TYPE_NONE,
-                              0,
-                              get_protections_from(player, card),
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              -1,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              TARGET_SPECIAL_USE_ORIGINAL_TYPE,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &selected_target))
+                             2,
+                             2,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_CREATURE,
+                             TYPE_NONE,
+                             0,
+                             get_protections_from(player, card),
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             -1,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             TARGET_SPECIAL_USE_ORIGINAL_TYPE,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &selected_target))
     {
       SET_TARGET(instance->targets[0], selected_target);
       instance->number_of_targets = 1;

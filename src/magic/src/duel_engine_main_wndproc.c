@@ -166,6 +166,7 @@ typedef struct
 PickCardDialogContext g_pick_card_dialog_context = {PICK_CARD_COLOR_BLACK, PICK_CARD_TYPE_CREATURE, NULL};
 
 // GLOBAL: MAGIC 0x006f6df4
+// GLOBAL: SHANDALAR 0x005a5fe4
 PickCardDialogContext *g_pick_card_dialog_context_ptr;
 
 // GLOBAL: MAGIC 0x008a9140
@@ -1935,6 +1936,7 @@ static __inline int pick_card_is_available(csvid_t csvid)
 }
 
 // FUNCTION: MAGIC 0x00506b4c
+// FUNCTION: SHANDALAR 0x0041272b
 static void populate_pick_card_list(HWND listbox, unsigned int color_filter, unsigned int type_filter)
 {
   struct
@@ -2105,6 +2107,7 @@ static __inline void select_first_pick_card(HWND hwnd)
 }
 
 // FUNCTION: MAGIC 0x0050630c
+// FUNCTION: SHANDALAR 0x00411efb
 static INT_PTR CALLBACK dlgproc_pick_card_from_list(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   struct

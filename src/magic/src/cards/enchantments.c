@@ -1379,16 +1379,15 @@ int card_invisibility(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004fcc82
 int card_jihad(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-  int chosen_color;
-  int ai_choice;
-  int best_score;
-  int current_color;
-  int opponent;
-  int current_card;
-  int found;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
+  struct
+  {
+    int color_choice;
+    int color_test;
+    int found;
+    int opponent;
+    int current_color;
+    int best_score;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -1399,35 +1398,36 @@ int card_jihad(int player, int card, event_t event)
   {
     if (player == g_other_player && (g_duel_network_flags & 2) == 0)
     {
-      ai_choice = COLOR_BLACK;
-      best_score = -1;
-      for (current_color = COLOR_BLACK; current_color <= COLOR_WHITE; ++current_color)
+      s.current_color = COLOR_BLACK;
+      s.best_score = -1;
+      for (; s.current_color < 6; ++s.current_color)
       {
-        if (best_score < g_basiclandtypes_controlled[1 - player][current_color] +
-                             g_creature_power_by_color[1 - player][current_color])
+        if (s.best_score < g_creature_toughness_by_color[1 - player][s.current_color] +
+                               g_creature_power_by_color[1 - player][s.current_color])
         {
-          best_score = g_basiclandtypes_controlled[1 - player][current_color] +
-                       g_basiclandtypes_controlled[1 - player][current_color];
-          ai_choice = current_color;
+          s.best_score = g_creature_toughness_by_color[1 - player][s.current_color] +
+                         g_creature_toughness_by_color[1 - player][s.current_color];
+          s.color_test = s.current_color;
         }
       }
     }
     else
     {
-      ai_choice = internal_rand(5) + 1;
+      s.color_test = internal_rand(5) + 1;
     }
 
     load_text("promptsX1.txt", "JIHAD");
     if (player == g_other_player && (g_duel_network_flags & 2) == 0)
     {
-      chosen_color = choose_a_color(player, g_text_lines[0], 1, ai_choice, 0x3e);
+      s.color_choice = s.color_test;
     }
     else
     {
-      chosen_color = choose_a_color(player, g_text_lines[0], 1, -1, 0x3e);
+      s.color_choice = -1;
     }
-    instance->info_slot = chosen_color;
-    if (instance->info_slot == -1)
+    PLAYER_CARD_INSTANCE(player, card).info_slot =
+        choose_a_color(player, g_text_lines[0], 1, s.color_choice, 0x3e);
+    if (PLAYER_CARD_INSTANCE(player, card).info_slot == -1)
     {
       g_spell_fizzled = 1;
     }
@@ -1436,7 +1436,8 @@ int card_jihad(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_SPELL)
   {
     load_text("promptsX1.txt", "JIHAD");
-    do_dialog(player, player, card, -1, -1, g_text_lines[instance->info_slot], 0);
+    do_dialog(player, player, card, -1, -1,
+              g_text_lines[PLAYER_CARD_INSTANCE(player, card).info_slot], 0);
   }
 
   if ((event == EVENT_POWER || event == EVENT_TOUGHNESS) &&
@@ -1455,28 +1456,29 @@ int card_jihad(int player, int card, event_t event)
     }
   }
 
-  if (event != EVENT_CHANGE_TYPE && instance->info_slot != 0 &&
+  if (event != EVENT_CHANGE_TYPE && PLAYER_CARD_INSTANCE(player, card).info_slot != 0 &&
       g_affected_card == card && g_affected_card_controller == player && g_spell_fizzled != 1)
   {
-    opponent = 1 - player;
-    chosen_color = instance->info_slot;
-    found = 0;
-    current_card = 0;
-    while (current_card < g_active_cards_count[opponent] && found == 0)
+    s.opponent = 1 - player;
+    s.color_test = 1 << (unsigned char)PLAYER_CARD_INSTANCE(player, card).info_slot;
+    s.current_color = 0;
+    s.found = 0;
+    for (;
+         s.current_color < g_active_cards_count[s.opponent] && s.found == 0;
+         ++s.current_color)
     {
-      if (is_in_play(opponent, current_card) != 0 &&
-          (global_cards_data[PLAYER_CARD_INSTANCE(opponent, current_card).internal_card_id].type &
-           (TYPE_LAND | TYPE_CREATURE | TYPE_ENCHANTMENT | TYPE_ARTIFACT)) != 0 &&
-          ((1 << ((unsigned char)chosen_color)) &
-           (int)(char)PLAYER_CARD_INSTANCE(opponent, current_card).color) != 0)
+      if (is_in_play(s.opponent, s.current_color) != 0 &&
+          (global_cards_data[PLAYER_CARD_INSTANCE(s.opponent, s.current_color).internal_card_id].type &
+           (TYPE_LAND | TYPE_CREATURE | TYPE_ENCHANTMENT | TYPE_ARTIFACT | 0x1000)) != 0 &&
+          (s.color_test &
+           (int)(char)PLAYER_CARD_INSTANCE(s.opponent, s.current_color).color) != 0)
       {
-        found = 1;
+        s.found = 1;
       }
-      ++current_card;
     }
-    if (found == 0)
+    if (s.found == 0)
     {
-      instance->info_slot = 0;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
       kill_card(player, card, KILL_BURY);
     }
   }
