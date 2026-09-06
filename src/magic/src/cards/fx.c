@@ -730,17 +730,15 @@ int card_living_land_FX(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048486e
 int card_river_FX(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *river_effect;
   card_instance_t *target;
   int current_card;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-  target = &PLAYER_CARD_INSTANCE((int)instance->damage_target_player, instance->damage_target_card);
+  target = &PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
 
   if (event == EVENT_BLOCK_LEGALITY &&
-      instance->damage_target_card == g_affected_card &&
-      (int)instance->damage_target_player == g_affected_card_controller &&
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
+      (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
       g_affected_card != -1 &&
       (target->regen_status & 0x20) == 0)
   {
@@ -751,7 +749,7 @@ int card_river_FX(int player, int card, event_t event)
       if (river_effect->internal_card_id == g_duel_generated_internal_card_id_2a &&
           (int)river_effect->damage_target_player == g_attacking_card_controller &&
           river_effect->damage_target_card == g_attacking_card &&
-          instance->eot_toughness != river_effect->eot_toughness)
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness != river_effect->eot_toughness)
       {
         g_event_result = 1;
       }

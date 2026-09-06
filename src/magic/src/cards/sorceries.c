@@ -898,7 +898,6 @@ int card_tranquility(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00448a30
 int card_volcanic_eruption(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   unsigned int *state_ptr;
   target_t selected_target;
   int required_subtype;
@@ -907,8 +906,6 @@ int card_volcanic_eruption(int player, int card, event_t event)
   int invalid_targets;
   int damage_effect_card;
   char prompt[52];
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -940,8 +937,8 @@ int card_volcanic_eruption(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller)
   {
-    g_ai_modifier -= 0x24 / count_active_card_instances_plus_one(player, instance->internal_card_id);
-    instance->number_of_targets = 0;
+    g_ai_modifier -= 0x24 / count_active_card_instances_plus_one(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id);
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     required_subtype = get_hacked_color(player, card, 4) - 1;
     current_target = 0;
     selecting_done = 0;
@@ -978,8 +975,8 @@ int card_volcanic_eruption(int player, int card, event_t event)
         state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state;
         *state_ptr |= 0x300000;
         TENTATIVE_reassess_all_cards(0, 0x20);
-        SET_TARGET(instance->targets[instance->number_of_targets], selected_target);
-        ++instance->number_of_targets;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], selected_target);
+        ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
       }
       else
       {
@@ -996,17 +993,17 @@ int card_volcanic_eruption(int player, int card, event_t event)
       ++current_target;
     }
 
-    for (current_target = 0; current_target < instance->number_of_targets; ++current_target)
+    for (current_target = 0; current_target < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++current_target)
     {
-      state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(instance->targets[current_target].player,
-                                                        instance->targets[current_target].card)
+      state_ptr = (unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[current_target].player,
+                                                        PLAYER_CARD_INSTANCE(player, card).targets[current_target].card)
                       .state;
       *state_ptr &= 0xffcfffff;
     }
 
     if (g_spell_fizzled == 1)
     {
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
   }
 
@@ -1015,10 +1012,10 @@ int card_volcanic_eruption(int player, int card, event_t event)
     required_subtype = get_hacked_color(player, card, 4) - 1;
     invalid_targets = 0;
 
-    for (current_target = 0; current_target < instance->number_of_targets; ++current_target)
+    for (current_target = 0; current_target < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++current_target)
     {
-      if (C_real_validate_target(instance->targets[current_target].player,
-                                  instance->targets[current_target].card,
+      if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[current_target].player,
+                                  PLAYER_CARD_INSTANCE(player, card).targets[current_target].card,
                                   (char *)0,
                                   player,
                                   2,
@@ -1038,8 +1035,8 @@ int card_volcanic_eruption(int player, int card, event_t event)
                                   0,
                                   0))
       {
-        kill_card(instance->targets[current_target].player,
-                  instance->targets[current_target].card,
+        kill_card(PLAYER_CARD_INSTANCE(player, card).targets[current_target].player,
+                  PLAYER_CARD_INSTANCE(player, card).targets[current_target].card,
                   KILL_DESTROY);
       }
       else
@@ -1048,21 +1045,21 @@ int card_volcanic_eruption(int player, int card, event_t event)
       }
     }
 
-    if (instance->number_of_targets == invalid_targets)
+    if (PLAYER_CARD_INSTANCE(player, card).number_of_targets == invalid_targets)
     {
       g_spell_fizzled = 1;
     }
 
     if (g_spell_fizzled != 1 && (damage_effect_card = add_card_to_hand(player, g_duel_generated_internal_card_id_12)) != -1)
     {
-      PLAYER_CARD_INSTANCE(player, damage_effect_card).original_internal_card_id = instance->internal_card_id;
+      PLAYER_CARD_INSTANCE(player, damage_effect_card).original_internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
       PLAYER_CARD_INSTANCE(player, damage_effect_card).state |= 2;
       PLAYER_CARD_INSTANCE(player, damage_effect_card).display_pic_info = 0x109;
-      PLAYER_CARD_INSTANCE(player, damage_effect_card).info_slot = instance->number_of_targets - invalid_targets;
+      PLAYER_CARD_INSTANCE(player, damage_effect_card).info_slot = PLAYER_CARD_INSTANCE(player, card).number_of_targets - invalid_targets;
       TENTATIVE_set_timestamps(player, damage_effect_card);
     }
 
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -2136,12 +2133,9 @@ int card_fireball(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044bde2
 int card_detonate(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int converted_cost;
   int internal_card_id;
   target_t target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -2194,9 +2188,9 @@ int card_detonate(int player, int card, event_t event)
                               1,
                               &target))
     {
-      instance->info_slot = g_x_value;
-      SET_TARGET(instance->targets[0], target);
-      instance->number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = g_x_value;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     else
     {
@@ -2206,7 +2200,7 @@ int card_detonate(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    SET_TARGET(target, instance->targets[0]);
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
@@ -2230,9 +2224,9 @@ int card_detonate(int player, int card, event_t event)
     {
       internal_card_id = PLAYER_CARD_INSTANCE(target.player, target.card).internal_card_id;
       converted_cost = global_cards_data[internal_card_id].cc[0] + global_cards_data[internal_card_id].cc[1];
-      if (converted_cost == instance->info_slot)
+      if (converted_cost == PLAYER_CARD_INSTANCE(player, card).info_slot)
       {
-        damage_player(target.player, instance->info_slot, player, card);
+        damage_player(target.player, PLAYER_CARD_INSTANCE(player, card).info_slot, player, card);
         kill_card(target.player, target.card, KILL_BURY);
       }
       else
@@ -2245,7 +2239,7 @@ int card_detonate(int player, int card, event_t event)
       g_spell_fizzled = 1;
     }
 
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -2309,12 +2303,9 @@ int card_mana_clash(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044c410
 int card_word_of_binding(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int stop_selecting;
   int target_index;
   target_t selected_target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -2348,8 +2339,8 @@ int card_word_of_binding(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && player == g_affected_card_controller)
   {
-    instance->info_slot = g_x_value;
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = g_x_value;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     target_index = 0;
     stop_selecting = 0;
 
@@ -2385,8 +2376,8 @@ int card_word_of_binding(int player, int card, event_t event)
         PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |=
             STATE_CANNOT_TARGET | STATE_TARGETTED;
         TENTATIVE_reassess_all_cards(0, 0x20);
-        SET_TARGET(instance->targets[instance->number_of_targets], selected_target);
-        ++instance->number_of_targets;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], selected_target);
+        ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
       }
       else
       {
@@ -2402,25 +2393,25 @@ int card_word_of_binding(int player, int card, event_t event)
       ++target_index;
     }
 
-    for (target_index = 0; target_index < instance->number_of_targets; ++target_index)
+    for (target_index = 0; target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++target_index)
     {
-      PLAYER_CARD_INSTANCE(instance->targets[target_index].player,
-                           instance->targets[target_index].card)
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
+                           PLAYER_CARD_INSTANCE(player, card).targets[target_index].card)
           .state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
     }
 
     if (g_spell_fizzled == 1)
     {
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    for (target_index = 0; target_index < instance->number_of_targets; ++target_index)
+    for (target_index = 0; target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++target_index)
     {
-      if (C_real_validate_target(instance->targets[target_index].player,
-                                  instance->targets[target_index].card,
+      if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
+                                  PLAYER_CARD_INSTANCE(player, card).targets[target_index].card,
                                   (char *)0,
                                   player,
                                   2,
@@ -2440,8 +2431,8 @@ int card_word_of_binding(int player, int card, event_t event)
                                   0,
                                   0))
       {
-        tap_card_and_dispatch_event(instance->targets[target_index].player,
-                                    instance->targets[target_index].card);
+        tap_card_and_dispatch_event(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
+                                    PLAYER_CARD_INSTANCE(player, card).targets[target_index].card);
       }
       else
       {
@@ -2449,7 +2440,7 @@ int card_word_of_binding(int player, int card, event_t event)
       }
     }
 
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -3243,12 +3234,9 @@ int card_flashfires(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044e9de
 int card_pyrotechnics(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int invalid_targets;
   int target_index;
   target_t selected_target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -3263,13 +3251,13 @@ int card_pyrotechnics(int player, int card, event_t event)
       for (target_index = 0; target_index < 4; ++target_index)
       {
         select_damage_target(player, card, 1);
-        SET_TARGET(instance->targets[3 - target_index], instance->targets[0]);
-        instance->number_of_targets = 4;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[3 - target_index], PLAYER_CARD_INSTANCE(player, card).targets[0]);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 4;
       }
     }
     else
     {
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       if (g_duel_ai_mode_state != 1)
       {
         load_text("prompts.txt", "PYROTECHNICS");
@@ -3301,8 +3289,8 @@ int card_pyrotechnics(int player, int card, event_t event)
         {
           PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).state |= STATE_TARGETTED;
           TENTATIVE_reassess_all_cards(0, 0x20);
-          SET_TARGET(instance->targets[target_index], selected_target);
-          ++instance->number_of_targets;
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[target_index], selected_target);
+          ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
         }
         else
         {
@@ -3311,16 +3299,16 @@ int card_pyrotechnics(int player, int card, event_t event)
         ++target_index;
       }
 
-      for (target_index = 0; target_index < instance->number_of_targets; ++target_index)
+      for (target_index = 0; target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++target_index)
       {
-        PLAYER_CARD_INSTANCE(instance->targets[target_index].player,
-                             instance->targets[target_index].card)
+        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
+                             PLAYER_CARD_INSTANCE(player, card).targets[target_index].card)
             .state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
       }
 
       if (g_spell_fizzled == 1)
       {
-        instance->number_of_targets = 0;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       }
     }
   }
@@ -3332,17 +3320,17 @@ int card_pyrotechnics(int player, int card, event_t event)
     {
       for (target_index = 0; target_index < 4; ++target_index)
       {
-        SET_TARGET(instance->targets[0], instance->targets[target_index]);
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], PLAYER_CARD_INSTANCE(player, card).targets[target_index]);
         deal_damage_to_selected_target(player, card, EVENT_RESOLVE_SPELL, 1);
       }
     }
     else
     {
       invalid_targets = 0;
-      for (target_index = 0; target_index < instance->number_of_targets; ++target_index)
+      for (target_index = 0; target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++target_index)
       {
-        if (C_real_validate_target(instance->targets[target_index].player,
-                                    instance->targets[target_index].card,
+        if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
+                                    PLAYER_CARD_INSTANCE(player, card).targets[target_index].card,
                                     (char *)0,
                                     player,
                                     2,
@@ -3362,8 +3350,8 @@ int card_pyrotechnics(int player, int card, event_t event)
                                     0,
                                     0))
         {
-          damage_creature(instance->targets[target_index].player,
-                          instance->targets[target_index].card,
+          damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
+                          PLAYER_CARD_INSTANCE(player, card).targets[target_index].card,
                           1,
                           player,
                           card);
@@ -3374,11 +3362,11 @@ int card_pyrotechnics(int player, int card, event_t event)
         }
       }
 
-      if (instance->number_of_targets == invalid_targets)
+      if (PLAYER_CARD_INSTANCE(player, card).number_of_targets == invalid_targets)
       {
         g_spell_fizzled = 1;
       }
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
 
     kill_card(player, card, KILL_BURY);
@@ -3391,13 +3379,10 @@ int card_pyrotechnics(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044f1ac
 int card_disintegrate(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int target_player;
   int target_card;
   int damage_dealt;
   int legacy_card;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -3410,22 +3395,22 @@ int card_disintegrate(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
-    instance->info_slot = g_x_value;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = g_x_value;
     if (g_duel_ai_mode_state != 1)
     {
       load_text("prompts.txt", "DISINTEGRATE");
     }
     if (select_damage_target(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) != 0)
     {
-      g_ai_modifier -= 0x30 / count_active_card_instances_plus_one(player, instance->internal_card_id);
+      g_ai_modifier -= 0x30 / count_active_card_instances_plus_one(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id);
     }
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    target_player = instance->targets[0].player;
-    target_card = instance->targets[0].card;
-    damage_dealt = deal_damage_to_selected_target(player, card, EVENT_RESOLVE_SPELL, instance->info_slot);
+    target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+    target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    damage_dealt = deal_damage_to_selected_target(player, card, EVENT_RESOLVE_SPELL, PLAYER_CARD_INSTANCE(player, card).info_slot);
     if (damage_dealt != 0 && target_card != -1)
     {
       legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_17, target_player, target_card);
@@ -3435,7 +3420,7 @@ int card_disintegrate(int player, int card, event_t event)
       }
       PLAYER_CARD_INSTANCE(target_player, target_card).regen_status = 0x8000000;
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -3616,12 +3601,9 @@ int card_stone_rain(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044fd8c
 int card_drain_power(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
   int target_player;
   int color_index;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -3655,8 +3637,8 @@ int card_drain_power(int player, int card, event_t event)
                               1,
                               &target))
     {
-      SET_TARGET(instance->targets[0], target);
-      instance->number_of_targets = 1;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     else
     {
@@ -3667,7 +3649,7 @@ int card_drain_power(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    target_player = instance->targets[0].player;
+    target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     dispatch_three_arg_callback_to_cards_in_play(drain_power_draw_mana_from_land, target_player);
     if (target_player != player)
     {
@@ -3677,7 +3659,7 @@ int card_drain_power(int player, int card, event_t event)
         g_raw_mana_available[target_player][color_index] = 0;
       }
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 

@@ -3455,13 +3455,11 @@ int card_blood_moon(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0043cdfb
 int card_greater_realm_of_preservation(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t target;
   unsigned int target_color;
   int target_player;
   int target_card;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   target_color = (1 << (unsigned char)get_sleighted_color(player, card, COLOR_RED)) |
                  (1 << (unsigned char)get_sleighted_color(player, card, COLOR_BLACK));
 
@@ -3471,7 +3469,7 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
   }
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player &&
-      count_permanents_by_internal_card_id(player, instance->internal_card_id, player) == 0)
+      count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, player) == 0)
   {
     g_ai_modifier += (g_basiclandtypes_controlled[g_active_player][target_color] +
                       g_creature_power_by_color[g_active_player][target_color] / 2) *
@@ -3493,7 +3491,7 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
     return 99;
   }
 
-  if (event == EVENT_ACTIVATE && (instance->state & STATE_INVISIBLE) == 0)
+  if (event == EVENT_ACTIVATE && (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0)
   {
     g_mana_charge[COLOR_COLORLESS] = 1;
     charge_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1);
@@ -3510,8 +3508,8 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
                                TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0,
                                g_text_lines[0], 1, &target))
       {
-        SET_TARGET(instance->targets[0], target);
-        instance->number_of_targets = 1;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
       else
       {
@@ -3522,14 +3520,14 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                TYPE_NONE, TYPE_NONE, 0, 0, target_color, COLOR_TEST_0,
                                g_damage_card_internal_card_id, -1, -1, -1,
                                TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
     {
-      target_player = instance->targets[0].player;
-      target_card = instance->targets[0].card;
+      target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
       if (PLAYER_CARD_INSTANCE(target_player, target_card).info_slot != 0)
       {
         PLAYER_CARD_INSTANCE(target_player, target_card).info_slot = 0;
@@ -3539,7 +3537,7 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   return 0;

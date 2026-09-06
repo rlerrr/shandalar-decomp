@@ -160,15 +160,12 @@ int send_arena_network_choice(int player, int choice)
 // FUNCTION: SHANDALAR 0x00552320
 int card_arena(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *parent;
   target_t target;
   int first_valid;
   int second_valid;
   int first_power;
   int second_power;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAST_SPELL &&
       g_affected_card == card &&
@@ -180,7 +177,7 @@ int card_arena(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (instance->state & STATE_TAPPED) == 0 &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
            !is_animated_and_sick(player, card) &&
            has_mana(player, COLOR_ANY, 3) &&
            arena_has_targets(player, card);
@@ -200,9 +197,9 @@ int card_arena(int player, int card, event_t event)
                                    get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                    -1, -1, -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
           {
-            SET_TARGET(instance->targets[instance->number_of_targets], target);
-            ++instance->number_of_targets;
-            instance->state |= STATE_TAPPED;
+            SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], target);
+            ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
+            PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
             if ((g_duel_network_flags & 2) == 0)
             {
               select_best_arena_creature(1 - player, 1 - player, TYPE_CREATURE, &target);
@@ -216,8 +213,8 @@ int card_arena(int player, int card, event_t event)
                                    COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0,
                                    g_text_lines[0], 0, &target);
             }
-            SET_TARGET(instance->targets[instance->number_of_targets], target);
-            ++instance->number_of_targets;
+            SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], target);
+            ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
             do_dialog(1 - player, player, card, target.player, target.card, g_text_lines[1], 0);
           }
           else
@@ -242,17 +239,17 @@ int card_arena(int player, int card, event_t event)
           }
           if (g_spell_fizzled != 1)
           {
-            SET_TARGET(instance->targets[instance->number_of_targets], target);
-            ++instance->number_of_targets;
+            SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], target);
+            ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
             do_dialog(player, player, card, target.player, target.card, g_text_lines[1], 0);
             load_text("promptsX1.txt", "ARENA");
             C_real_select_target(1 - player, 1 - player, 1 - player, TARGET_ZONE_IN_PLAY,
                                  TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
                                  COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0,
                                  g_text_lines[0], 0, &target);
-            SET_TARGET(instance->targets[instance->number_of_targets], target);
-            ++instance->number_of_targets;
-            instance->state |= STATE_TAPPED;
+            SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets], target);
+            ++PLAYER_CARD_INSTANCE(player, card).number_of_targets;
+            PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
             if ((g_duel_network_flags & 2) != 0)
             {
               send_arena_network_choice(1 - player, 0);
@@ -262,7 +259,7 @@ int card_arena(int player, int card, event_t event)
 
         if (g_spell_fizzled == 1)
         {
-          instance->number_of_targets = 0;
+          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
         }
       }
     }
@@ -275,8 +272,8 @@ int card_arena(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    first_valid = C_real_validate_target(instance->targets[0].player,
-                                         instance->targets[0].card,
+    first_valid = C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                         PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                          (char *)0,
                                          g_active_player,
                                          g_active_player,
@@ -295,8 +292,8 @@ int card_arena(int player, int card, event_t event)
                                          0,
                                          0,
                                          0);
-    second_valid = C_real_validate_target(instance->targets[1].player,
-                                          instance->targets[1].card,
+    second_valid = C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[1].player,
+                                          PLAYER_CARD_INSTANCE(player, card).targets[1].card,
                                           (char *)0,
                                           g_other_player,
                                           g_other_player,
@@ -318,50 +315,50 @@ int card_arena(int player, int card, event_t event)
 
     if (first_valid)
     {
-      PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).state |= STATE_TAPPED;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).state |= STATE_TAPPED;
     }
     if (second_valid)
     {
-      PLAYER_CARD_INSTANCE(instance->targets[1].player, instance->targets[1].card).state |= STATE_TAPPED;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card).state |= STATE_TAPPED;
     }
 
     if (first_valid && second_valid)
     {
-      PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).regen_status |= 0x04000000;
-      PLAYER_CARD_INSTANCE(instance->targets[1].player, instance->targets[1].card).regen_status |= 0x04000000;
-      first_power = C_get_abilities(instance->targets[0].player, instance->targets[0].card, EVENT_POWER, -1);
-      second_power = C_get_abilities(instance->targets[1].player, instance->targets[1].card, EVENT_POWER, -1);
-      damage_creature(instance->targets[0].player,
-                      instance->targets[0].card,
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).regen_status |= 0x04000000;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card).regen_status |= 0x04000000;
+      first_power = C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, EVENT_POWER, -1);
+      second_power = C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card, EVENT_POWER, -1);
+      damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                       second_power,
-                      instance->targets[1].player,
-                      instance->targets[1].card);
-      damage_creature(instance->targets[1].player,
-                      instance->targets[1].card,
+                      PLAYER_CARD_INSTANCE(player, card).targets[1].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[1].card);
+      damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[1].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[1].card,
                       first_power,
-                      instance->targets[0].player,
-                      instance->targets[0].card);
+                      PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[0].card);
     }
-    else if (first_valid && PLAYER_CARD_INSTANCE(instance->targets[1].player, instance->targets[1].card).internal_card_id != -1)
+    else if (first_valid && PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card).internal_card_id != -1)
     {
-      first_power = C_get_abilities(instance->targets[0].player, instance->targets[0].card, EVENT_POWER, -1);
-      damage_creature(instance->targets[1].player,
-                      instance->targets[1].card,
+      first_power = C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, EVENT_POWER, -1);
+      damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[1].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[1].card,
                       first_power,
-                      instance->targets[0].player,
-                      instance->targets[0].card);
+                      PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[0].card);
     }
-    else if (second_valid && PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).internal_card_id != -1)
+    else if (second_valid && PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).internal_card_id != -1)
     {
-      second_power = C_get_abilities(instance->targets[1].player, instance->targets[1].card, EVENT_POWER, -1);
-      damage_creature(instance->targets[0].player,
-                      instance->targets[0].card,
+      second_power = C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card, EVENT_POWER, -1);
+      damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                       second_power,
-                      instance->targets[1].player,
-                      instance->targets[1].card);
+                      PLAYER_CARD_INSTANCE(player, card).targets[1].player,
+                      PLAYER_CARD_INSTANCE(player, card).targets[1].card);
     }
 
-    parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
+    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
     parent->number_of_targets = 0;
   }
 
@@ -758,9 +755,6 @@ int card_diamond_valley(int player, int card, event_t event)
     int control_aura_found;
     int current_card;
   } s;
-  card_instance_t *instance;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAST_SPELL &&
       g_affected_card == card &&
@@ -772,7 +766,7 @@ int card_diamond_valley(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (instance->state & STATE_TAPPED) == 0 &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
            !is_animated_and_sick(player, card) &&
            real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
@@ -829,8 +823,8 @@ int card_diamond_valley(int player, int card, event_t event)
         play_sound_effect(0xf);
       }
       kill_card(s.target.player, s.target.card, KILL_SACRIFICE);
-      instance->info_slot = C_get_abilities(s.target.player, s.target.card, EVENT_TOUGHNESS, -1);
-      instance->state |= STATE_TAPPED;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = C_get_abilities(s.target.player, s.target.card, EVENT_TOUGHNESS, -1);
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
 
       if (player == g_other_player &&
           (g_duel_network_flags & 2) == 0 &&
@@ -864,7 +858,7 @@ int card_diamond_valley(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    gain_life(player, instance->info_slot, g_card_on_stack_controller, g_card_on_stack);
+    gain_life(player, PLAYER_CARD_INSTANCE(player, card).info_slot, g_card_on_stack_controller, g_card_on_stack);
   }
 
   return 0;
@@ -1088,12 +1082,9 @@ int card_elephant_graveyard(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00554f53
 int card_island_of_wak_wak(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *parent;
   target_t target;
   int legacy_card;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAST_SPELL &&
       g_affected_card == card &&
@@ -1105,7 +1096,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (instance->state & STATE_TAPPED) == 0 &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
            !is_animated_and_sick(player, card) &&
            real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
@@ -1158,9 +1149,9 @@ int card_island_of_wak_wak(int player, int card, event_t event)
                              1,
                              &target))
     {
-      SET_TARGET(instance->targets[0], target);
-      instance->number_of_targets = 1;
-      instance->state |= STATE_TAPPED;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       g_produced_mana_color = -1;
     }
     else
@@ -1172,7 +1163,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    SET_TARGET(target, instance->targets[0]);
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(target.player,
                                 target.card,
                                 (char *)0,
@@ -1209,7 +1200,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
+    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
     parent->number_of_targets = 0;
   }
 

@@ -534,17 +534,14 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
     int legacy_card;
     unsigned int saved_no_auto_tapping;
   } s;
-  card_instance_t *instance;
   card_instance_t *parent;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_COUNT_MANA)
   {
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
 
-  s.can_tap = (instance->state & STATE_TAPPED) == 0 && !is_animated_and_sick(player, card);
+  s.can_tap = (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && !is_animated_and_sick(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
@@ -670,22 +667,22 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
       } while (!s.available[s.choice]);
     }
 
-    instance->info_slot = s.choice;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = s.choice;
     if (s.choice == 0)
     {
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
     }
     else if (s.choice == 1)
     {
-      s.saved_no_auto_tapping = instance->state & STATE_NO_AUTO_TAPPING;
-      instance->state |= STATE_NO_AUTO_TAPPING;
+      s.saved_no_auto_tapping = PLAYER_CARD_INSTANCE(player, card).state & STATE_NO_AUTO_TAPPING;
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_NO_AUTO_TAPPING;
       charge_mana(player, COLOR_COLORLESS, 1);
       if (s.saved_no_auto_tapping == 0)
       {
-        instance->state &= ~STATE_NO_AUTO_TAPPING;
+        PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_NO_AUTO_TAPPING;
       }
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       g_produced_mana_color = -1;
     }
     else if (s.choice == 2)
@@ -715,10 +712,10 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
                                 1,
                                 &s.target))
       {
-        instance->state |= STATE_TAPPED;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         undeclare_mana_available(player, COLOR_COLORLESS, 1);
-        instance->targets[0] = s.target;
-        instance->number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
       else
       {
@@ -740,34 +737,34 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
-    if (parent->internal_card_id == -1 || instance->info_slot == 0)
+    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
+    if (parent->internal_card_id == -1 || PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
     {
       return 0;
     }
 
-    if (instance->info_slot == 1)
+    if (PLAYER_CARD_INSTANCE(player, card).info_slot == 1)
     {
       parent->internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
       parent->dummy3 = parent->internal_card_id;
-      ++g_duel_summary.creature_counts[instance->parent_controller];
-      ++g_duel_summary.artifact_counts[instance->parent_controller];
+      ++g_duel_summary.creature_counts[PLAYER_CARD_INSTANCE(player, card).parent_controller];
+      ++g_duel_summary.artifact_counts[PLAYER_CARD_INSTANCE(player, card).parent_controller];
       parent->state |= STATE_IN_PLAY;
-      dispatch_event_to_single_card(instance->parent_controller,
-                                    instance->parent_card,
+      dispatch_event_to_single_card(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                                    PLAYER_CARD_INSTANCE(player, card).parent_card,
                                     EVENT_CAST_SPELL,
-                                    1 - instance->parent_controller,
+                                    1 - PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     -1);
       parent->state |= STATE_SUMMONSICK;
-      dispatch_event_to_single_card(instance->parent_controller,
-                                    instance->parent_card,
+      dispatch_event_to_single_card(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                                    PLAYER_CARD_INSTANCE(player, card).parent_card,
                                     EVENT_RESOLVE_SPELL,
-                                    1 - instance->parent_controller,
+                                    1 - PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     -1);
     }
-    else if (instance->info_slot == 2 && instance->number_of_targets != 0)
+    else if (PLAYER_CARD_INSTANCE(player, card).info_slot == 2 && PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
     {
-      SET_TARGET(s.target, instance->targets[0]);
+      SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
       if (C_real_validate_target(s.target.player,
                                   s.target.card,
                                   (char *)0,

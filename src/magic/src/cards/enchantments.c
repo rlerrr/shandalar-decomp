@@ -1105,7 +1105,6 @@ int card_fishliver_oil(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004fbeef
 int card_gate_to_phyrexia(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *parent;
   target_t creature;
   target_t artifact;
@@ -1115,8 +1114,6 @@ int card_gate_to_phyrexia(int player, int card, event_t event)
   int best_creature_score;
   int best_artifact_score;
   int artifact_player;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -1192,8 +1189,8 @@ int card_gate_to_phyrexia(int player, int card, event_t event)
         if (creature.card != -1 && artifact.card != -1 && best_creature_score < best_artifact_score)
         {
           g_activation_event_flags |= 3;
-          SET_TARGET(instance->targets[0], artifact);
-          SET_TARGET(instance->targets[1], creature);
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], artifact);
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[1], creature);
         }
       }
       return 1;
@@ -1229,8 +1226,8 @@ int card_gate_to_phyrexia(int player, int card, event_t event)
             play_sound_effect(0xf);
           }
           kill_card(creature.player, creature.card, KILL_SACRIFICE);
-          SET_TARGET(instance->targets[0], artifact);
-          instance->number_of_targets = 1;
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], artifact);
+          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
         }
         else
         {
@@ -1244,32 +1241,32 @@ int card_gate_to_phyrexia(int player, int card, event_t event)
     }
     else
     {
-      if (PLAYER_CARD_INSTANCE(instance->targets[1].player, instance->targets[1].card).internal_card_id == -1)
+      if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card).internal_card_id == -1)
       {
         g_spell_fizzled = 1;
       }
       else
       {
-        kill_card(instance->targets[1].player, instance->targets[1].card, KILL_SACRIFICE);
-        instance->number_of_targets = 1;
+        kill_card(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card, KILL_SACRIFICE);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
     }
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                TYPE_ARTIFACT, TYPE_NONE, 0, get_protections_from(player, card),
                                COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0))
     {
-      kill_card(instance->targets[0].player, instance->targets[0].card, KILL_DESTROY);
+      kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, KILL_DESTROY);
     }
     else
     {
       g_spell_fizzled = 1;
     }
-    parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
+    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
     parent->number_of_targets = 0;
   }
 
@@ -1490,10 +1487,7 @@ int card_jihad(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004fd152
 int card_kudzu(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t new_target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -1525,7 +1519,7 @@ int card_kudzu(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    else if (instance->targets[0].player == player)
+    else if (PLAYER_CARD_INSTANCE(player, card).targets[0].player == player)
     {
       g_ai_modifier -= 0x18;
     }
@@ -1538,8 +1532,8 @@ int card_kudzu(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (C_real_validate_target(instance->targets[0].player,
-                               instance->targets[0].card,
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                (char *)0,
                                player,
                                2,
@@ -1559,19 +1553,19 @@ int card_kudzu(int player, int card, event_t event)
                                0,
                                0))
     {
-      instance->damage_target_player = (char)instance->targets[0].player;
-      instance->damage_target_card = instance->targets[0].card;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player = (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
     }
     else
     {
       kill_card(player, card, KILL_BURY);
       g_spell_fizzled = 1;
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
   }
 
-  if (event == 0x81 && instance->damage_target_card == g_affected_card && instance->damage_target_player == g_affected_card_controller && g_affected_card != -1 && (instance->state & 0x20) == 0)
+  if (event == 0x81 && PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card && PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller && g_affected_card != -1 && (PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0)
   {
     card_instance_t *original_kudzu;
     int valid_targets;

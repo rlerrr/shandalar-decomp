@@ -424,25 +424,23 @@ int card_copper_tablet(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00455da6
 int card_cyclopean_tomb(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *legacy;
   target_t target;
   int chosen_land_type;
   int legacy_card;
   int can_activate;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   chosen_land_type = get_hacked_color(player, card, 1) - 1;
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     TENTATIVE_set_timestamps(player, card);
-    instance->info_slot = instance->timestamp;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).timestamp;
   }
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if (g_current_phase == 4 && player == g_current_turn && player == g_current_player && (instance->state & STATE_TAPPED) == 0 && (((instance->state & STATE_SUMMONSICK_BOTH) == 0) || (global_cards_data[instance->internal_card_id].type & TYPE_CREATURE) == 0) && has_mana(player, 7, 2) != 0)
+    if (g_current_phase == 4 && player == g_current_turn && player == g_current_player && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_SUMMONSICK_BOTH) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) && has_mana(player, 7, 2) != 0)
     {
       can_activate = real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 1 - player, 0x200, TYPE_LAND, 0, 0,
                                            get_protections_from(player, card), 0, 0, chosen_land_type,
@@ -472,7 +470,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
       {
         if (select_land_for_cyclopean_tomb_ai(player, card, 1 - player))
         {
-          instance->state |= STATE_TAPPED;
+          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         }
       }
       else
@@ -484,9 +482,9 @@ int card_cyclopean_tomb(int player, int card, event_t event)
                                  TARGET_SPECIAL_NOT_LAND_SUBTYPE, 0, 0, g_text_lines[0], 1,
                                  &target))
         {
-          SET_TARGET(instance->targets[0], target);
-          instance->number_of_targets = 1;
-          instance->state |= STATE_TAPPED;
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         }
         else
         {
@@ -498,20 +496,20 @@ int card_cyclopean_tomb(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (C_real_validate_target(instance->targets[0].player, instance->targets[0].card, (char *)0,
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, (char *)0,
                                player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_LAND, TYPE_NONE, 0,
                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                chosen_land_type, ~SUB_WALL, -1, -1,
                                TARGET_SPECIAL_NOT_LAND_SUBTYPE, 0, 0))
     {
       legacy_card = create_legacy_effect(g_affected_card_controller, g_affected_card, g_duel_generated_internal_card_id_23,
-                                         instance->targets[0].player, instance->targets[0].card);
+                                         PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card);
       if (legacy_card != -1)
       {
         legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
         legacy->dummy3 = chosen_land_type;
         legacy->token_status = 0x10000;
-        legacy->info_slot = PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot;
+        legacy->info_slot = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).info_slot;
         legacy->eot_toughness = 1;
       }
     }
@@ -519,7 +517,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   if (event == 0x77 && g_affected_card == card && g_affected_card_controller == player)
@@ -528,7 +526,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
     if (legacy_card != -1)
     {
       legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
-      legacy->info_slot = instance->info_slot;
+      legacy->info_slot = PLAYER_CARD_INSTANCE(player, card).info_slot;
       legacy->eot_toughness = 2;
     }
   }

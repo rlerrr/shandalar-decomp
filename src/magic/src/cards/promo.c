@@ -283,13 +283,10 @@ int card_aswan_jaguar(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00419fc9
 int card_goblin_polka_band(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (has_mana(player, COLOR_ANY, 2) != 0 && (instance->state & 0x20014) == 0) ? 1 : 0;
+    return (has_mana(player, COLOR_ANY, 2) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & 0x20014) == 0) ? 1 : 0;
   }
 
   if (event == EVENT_GET_SELECTED_CARD)
@@ -308,19 +305,19 @@ int card_goblin_polka_band(int player, int card, event_t event)
     }
     if (g_spell_fizzled != 1)
     {
-      instance->info_slot = g_x_value;
-      instance->state |= STATE_TAPPED;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = g_x_value;
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
     }
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && instance->info_slot > 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && PLAYER_CARD_INSTANCE(player, card).info_slot > 0)
   {
     if (g_duel_ai_mode_state != 1)
     {
       play_sound_effect(0x33);
     }
-    polka_apply_effect(g_card_on_stack_controller, g_card_on_stack, instance->info_slot);
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).info_slot = 0;
+    polka_apply_effect(g_card_on_stack_controller, g_card_on_stack, PLAYER_CARD_INSTANCE(player, card).info_slot);
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).info_slot = 0;
   }
 
   return 0;
@@ -330,16 +327,15 @@ int card_goblin_polka_band(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0041a76b
 int card_polka(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_UNTAP &&
-      instance->damage_target_card == g_affected_card &&
-      instance->damage_target_player == g_affected_card_controller &&
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
+      PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
       g_affected_card != -1)
   {
-    PLAYER_CARD_INSTANCE((int)instance->damage_target_player, instance->damage_target_card).untap_status &= ~3;
+    PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                         PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+        .untap_status &= ~3;
     kill_card(player, card, KILL_BURY);
   }
 
@@ -506,18 +502,16 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
   int current_player;
   int current_card;
   int amount;
-  card_instance_t *instance;
   card_instance_t *target;
   card_instance_t *legacy;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-  if (C_real_validate_target(instance->targets[0].player, instance->targets[0].card,
+  if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                              (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                              TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
                              COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0))
   {
-    target_player = instance->targets[0].player;
-    target_card = instance->targets[0].card;
+    target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+    target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
     target = &PLAYER_CARD_INSTANCE(target_player, target_card);
     legacy_card = -1;
 
@@ -753,7 +747,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
     g_spell_fizzled = 1;
   }
 
-  PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+  PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
 
   return 0;
 }

@@ -1307,14 +1307,11 @@ int card_cuombajj_witches(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00474970
 int card_demonic_hordes(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   target_t selected_target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((instance->state & 0x20010) == 0 && real_target_available((int *)0,
+    if ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 && real_target_available((int *)0,
                                                                   TARGET_SCAN_DIRECT,
                                                                   player,
                                                                   2,
@@ -1352,20 +1349,20 @@ int card_demonic_hordes(int player, int card, event_t event)
       }
       else
       {
-        instance->state |= 0x10;
-        g_ai_modifier += instance->targets[0].player == player ? -24 : 36;
+        PLAYER_CARD_INSTANCE(player, card).state |= 0x10;
+        g_ai_modifier += PLAYER_CARD_INSTANCE(player, card).targets[0].player == player ? -24 : 36;
       }
 
       if (g_spell_fizzled == 1)
       {
-        instance->number_of_targets = 0;
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       }
     }
 
     if (event == EVENT_RESOLVE_ACTIVATION)
     {
-      if (C_real_validate_target(instance->targets[0].player,
-                                 instance->targets[0].card,
+      if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                 PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                  (char *)0,
                                  player,
                                  2,
@@ -1385,20 +1382,20 @@ int card_demonic_hordes(int player, int card, event_t event)
                                  0,
                                  0))
       {
-        kill_card(instance->targets[0].player, instance->targets[0].card, KILL_DESTROY);
+        kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, KILL_DESTROY);
       }
       else
       {
         g_spell_fizzled = 1;
       }
 
-      PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
     }
 
     if (event == EVENT_SETUP_UPKEEP_COSTS && card == g_affected_card && player == g_affected_card_controller && player == g_current_player && g_event_player == player)
     {
-      instance->upkeep_flags |= 1;
-      instance->upkeep_black += 3;
+      PLAYER_CARD_INSTANCE(player, card).upkeep_flags |= 1;
+      PLAYER_CARD_INSTANCE(player, card).upkeep_black += 3;
     }
 
     if (event == EVENT_UPKEEP_COSTS_UNPAID)
@@ -1466,7 +1463,7 @@ int card_demonic_hordes(int player, int card, event_t event)
         kill_card(selected_target.player, selected_target.card, KILL_SACRIFICE);
       }
 
-      PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).state |= STATE_TAPPED;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).state |= STATE_TAPPED;
     }
   }
 
@@ -1521,14 +1518,12 @@ int card_desert_nomads(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00475328
 int card_dwarven_demolition_team(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *parent;
   target_t target;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((instance->state & 0x20010) == 0 && real_target_available((int *)0,
+    if ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 && real_target_available((int *)0,
                                                                   TARGET_SCAN_DIRECT,
                                                                   player,
                                                                   2,
@@ -1585,14 +1580,14 @@ int card_dwarven_demolition_team(int player, int card, event_t event)
       }
       else
       {
-        SET_TARGET(instance->targets[0], target);
-        instance->number_of_targets = 1;
-        instance->state |= STATE_TAPPED;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
     }
     if (event == EVENT_RESOLVE_ACTIVATION)
     {
-      SET_TARGET(target, instance->targets[0]);
+      SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
       if (C_real_validate_target(target.player,
                                  target.card,
                                  (char *)0,
@@ -1620,7 +1615,7 @@ int card_dwarven_demolition_team(int player, int card, event_t event)
       {
         g_spell_fizzled = 1;
       }
-      parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
+      parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
       parent->number_of_targets = 0;
     }
   }
@@ -1632,12 +1627,9 @@ int card_dwarven_demolition_team(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00475696
 int card_dwarven_weaponsmith(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *target_instance;
   target_t target;
   target_t artifact;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
@@ -1675,9 +1667,9 @@ int card_dwarven_weaponsmith(int player, int card, event_t event)
           play_sound_effect(WAV_SACRFICE);
         }
         kill_card(artifact.player, artifact.card, KILL_SACRIFICE);
-        SET_TARGET(instance->targets[0], target);
-        instance->number_of_targets = 1;
-        instance->state |= STATE_TAPPED;
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
       else
       {
@@ -1688,7 +1680,7 @@ int card_dwarven_weaponsmith(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    SET_TARGET(target, instance->targets[0]);
+    SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(target.player, target.card, (char *)0, player, 2, 2,
                                TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
@@ -1708,7 +1700,7 @@ int card_dwarven_weaponsmith(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   return 0;
@@ -4030,12 +4022,9 @@ int card_singing_tree(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0047dd1e
 int card_two_headed_giant_of_foriys(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   int giant_copy_internal_id;
   int giant_copy_card;
   int current_card;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (g_trigger_condition == 0xdf && g_affected_card == card && g_affected_card_controller == player && g_current_turn == player && player != g_current_player && player == g_trigger_cause_controller && card == g_trigger_cause)
   {
@@ -4045,7 +4034,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
     }
     if (event == 0x7e)
     {
-      giant_copy_internal_id = create_a_card_type(instance->internal_card_id);
+      giant_copy_internal_id = create_a_card_type(PLAYER_CARD_INSTANCE(player, card).internal_card_id);
       if (giant_copy_internal_id != -1)
       {
         global_cards_data[giant_copy_internal_id].code_pointer = card_two_headed_giant_of_foriys_legacy;
@@ -4055,14 +4044,14 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
         giant_copy_card = add_card_to_hand(player, giant_copy_internal_id);
         if (giant_copy_card != -1)
         {
-          PLAYER_CARD_INSTANCE(player, giant_copy_card).state = instance->state & 0xfffffff7;
-          PLAYER_CARD_INSTANCE(player, giant_copy_card).regen_status = instance->regen_status;
+          PLAYER_CARD_INSTANCE(player, giant_copy_card).state = PLAYER_CARD_INSTANCE(player, card).state & 0xfffffff7;
+          PLAYER_CARD_INSTANCE(player, giant_copy_card).regen_status = PLAYER_CARD_INSTANCE(player, card).regen_status;
           PLAYER_CARD_INSTANCE(player, giant_copy_card).token_status = 0x8000008;
           PLAYER_CARD_INSTANCE(player, giant_copy_card).info_slot = 2;
           PLAYER_CARD_INSTANCE(player, giant_copy_card).damage_source_player = (char)player;
           PLAYER_CARD_INSTANCE(player, giant_copy_card).damage_source_card = card;
           PLAYER_CARD_INSTANCE(player, giant_copy_card).display_pic_info =
-              global_cards_data[instance->internal_card_id].id;
+              global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].id;
         }
       }
     }
@@ -4074,7 +4063,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
     {
       g_event_result |= 2;
     }
-    if (event == 0x7e && instance->blocking != -1)
+    if (event == 0x7e && PLAYER_CARD_INSTANCE(player, card).blocking != -1)
     {
       for (current_card = 0; current_card < g_active_cards_count[player]; ++current_card)
       {
@@ -4086,7 +4075,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
     }
   }
 
-  if (event == 0x77 && g_affected_card == card && g_affected_card_controller == player && instance->blocking != -1)
+  if (event == 0x77 && g_affected_card == card && g_affected_card_controller == player && PLAYER_CARD_INSTANCE(player, card).blocking != -1)
   {
     for (current_card = 0; current_card < g_active_cards_count[player]; ++current_card)
     {
@@ -4110,7 +4099,6 @@ static int C_vesuvan_doppelganger_helper(int source_player,
 // FUNCTION: SHANDALAR 0x0047e344
 int card_vesuvan_doppelganger(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *parent;
   card_instance_t *data_card;
   card_instance_t *target_instance;
@@ -4131,8 +4119,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
   char dialog[900];
   unsigned int result;
 
-  instance = &PLAYER_CARD_INSTANCE(player, card);
-  parent = instance;
+  parent = &PLAYER_CARD_INSTANCE(player, card);
   data_card = (card_instance_t *)0;
   data_card_location = -1;
   data_card_controller = -1;
@@ -4140,28 +4127,28 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
   delegate_to_copy = 0;
   result = 0;
 
-  if (event == EVENT_RESOLVE_ACTIVATION && instance->parent_controller != -1 && instance->parent_card != -1)
+  if (event == EVENT_RESOLVE_ACTIVATION && PLAYER_CARD_INSTANCE(player, card).parent_controller != -1 && PLAYER_CARD_INSTANCE(player, card).parent_card != -1)
   {
-    parent = &PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card);
+    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
   }
 
-  if (is_in_play(parent == instance ? player : instance->parent_controller,
-                 parent == instance ? card : instance->parent_card))
+  if (is_in_play(parent == &PLAYER_CARD_INSTANCE(player, card) ? player : PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                 parent == &PLAYER_CARD_INSTANCE(player, card) ? card : PLAYER_CARD_INSTANCE(player, card).parent_card))
   {
     if (parent->internal_card_id == g_stack_proxy_internal_card_id)
     {
       lookup_player = g_card_on_stack_controller;
       lookup_card = g_card_on_stack;
     }
-    else if (parent == instance)
+    else if (parent == &PLAYER_CARD_INSTANCE(player, card))
     {
       lookup_player = player;
       lookup_card = card;
     }
     else
     {
-      lookup_player = instance->parent_controller;
-      lookup_card = instance->parent_card;
+      lookup_player = PLAYER_CARD_INSTANCE(player, card).parent_controller;
+      lookup_card = PLAYER_CARD_INSTANCE(player, card).parent_card;
     }
 
     data_card_location = dispatch_function_to_all_cards_in_play(lookup_player, lookup_card, clone_find_data_card_callback, -1);
@@ -4221,8 +4208,8 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
                              1,
                              &selected_target))
     {
-      SET_TARGET(instance->targets[0], selected_target);
-      instance->number_of_targets = 1;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     else
     {
@@ -4232,8 +4219,8 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (C_real_validate_target(instance->targets[0].player,
-                               instance->targets[0].card,
+    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                (char *)0,
                                player,
                                2,
@@ -4253,7 +4240,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
                                0,
                                0))
     {
-      SET_TARGET(selected_target, instance->targets[0]);
+      SET_TARGET(selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
       target_instance = &PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card);
       if (global_cards_data[target_instance->internal_card_id].id == CARD_ID_VESUVAN_DOPPELGANGER)
       {
@@ -4286,11 +4273,11 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
         copied_internal_id = create_a_card_type(source_internal_card_id);
         if (copied_internal_id != -1)
         {
-          instance->internal_card_id = copied_internal_id;
-          instance->dummy3 = copied_internal_id;
-          instance->regen_status |= 0x1000000;
-          instance->state &= 0xffffdfff;
-          instance->color = global_cards_data[copied_internal_id].color;
+          PLAYER_CARD_INSTANCE(player, card).internal_card_id = copied_internal_id;
+          PLAYER_CARD_INSTANCE(player, card).dummy3 = copied_internal_id;
+          PLAYER_CARD_INSTANCE(player, card).regen_status |= 0x1000000;
+          PLAYER_CARD_INSTANCE(player, card).state &= 0xffffdfff;
+          PLAYER_CARD_INSTANCE(player, card).color = global_cards_data[copied_internal_id].color;
           if ((global_cards_data[copied_internal_id].type & TYPE_ARTIFACT) != 0)
           {
             ++g_duel_summary.artifact_counts[player];
@@ -4305,22 +4292,22 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
           dispatch_event_to_single_card(player, card, EVENT_CAST_SPELL, 1 - player, -1);
           dispatch_event_to_single_card(player, card, EVENT_RESOLVE_SPELL, 1 - player, -1);
           global_cards_data[copied_internal_id].code_pointer =
-              global_cards_data[instance->original_internal_card_id].code_pointer;
+              global_cards_data[PLAYER_CARD_INSTANCE(player, card).original_internal_card_id].code_pointer;
           global_cards_data[copied_internal_id].extra_ability |= 1;
         }
       }
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
     else
     {
-      instance->number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
       kill_card(player, card, KILL_DESTROY);
     }
   }
 
   if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & 0x20000) == 0 && card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
   {
-    g_event_result = instance->dummy3;
+    g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }
 
   if (event == EVENT_CAN_ACTIVATE)
@@ -4335,7 +4322,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
   {
     change_form = 1;
     load_text("promptsX1.txt", "VESUVAN_DOPPELGANGER");
-    if ((instance->state & STATE_OUBLIETTED) == 0 &&
+    if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_OUBLIETTED) == 0 &&
         (data_card->eot_toughness & 1) != 0 &&
         data_card->info_slot != 0 &&
         global_cards_data[data_card->info_slot].code_pointer(player, card, EVENT_CAN_ACTIVATE) != 0)
@@ -4372,19 +4359,19 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
     }
     else if (change_form)
     {
-      SET_TARGET(instance->targets[0], selected_target);
-      instance->number_of_targets = 1;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       data_card->eot_toughness |= 6;
       delegate_to_copy = 0;
     }
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && parent != instance)
+  if (event == EVENT_RESOLVE_ACTIVATION && parent != &PLAYER_CARD_INSTANCE(player, card))
   {
     if (data_card != (card_instance_t *)0 && (data_card->eot_toughness & 4) != 0)
     {
-      if (C_real_validate_target(instance->targets[0].player,
-                                 instance->targets[0].card,
+      if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
+                                 PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                  (char *)0,
                                  player,
                                  2,
@@ -4393,7 +4380,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
                                  TYPE_CREATURE,
                                  TYPE_NONE,
                                  0,
-                                 get_protections_from(instance->parent_controller, instance->parent_card),
+                                 get_protections_from(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card),
                                  COLOR_TEST_0,
                                  COLOR_TEST_0,
                                  -1,
@@ -4404,11 +4391,11 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
                                  0,
                                  0))
       {
-        target_instance = &PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card);
+        target_instance = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card);
         if (global_cards_data[target_instance->internal_card_id].id == CARD_ID_VESUVAN_DOPPELGANGER)
         {
           target_data_card_location =
-              dispatch_function_to_all_cards_in_play(instance->targets[0].player, instance->targets[0].card, clone_find_data_card_callback, -1);
+              dispatch_function_to_all_cards_in_play(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, clone_find_data_card_callback, -1);
           if (target_data_card_location == -1)
           {
             source_internal_card_id = 0;
@@ -4476,12 +4463,12 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
           dispatch_event_to_single_card(g_card_on_stack_controller,
                                         g_card_on_stack,
                                         EVENT_CAST_SPELL,
-                                        1 - instance->parent_controller,
+                                        1 - PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                         -1);
           dispatch_event_to_single_card(g_card_on_stack_controller,
                                         g_card_on_stack,
                                         EVENT_RESOLVE_SPELL,
-                                        1 - instance->parent_controller,
+                                        1 - PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                         -1);
           global_cards_data[copied_internal_id].code_pointer =
               global_cards_data[parent->original_internal_card_id].code_pointer;
@@ -4493,7 +4480,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
       delegate_to_copy = 0;
     }
 
-    PLAYER_CARD_INSTANCE(instance->parent_controller, instance->parent_card).number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   if (event == EVENT_CLEANUP && data_card != (card_instance_t *)0)
@@ -4501,8 +4488,8 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
     data_card->eot_toughness &= ~2;
   }
 
-  if (parent == instance &&
-      (instance->state & STATE_INVISIBLE) == 0 &&
+  if (parent == &PLAYER_CARD_INSTANCE(player, card) &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0 &&
       delegate_to_copy &&
       data_card != (card_instance_t *)0 &&
       data_card->info_slot != 0)

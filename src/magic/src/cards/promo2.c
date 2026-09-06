@@ -149,11 +149,8 @@ int card_blaze_of_glory(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004a354a
 int card_guardian_angel(int player, int card, event_t event)
 {
-  card_instance_t *instance;
   card_instance_t *damage;
   target_t selected_target;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -206,9 +203,9 @@ int card_guardian_angel(int player, int card, event_t event)
                               1,
                               &selected_target))
     {
-      SET_TARGET(instance->targets[0], selected_target);
-      instance->number_of_targets = 1;
-      instance->info_slot = g_x_value;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
+      PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+      PLAYER_CARD_INSTANCE(player, card).info_slot = g_x_value;
     }
     else
     {
@@ -218,7 +215,7 @@ int card_guardian_angel(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    SET_TARGET(selected_target, instance->targets[0]);
+    SET_TARGET(selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(selected_target.player,
                                 selected_target.card,
                                 (char *)0,
@@ -241,9 +238,9 @@ int card_guardian_angel(int player, int card, event_t event)
                                 0))
     {
       damage = &PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card);
-      if (instance->info_slot < damage->info_slot)
+      if (PLAYER_CARD_INSTANCE(player, card).info_slot < damage->info_slot)
       {
-        damage->info_slot -= instance->info_slot;
+        damage->info_slot -= PLAYER_CARD_INSTANCE(player, card).info_slot;
       }
       else
       {
@@ -259,7 +256,7 @@ int card_guardian_angel(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_DESTROY);
   }
 
@@ -388,9 +385,6 @@ int card_natural_selection(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004a3da3
 int card_psionic_blast(int player, int card, event_t event)
 {
-  card_instance_t *instance;
-
-  instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -403,7 +397,7 @@ int card_psionic_blast(int player, int card, event_t event)
     select_damage_target(player, card, 4);
     if (player == g_other_player)
     {
-      g_ai_modifier += (3 - PLAYER_CARD_INSTANCE(instance->targets[0].player, instance->targets[0].card).toughness) * 0xc;
+      g_ai_modifier += (3 - PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).toughness) * 0xc;
     }
   }
 
@@ -413,7 +407,7 @@ int card_psionic_blast(int player, int card, event_t event)
     {
       damage_player(player, 2, player, card);
     }
-    instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 
