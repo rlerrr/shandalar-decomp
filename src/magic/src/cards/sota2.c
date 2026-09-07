@@ -7,6 +7,8 @@
 int gain_control(int player, int card);
 int coin_flip(int player, char *dialog_title, int show_dialog_if_animation_is_off);
 int card_argothian_treefolk(int player, int card, event_t event);
+int card_sea_serpent(int player, int card, event_t event);
+
 static int veteran_bodyguard_prevent_damage_callback(int source_player,
                                                      int source_card,
                                                      int player,
