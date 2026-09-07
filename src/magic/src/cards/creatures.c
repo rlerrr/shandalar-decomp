@@ -1226,7 +1226,6 @@ int card_giant_tortoise(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0048c4db
 int card_personal_incarnation(int player, int card, event_t event)
 {
-  card_instance_t *selected;
   target_t target;
   int damage_source_player;
   int max_damage;
@@ -1272,33 +1271,32 @@ int card_personal_incarnation(int player, int card, event_t event)
                                COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id, ~SUB_WALL,
                                -1, -1, 0, 0, 0, g_text_lines[0], 1, &target))
       {
-        selected = &PLAYER_CARD_INSTANCE(target.player, target.card);
-        if (selected->damage_target_player == player && selected->damage_target_card == card)
+        if (PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player == player && PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_card == card)
         {
           if (g_duel_ai_mode_state != 1)
           {
             load_text("prompts.txt", "PERSONAL_INCARNATION");
           }
-          if (selected->info_slot + PLAYER_CARD_INSTANCE(player, card).toughness < 6)
+          if (PLAYER_CARD_INSTANCE(target.player, target.card).info_slot + PLAYER_CARD_INSTANCE(player, card).damage_on_card < 6)
           {
             max_damage = 0;
           }
           else
           {
-            max_damage = selected->info_slot - (5 - PLAYER_CARD_INSTANCE(player, card).toughness);
+            max_damage = PLAYER_CARD_INSTANCE(target.player, target.card).info_slot - (5 - PLAYER_CARD_INSTANCE(player, card).damage_on_card);
           }
           damage_to_deal = choose_a_number(player, g_text_lines[1], max_damage);
-          if (damage_to_deal > selected->info_slot)
+          if (damage_to_deal > PLAYER_CARD_INSTANCE(target.player, target.card).info_slot)
           {
-            damage_to_deal = selected->info_slot;
+            damage_to_deal = PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
           }
           damage_card = damage_creature(damage_source_player, -1, damage_to_deal,
-                                        selected->damage_source_player, selected->damage_source_card);
+                                        PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player, PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card);
           if (damage_card != -1)
           {
-            PLAYER_CARD_INSTANCE(player, damage_card).display_pic_info = selected->display_pic_info;
+            PLAYER_CARD_INSTANCE(player, damage_card).display_pic_info = PLAYER_CARD_INSTANCE(target.player, target.card).display_pic_info;
             PLAYER_CARD_INSTANCE(player, card).info_slot &= ~1;
-            selected->info_slot -= damage_to_deal;
+            PLAYER_CARD_INSTANCE(target.player, target.card).info_slot -= damage_to_deal;
           }
         }
       }
@@ -1576,7 +1574,7 @@ int card_carrion_ants(int player, int card, event_t event)
       {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .info_slot &= 0xfff7ffff;
+            .info_slot &= ~STATE_ETB_THIS_TURN;
         legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                            g_card_on_stack,
                                            LEGACY_EFFECT_PUMP,
@@ -1714,7 +1712,7 @@ int card_shivan_dragon(int player, int card, event_t event)
       {
         *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                                PLAYER_CARD_INSTANCE(player, card).parent_card)
-             .info_slot &= 0xfff7ffff;
+             .info_slot &= ~STATE_ETB_THIS_TURN;
         legacy = create_legacy_effect(g_card_on_stack_controller,
                                       g_card_on_stack,
                                       LEGACY_EFFECT_PUMP,
@@ -1862,7 +1860,7 @@ int card_dragon_whelp(int player, int card, event_t event)
       {
         *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                                PLAYER_CARD_INSTANCE(player, card).parent_card)
-             .info_slot &= 0xfff7ffff;
+             .info_slot &= ~STATE_ETB_THIS_TURN;
         legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                            g_card_on_stack,
                                            LEGACY_EFFECT_PUMP,
@@ -2103,7 +2101,7 @@ int card_angry_mob(int player, int card, event_t event)
     {
       PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                            PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness &= 0xfffffffd;
+          .eot_toughness &= ~STATE_IN_PLAY;
     }
   }
 
@@ -2137,37 +2135,37 @@ int card_gaea_s_liege(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
           .eot_toughness |= 1;
       PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness &= 0xfffffffd;
+          .eot_toughness &= ~STATE_IN_PLAY;
     }
     else
     {
       PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
           .eot_toughness |= 2;
       PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness &= 0xfffffffe;
+          .eot_toughness &= ~STATE_JUST_DRAWED;
     }
   }
   else if (event == EVENT_CAN_ACTIVATE)
   {
     if ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 && real_target_available((int *)0,
-                                                                  TARGET_SCAN_DIRECT,
-                                                                  player,
-                                                                  2,
-                                                                  2,
-                                                                  TARGET_ZONE_IN_PLAY,
-                                                                  TYPE_LAND,
-                                                                  TYPE_NONE,
-                                                                  0,
-                                                                  get_protections_from(player, card),
-                                                                  0,
-                                                                  0,
-                                                                  -1,
-                                                                  -1,
-                                                                  -1,
-                                                                  -1,
-                                                                  0,
-                                                                  0,
-                                                                  0) != 0)
+                                                                                           TARGET_SCAN_DIRECT,
+                                                                                           player,
+                                                                                           2,
+                                                                                           2,
+                                                                                           TARGET_ZONE_IN_PLAY,
+                                                                                           TYPE_LAND,
+                                                                                           TYPE_NONE,
+                                                                                           0,
+                                                                                           get_protections_from(player, card),
+                                                                                           0,
+                                                                                           0,
+                                                                                           -1,
+                                                                                           -1,
+                                                                                           -1,
+                                                                                           -1,
+                                                                                           0,
+                                                                                           0,
+                                                                                           0) != 0)
     {
       return 1;
     }
@@ -2258,7 +2256,7 @@ int card_gaea_s_liege(int player, int card, event_t event)
   }
   else if ((event == EVENT_CLEANUP || event == EVENT_SHOULD_AI_PLAY) && card == g_affected_card && player == g_affected_card_controller && (PLAYER_CARD_INSTANCE(player, card).info_slot & 0x4000) != 0)
   {
-    PLAYER_CARD_INSTANCE(player, card).info_slot &= 0xffffbfff;
+    PLAYER_CARD_INSTANCE(player, card).info_slot &= ~STATE_BLOCKED;
     C_get_abilities(player, card, EVENT_POWER, -1);
     C_get_abilities(player, card, EVENT_TOUGHNESS, -1);
   }
@@ -2553,7 +2551,7 @@ int card_vampire_bats(int player, int card, event_t event)
       {
         PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .info_slot &= 0xfff7ffff;
+            .info_slot &= ~STATE_ETB_THIS_TURN;
         legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                            g_card_on_stack,
                                            LEGACY_EFFECT_PUMP,
@@ -2589,17 +2587,12 @@ int card_vampire_bats(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00491883
 int card_frozen_shade(int player, int card, event_t event)
 {
-  union
-  {
-    int legacy_effect_card;
-    card_instance_t *instance;
-  } u;
+  int legacy_effect_card;
 
   if (((event == EVENT_CAST_SPELL) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
-    u.instance = &PLAYER_CARD_INSTANCE(player, card);
-    u.instance->eot_toughness = 0;
-    u.instance->info_slot = u.instance->eot_toughness;
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
     return 0;
   }
 
@@ -2627,13 +2620,13 @@ int card_frozen_shade(int player, int card, event_t event)
       if (player == g_current_player)
       {
         charge_mana(player, COLOR_BLACK, -1);
-        if (g_x_value < 1)
+        if (g_x_value > 0)
         {
-          g_spell_fizzled = 1;
+          PLAYER_CARD_INSTANCE(player, card).eot_toughness = g_x_value;
         }
         else
         {
-          PLAYER_CARD_INSTANCE(player, card).eot_toughness = g_x_value;
+          g_spell_fizzled = 1;
         }
       }
       else
@@ -2682,17 +2675,17 @@ int card_frozen_shade(int player, int card, event_t event)
       {
         *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                                PLAYER_CARD_INSTANCE(player, card).parent_card)
-             .info_slot &= 0xfff7ffff;
-        u.legacy_effect_card = create_legacy_effect(g_card_on_stack_controller,
-                                                    g_card_on_stack,
-                                                    LEGACY_EFFECT_PUMP,
-                                                    g_card_on_stack_controller,
-                                                    g_card_on_stack);
-        if (u.legacy_effect_card != -1)
+             .info_slot &= ~STATE_ETB_THIS_TURN;
+        legacy_effect_card = create_legacy_effect(g_card_on_stack_controller,
+                                                  g_card_on_stack,
+                                                  LEGACY_EFFECT_PUMP,
+                                                  g_card_on_stack_controller,
+                                                  g_card_on_stack);
+        if (legacy_effect_card != -1)
         {
-          PLAYER_CARD_INSTANCE(player, u.legacy_effect_card).counter_power = 1;
-          PLAYER_CARD_INSTANCE(player, u.legacy_effect_card).counter_toughness = 1;
-          *(unsigned int *)&PLAYER_CARD_INSTANCE(player, u.legacy_effect_card).info_slot |= 0x80000;
+          PLAYER_CARD_INSTANCE(player, legacy_effect_card).counter_power = 1;
+          PLAYER_CARD_INSTANCE(player, legacy_effect_card).counter_toughness = 1;
+          *(unsigned int *)&PLAYER_CARD_INSTANCE(player, legacy_effect_card).info_slot |= 0x80000;
         }
       }
     }
@@ -2721,9 +2714,8 @@ int card_frozen_shade(int player, int card, event_t event)
 
   if ((event == EVENT_CLEANUP) || (event == EVENT_SHOULD_AI_PLAY))
   {
-    u.instance = &PLAYER_CARD_INSTANCE(player, card);
-    u.instance->eot_toughness = 0;
-    u.instance->info_slot = u.instance->eot_toughness;
+    PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).eot_toughness;
   }
 
   return 0;
@@ -2968,7 +2960,7 @@ int card_wall_of_water(int player, int card, event_t event)
       {
         *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                                PLAYER_CARD_INSTANCE(player, card).parent_card)
-             .info_slot &= 0xfff7ffff;
+             .info_slot &= ~STATE_ETB_THIS_TURN;
         legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                            g_card_on_stack,
                                            LEGACY_EFFECT_PUMP,
@@ -4017,30 +4009,29 @@ int card_stone_giant(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00495df9
 int card_dwarven_warriors(int player, int card, event_t event)
 {
-  card_instance_t *parent;
   target_t target;
 
   if (event == EVENT_CAN_ACTIVATE)
   {
     if ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 && real_target_available((int *)0,
-                                                                  TARGET_SCAN_DIRECT,
-                                                                  player,
-                                                                  2,
-                                                                  2,
-                                                                  TARGET_ZONE_IN_PLAY,
-                                                                  TYPE_CREATURE,
-                                                                  TYPE_NONE,
-                                                                  0,
-                                                                  get_protections_from(player, card),
-                                                                  COLOR_TEST_0,
-                                                                  COLOR_TEST_0,
-                                                                  -1,
-                                                                  -1,
-                                                                  0x2002,
-                                                                  0xffffffff,
-                                                                  0,
-                                                                  0,
-                                                                  0))
+                                                                                           TARGET_SCAN_DIRECT,
+                                                                                           player,
+                                                                                           2,
+                                                                                           2,
+                                                                                           TARGET_ZONE_IN_PLAY,
+                                                                                           TYPE_CREATURE,
+                                                                                           TYPE_NONE,
+                                                                                           0,
+                                                                                           get_protections_from(player, card),
+                                                                                           COLOR_TEST_0,
+                                                                                           COLOR_TEST_0,
+                                                                                           -1,
+                                                                                           -1,
+                                                                                           0x2002,
+                                                                                           0xffffffff,
+                                                                                           0,
+                                                                                           0,
+                                                                                           0))
     {
       return 1;
     }
@@ -4115,8 +4106,7 @@ int card_dwarven_warriors(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
-    parent->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   return 0;
@@ -4976,13 +4966,13 @@ int card_leviathan(int player, int card, event_t event)
 
   if (event == EVENT_UNTAP_PHASE)
   {
-    if (!TENTATIVE_sacrifice_leviathan_lands(player, card, 1))
+    if (TENTATIVE_sacrifice_leviathan_lands(player, card, 1))
     {
-      g_event_result |= 1;
+      PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_TAPPED;
     }
     else
     {
-      PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_TAPPED;
+      g_event_result |= 1;
     }
     return 0;
   }
@@ -5006,11 +4996,7 @@ int card_leviathan(int player, int card, event_t event)
       g_trigger_cause_controller == player &&
       g_trigger_cause == card)
   {
-    if (g_basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLUE)] < 2)
-    {
-      g_combat_assignment_cancelled = 1;
-    }
-    else
+    if (g_basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLUE)] >= 2)
     {
       if (event == EVENT_TRIGGER)
       {
@@ -5028,6 +5014,10 @@ int card_leviathan(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
         }
       }
+    }
+    else
+    {
+      g_combat_assignment_cancelled = 1;
     }
     return 0;
   }
@@ -6269,7 +6259,7 @@ int card_lord_of_the_pit(int player, int card, event_t event)
 
       creature_to_sacrifice = choose_creature_to_sacrifice(player);
 
-      PLAYER_CARD_INSTANCE(player, card).state &= 0xffefffff;
+      PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_CANNOT_TARGET;
       if (creature_to_sacrifice != -1)
       {
         kill_card(player, creature_to_sacrifice, KILL_SACRIFICE);
@@ -6389,7 +6379,7 @@ int card_nether_shadow(int player, int card, event_t event)
   {
     if (player == g_affected_card_controller)
     {
-      *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).state &= 0xfffcffff;
+      *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_SUMMONSICK_BOTH;
     }
   }
 
@@ -6416,6 +6406,8 @@ int card_nether_shadow(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(hand_player, hand_card).display_pic_info =
           global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].id;
     }
+
+    return 0;
   }
 
   return 0;
@@ -6665,24 +6657,24 @@ int card_ley_druid(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 && real_target_available((int *)0,
-                                                                     TARGET_SCAN_DIRECT,
-                                                                     player,
-                                                                     2,
-                                                                     2,
-                                                                     0x200,
-                                                                     TYPE_LAND,
-                                                                     0,
-                                                                     0,
-                                                                     get_protections_from(player, card),
-                                                                     0,
-                                                                     0,
-                                                                     -1,
-                                                                     -1,
-                                                                     -1,
-                                                                     -1,
-                                                                     0,
-                                                                     0,
-                                                                     0) != 0;
+                                                                                              TARGET_SCAN_DIRECT,
+                                                                                              player,
+                                                                                              2,
+                                                                                              2,
+                                                                                              0x200,
+                                                                                              TYPE_LAND,
+                                                                                              0,
+                                                                                              0,
+                                                                                              get_protections_from(player, card),
+                                                                                              0,
+                                                                                              0,
+                                                                                              -1,
+                                                                                              -1,
+                                                                                              -1,
+                                                                                              -1,
+                                                                                              0,
+                                                                                              0,
+                                                                                              0) != 0;
   }
 
   if (event == 0x90)
@@ -6991,9 +6983,7 @@ int card_sisters_of_the_flame(int player, int card, event_t event)
     return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0;
   }
 
-  if (event == EVENT_ACTIVATE &&
-      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
-      has_mana(player, COLOR_BLUE, 1))
+  if (event == EVENT_ACTIVATE && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
   {
     undeclare_mana_available_and_produce_it(player, COLOR_RED, 1);
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
@@ -7225,7 +7215,7 @@ int card_radjan_spirit(int player, int card, event_t event)
     {
       legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                          g_card_on_stack,
-                                         g_duel_generated_internal_card_id_03,
+                                         g_duel_generated_internal_card_id_07,
                                          target.player,
                                          target.card);
       if (legacy_card != -1)

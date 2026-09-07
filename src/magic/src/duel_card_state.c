@@ -418,12 +418,12 @@ int has_effect_source_type(int player, int card, unsigned int flags)
 {
   struct
   {
-    card_instance_t *instance;
     int source_internal_card_id;
+    card_instance_t *instance;
     int found;
     int test_card;
-    int source_player;
     int source_card;
+    int source_player;
     int test_player;
   } s;
 
@@ -432,8 +432,9 @@ int has_effect_source_type(int player, int card, unsigned int flags)
     return 0;
   }
 
+  s.test_player = 0;
   s.found = 0;
-  for (s.test_player = 0; s.test_player < 2 && s.found == 0; ++s.test_player)
+  for (; s.test_player < 2 && s.found == 0; ++s.test_player)
   {
     for (s.test_card = 0; s.test_card < g_active_cards_count[s.test_player] && s.found == 0; ++s.test_card)
     {
@@ -450,10 +451,8 @@ int has_effect_source_type(int player, int card, unsigned int flags)
         if (PLAYER_CARD_INSTANCE(s.source_player, s.source_card).internal_card_id != -1 &&
             global_cards_data[PLAYER_CARD_INSTANCE(s.source_player, s.source_card).internal_card_id].id == g_legacy_display_internal_card_id)
         {
-          s.source_player =
-              PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(s.source_player, s.source_card).damage_source_player,
-                                   s.source_card)
-                  .info_slot;
+          s.source_player = (int)(char)PLAYER_CARD_INSTANCE(s.source_player, s.source_card).damage_source_player;
+          s.source_player = PLAYER_CARD_INSTANCE(s.source_player, s.source_card).damage_source_card;
         }
 
         if (PLAYER_CARD_INSTANCE(s.source_player, s.source_card).internal_card_id != -1)

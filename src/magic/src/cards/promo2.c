@@ -53,24 +53,24 @@ int card_blaze_of_glory(int player, int card, event_t event)
   if (event == EVENT_CAN_CAST)
   {
     return (g_current_phase == PHASE_BEFORE_BLOCKING && real_target_available((int *)0,
-                                                                            TARGET_SCAN_DIRECT,
-                                                                            player,
-                                                                            1 - g_current_player,
-                                                                            1 - g_current_player,
-                                                                            0x200,
-                                                                            TYPE_CREATURE,
-                                                                            0,
-                                                                            0,
-                                                                            get_protections_from(player, card),
-                                                                            0,
-                                                                            0,
-                                                                            -1,
-                                                                            -1,
-                                                                            -1,
-                                                                            -1,
-                                                                            0,
-                                                                            0,
-                                                                            0))
+                                                                              TARGET_SCAN_DIRECT,
+                                                                              player,
+                                                                              1 - g_current_player,
+                                                                              1 - g_current_player,
+                                                                              0x200,
+                                                                              TYPE_CREATURE,
+                                                                              0,
+                                                                              0,
+                                                                              get_protections_from(player, card),
+                                                                              0,
+                                                                              0,
+                                                                              -1,
+                                                                              -1,
+                                                                              -1,
+                                                                              -1,
+                                                                              0,
+                                                                              0,
+                                                                              0))
                ? 1
                : 0;
   }
@@ -149,59 +149,56 @@ int card_blaze_of_glory(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004a354a
 int card_guardian_angel(int player, int card, event_t event)
 {
-  card_instance_t *damage;
   target_t selected_target;
 
   if (event == EVENT_CAN_CAST)
   {
-    if ((g_land_can_be_played & 4) == 0 || !real_target_available((int *)0,
-                                                          TARGET_SCAN_DIRECT,
-                                                          player,
-                                                          2,
-                                                          2,
-                                                          TARGET_ZONE_IN_PLAY,
-                                                          TYPE_NONE,
-                                                          TYPE_NONE,
-                                                          0,
-                                                          0,
-                                                          COLOR_TEST_0,
-                                                          COLOR_TEST_0,
-                                                          g_damage_card_internal_card_id,
-                                                          ~SUB_WALL,
-                                                          -1,
-                                                          -1,
-                                                          0,
-                                                          0,
-                                                          0))
-    {
-      return 0;
-    }
-    return 99;
+    return ((g_land_can_be_played & 4) != 0 && real_target_available((int *)0,
+                                                                     TARGET_SCAN_DIRECT,
+                                                                     player,
+                                                                     2,
+                                                                     2,
+                                                                     TARGET_ZONE_IN_PLAY,
+                                                                     TYPE_NONE,
+                                                                     TYPE_NONE,
+                                                                     0,
+                                                                     0,
+                                                                     COLOR_TEST_0,
+                                                                     COLOR_TEST_0,
+                                                                     g_damage_card_internal_card_id,
+                                                                     ~SUB_WALL,
+                                                                     -1,
+                                                                     -1,
+                                                                     0,
+                                                                     0,
+                                                                     0))
+               ? 99
+               : 0;
   }
 
   if (((event == EVENT_CAST_SPELL) && (card == g_affected_card)) && (player == g_affected_card_controller))
   {
     load_text("promptsX1.txt", "GUARDIAN_ANGLE");
     if (C_real_select_target(player,
-                              2,
-                              2,
-                              TARGET_ZONE_IN_PLAY,
-                              TYPE_NONE,
-                              TYPE_NONE,
-                              0,
-                              0,
-                              COLOR_TEST_0,
-                              COLOR_TEST_0,
-                              g_damage_card_internal_card_id,
-                              ~SUB_WALL,
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              g_text_lines[0],
-                              1,
-                              &selected_target))
+                             2,
+                             2,
+                             TARGET_ZONE_IN_PLAY,
+                             TYPE_NONE,
+                             TYPE_NONE,
+                             0,
+                             0,
+                             COLOR_TEST_0,
+                             COLOR_TEST_0,
+                             g_damage_card_internal_card_id,
+                             ~SUB_WALL,
+                             -1,
+                             -1,
+                             0,
+                             0,
+                             0,
+                             g_text_lines[0],
+                             1,
+                             &selected_target))
     {
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], selected_target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
@@ -217,40 +214,39 @@ int card_guardian_angel(int player, int card, event_t event)
   {
     SET_TARGET(selected_target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(selected_target.player,
-                                selected_target.card,
-                                (char *)0,
-                                player,
-                                2,
-                                2,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_NONE,
-                                TYPE_NONE,
-                                0,
-                                0,
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                g_damage_card_internal_card_id,
-                                ~SUB_WALL,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0))
+                               selected_target.card,
+                               (char *)0,
+                               player,
+                               2,
+                               2,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_NONE,
+                               TYPE_NONE,
+                               0,
+                               0,
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               g_damage_card_internal_card_id,
+                               ~SUB_WALL,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0))
     {
-      damage = &PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card);
-      if (PLAYER_CARD_INSTANCE(player, card).info_slot < damage->info_slot)
+      if (PLAYER_CARD_INSTANCE(player, card).info_slot < PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).info_slot)
       {
-        damage->info_slot -= PLAYER_CARD_INSTANCE(player, card).info_slot;
+        PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).info_slot -= PLAYER_CARD_INSTANCE(player, card).info_slot;
       }
       else
       {
-        damage->info_slot = 0;
+        PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).info_slot = 0;
       }
       create_legacy_effect(player,
                            card,
                            g_duel_generated_internal_card_id_24,
-                           (int)damage->damage_source_player,
-                           damage->damage_source_card);
+                           (int)PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).damage_target_player,
+                           PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).damage_target_card);
     }
     else
     {
@@ -542,7 +538,9 @@ int card_reverse_polarity(int player, int card, event_t event)
         {
           gain_life(player,
                     g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
-                                         [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player].amount * 2 +
+                                         [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player]
+                                             .amount *
+                            2 +
                         PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot);
           PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
         }
@@ -628,18 +626,19 @@ int card_artifact_blast(int player, int card, event_t event)
   if (event == EVENT_CAN_CAST)
   {
     load_recorded_action_target(0);
-    if (g_current_spell_player == -1)
+    if (g_current_spell_player != -1)
+    {
+      return C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0,
+                                    player, 2, 2, 0, TYPE_ARTIFACT, TYPE_NONE, 0, 0,
+                                    COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1,
+                                    TARGET_SPECIAL_SPELL_ON_STACK, 0, 0)
+                 ? 99
+                 : 0;
+    }
+    else
     {
       return 0;
     }
-    if (C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0,
-                               player, 2, 2, 0, TYPE_ARTIFACT, TYPE_NONE, 0, 0,
-                               COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1,
-                               TARGET_SPECIAL_SPELL_ON_STACK, 0, 0))
-    {
-      return 99;
-    }
-    return 0;
   }
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
@@ -666,7 +665,9 @@ int card_artifact_blast(int player, int card, event_t event)
                                TARGET_SPECIAL_SPELL_ON_STACK, 0, 0) != 0)
     {
       if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                PLAYER_CARD_INSTANCE(player, card).targets[0].card).state & STATE_INVISIBLE) != 0)
+                                PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+               .state &
+           STATE_INVISIBLE) != 0)
       {
         kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                   PLAYER_CARD_INSTANCE(player, card).targets[0].card, KILL_BURY);
@@ -707,7 +708,8 @@ int card_sacrifice(int player, int card, event_t event)
   if (event == EVENT_RESOLVE_SPELL)
   {
     iid = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                               PLAYER_CARD_INSTANCE(player, card).targets[0].card).original_internal_card_id;
+                               PLAYER_CARD_INSTANCE(player, card).targets[0].card)
+              .original_internal_card_id;
     amount = (int)(char)global_cards_data[iid].cc[0] + (int)(char)global_cards_data[iid].cc[1];
     if ((int)(char)global_cards_data[iid].cc[1] == -1)
     {

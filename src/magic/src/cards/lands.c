@@ -188,25 +188,25 @@ int card_oasis(int player, int card, event_t event)
     {
       load_text("prompts.txt", "OASIS");
       if (C_real_select_target(player,
-                                2,
-                                2,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_NONE,
-                                TYPE_NONE,
-                                0,
-                                0,
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                g_damage_card_internal_card_id,
-                                -1,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                g_text_lines[0],
-                                1,
-                                &target))
+                               2,
+                               2,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_NONE,
+                               TYPE_NONE,
+                               0,
+                               0,
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               g_damage_card_internal_card_id,
+                               -1,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               g_text_lines[0],
+                               1,
+                               &target))
       {
         g_spell_fizzled = 1;
         done = 1;
@@ -376,25 +376,25 @@ int card_strip_mine(int player, int card, event_t event)
   {
     SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
     if (C_real_validate_target(s.target.player,
-                                s.target.card,
-                                (char *)0,
-                                player,
-                                2,
-                                2,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_LAND,
-                                TYPE_NONE,
-                                0,
-                                get_protections_from(player, card),
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                -1,
-                                -1,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0) != 0)
+                               s.target.card,
+                               (char *)0,
+                               player,
+                               2,
+                               2,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_LAND,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               -1,
+                               -1,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0) != 0)
     {
       kill_card(s.target.player, s.target.card, KILL_DESTROY);
     }
@@ -404,11 +404,17 @@ int card_strip_mine(int player, int card, event_t event)
     }
 
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
     return 0;
   }
 
-  if (event == EVENT_UNTAP_PHASE || event == EVENT_RESOLVE_SPELL)
+  if (event == EVENT_UNTAP_PHASE)
+  {
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
+  }
+
+  if (event == EVENT_RESOLVE_SPELL)
   {
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
@@ -534,7 +540,6 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
     int legacy_card;
     unsigned int saved_no_auto_tapping;
   } s;
-  card_instance_t *parent;
 
   if (event == EVENT_COUNT_MANA)
   {
@@ -692,25 +697,25 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
         load_text("prompts.txt", is_assembly_worker ? "ASSEMBLY_WORKER" : "MISHRAS_FACTORY");
       }
       if (C_real_select_target(player,
-                                2,
-                                player,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_NONE,
-                                TYPE_NONE,
-                                0,
-                                get_protections_from(player, card),
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
-                                -1,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                g_text_lines[0],
-                                1,
-                                &s.target))
+                               2,
+                               player,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_NONE,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
+                               -1,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               g_text_lines[0],
+                               1,
+                               &s.target))
       {
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         undeclare_mana_available(player, COLOR_COLORLESS, 1);
@@ -737,25 +742,37 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
-    if (parent->internal_card_id == -1 || PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
+    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                             PLAYER_CARD_INSTANCE(player, card).parent_card)
+                .internal_card_id == -1 ||
+        PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
     {
       return 0;
     }
 
     if (PLAYER_CARD_INSTANCE(player, card).info_slot == 1)
     {
-      parent->internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
-      parent->dummy3 = parent->internal_card_id;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .dummy3 = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+                        .internal_card_id;
       ++g_duel_summary.creature_counts[PLAYER_CARD_INSTANCE(player, card).parent_controller];
       ++g_duel_summary.artifact_counts[PLAYER_CARD_INSTANCE(player, card).parent_controller];
-      parent->state |= STATE_IN_PLAY;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .state |= STATE_IN_PLAY;
       dispatch_event_to_single_card(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     PLAYER_CARD_INSTANCE(player, card).parent_card,
                                     EVENT_CAST_SPELL,
                                     1 - PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     -1);
-      parent->state |= STATE_SUMMONSICK;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                           PLAYER_CARD_INSTANCE(player, card).parent_card)
+          .state |= STATE_SUMMONSICK;
       dispatch_event_to_single_card(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     PLAYER_CARD_INSTANCE(player, card).parent_card,
                                     EVENT_RESOLVE_SPELL,
@@ -766,25 +783,25 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
     {
       SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
       if (C_real_validate_target(s.target.player,
-                                  s.target.card,
-                                  (char *)0,
-                                  player,
-                                  2,
-                                  2,
-                                  TARGET_ZONE_IN_PLAY,
-                                  TYPE_NONE,
-                                  TYPE_NONE,
-                                  0,
-                                  get_protections_from(player, card),
-                                  COLOR_TEST_0,
-                                  COLOR_TEST_0,
-                                  find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
-                                  -1,
-                                  -1,
-                                  -1,
-                                  0,
-                                  0,
-                                  0))
+                                 s.target.card,
+                                 (char *)0,
+                                 player,
+                                 2,
+                                 2,
+                                 TARGET_ZONE_IN_PLAY,
+                                 TYPE_NONE,
+                                 TYPE_NONE,
+                                 0,
+                                 get_protections_from(player, card),
+                                 COLOR_TEST_0,
+                                 COLOR_TEST_0,
+                                 find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
+                                 -1,
+                                 -1,
+                                 -1,
+                                 0,
+                                 0,
+                                 0))
       {
         s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                              g_card_on_stack,
@@ -802,7 +819,9 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
         g_spell_fizzled = 1;
       }
     }
-    parent->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
     return 0;
   }
 
@@ -991,25 +1010,25 @@ int card_mishra_s_factory(int player, int card, event_t event)
         load_text("prompts.txt", "MISHRAS_FACTORY");
       }
       if (C_real_select_target(player,
-                                2,
-                                player,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_NONE,
-                                TYPE_NONE,
-                                0,
-                                get_protections_from(player, card),
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
-                                -1,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                g_text_lines[0],
-                                1,
-                                &s.target))
+                               2,
+                               player,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_NONE,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
+                               -1,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               g_text_lines[0],
+                               1,
+                               &s.target))
       {
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         undeclare_mana_available(player, COLOR_COLORLESS, 1);
@@ -1038,7 +1057,7 @@ int card_mishra_s_factory(int player, int card, event_t event)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-              .internal_card_id != -1 &&
+                .internal_card_id != -1 &&
         PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       s.choice = PLAYER_CARD_INSTANCE(player, card).info_slot;
@@ -1075,25 +1094,25 @@ int card_mishra_s_factory(int player, int card, event_t event)
       {
         SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
         if (C_real_validate_target(s.target.player,
-                                    s.target.card,
-                                    (char *)0,
-                                    player,
-                                    2,
-                                    2,
-                                    TARGET_ZONE_IN_PLAY,
-                                    TYPE_NONE,
-                                    TYPE_NONE,
-                                    0,
-                                    get_protections_from(player, card),
-                                    COLOR_TEST_0,
-                                    COLOR_TEST_0,
-                                    find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
-                                    -1,
-                                    -1,
-                                    -1,
-                                    0,
-                                    0,
-                                    0))
+                                   s.target.card,
+                                   (char *)0,
+                                   player,
+                                   2,
+                                   2,
+                                   TARGET_ZONE_IN_PLAY,
+                                   TYPE_NONE,
+                                   TYPE_NONE,
+                                   0,
+                                   get_protections_from(player, card),
+                                   COLOR_TEST_0,
+                                   COLOR_TEST_0,
+                                   find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
+                                   -1,
+                                   -1,
+                                   -1,
+                                   0,
+                                   0,
+                                   0))
         {
           s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                                g_card_on_stack,
@@ -1335,25 +1354,25 @@ int card_assembly_worker(int player, int card, event_t event)
         load_text("prompts.txt", "ASSEMBLY_WORKER");
       }
       if (C_real_select_target(player,
-                                2,
-                                player,
-                                TARGET_ZONE_IN_PLAY,
-                                TYPE_NONE,
-                                TYPE_NONE,
-                                0,
-                                get_protections_from(player, card),
-                                COLOR_TEST_0,
-                                COLOR_TEST_0,
-                                find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
-                                -1,
-                                -1,
-                                -1,
-                                0,
-                                0,
-                                0,
-                                g_text_lines[0],
-                                1,
-                                &s.target))
+                               2,
+                               player,
+                               TARGET_ZONE_IN_PLAY,
+                               TYPE_NONE,
+                               TYPE_NONE,
+                               0,
+                               get_protections_from(player, card),
+                               COLOR_TEST_0,
+                               COLOR_TEST_0,
+                               find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
+                               -1,
+                               -1,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               g_text_lines[0],
+                               1,
+                               &s.target))
       {
         PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         undeclare_mana_available(player, COLOR_COLORLESS, 1);
@@ -1382,7 +1401,7 @@ int card_assembly_worker(int player, int card, event_t event)
   {
     if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                              PLAYER_CARD_INSTANCE(player, card).parent_card)
-              .internal_card_id != -1 &&
+                .internal_card_id != -1 &&
         PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       s.choice = PLAYER_CARD_INSTANCE(player, card).info_slot;
@@ -1419,25 +1438,25 @@ int card_assembly_worker(int player, int card, event_t event)
       {
         SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
         if (C_real_validate_target(s.target.player,
-                                    s.target.card,
-                                    (char *)0,
-                                    player,
-                                    2,
-                                    2,
-                                    TARGET_ZONE_IN_PLAY,
-                                    TYPE_NONE,
-                                    TYPE_NONE,
-                                    0,
-                                    get_protections_from(player, card),
-                                    COLOR_TEST_0,
-                                    COLOR_TEST_0,
-                                    find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
-                                    -1,
-                                    -1,
-                                    -1,
-                                    0,
-                                    0,
-                                    0))
+                                   s.target.card,
+                                   (char *)0,
+                                   player,
+                                   2,
+                                   2,
+                                   TARGET_ZONE_IN_PLAY,
+                                   TYPE_NONE,
+                                   TYPE_NONE,
+                                   0,
+                                   get_protections_from(player, card),
+                                   COLOR_TEST_0,
+                                   COLOR_TEST_0,
+                                   find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER),
+                                   -1,
+                                   -1,
+                                   -1,
+                                   0,
+                                   0,
+                                   0))
         {
           s.legacy_card = create_legacy_effect(g_card_on_stack_controller,
                                                g_card_on_stack,

@@ -189,10 +189,7 @@ int card_aswan_jaguar(int player, int card, event_t event)
     target_t target;
     int selected_monster;
     int saved_event_result;
-    card_instance_t *instance;
   } s;
-
-  s.instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_RESOLVE_SPELL)
   {
@@ -205,13 +202,13 @@ int card_aswan_jaguar(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     if (!is_animated_and_sick(player, card) &&
-        (s.instance->state & STATE_TAPPED) == 0 &&
+        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
         has_mana(player, COLOR_GREEN, 2) != 0 &&
         real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY,
                               TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
                               COLOR_TEST_0, COLOR_TEST_0, -1,
-                              PLAYER_CARD_INSTANCE((int)s.instance->damage_source_player,
-                                                   s.instance->damage_source_card).info_slot,
+                              PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
+                                                   PLAYER_CARD_INSTANCE(player, card).damage_source_card).info_slot,
                               -1, -1, TARGET_SPECIAL_0x10, 0, 0) != 0)
     {
       return 1;
@@ -224,10 +221,10 @@ int card_aswan_jaguar(int player, int card, event_t event)
   else
   {
     if (event == EVENT_ACTIVATE &&
-        (s.instance->state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0 &&
+        (PLAYER_CARD_INSTANCE(player, card).state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0 &&
         aswan_jaguar_target_available(player, card,
-                                      PLAYER_CARD_INSTANCE((int)s.instance->damage_source_player,
-                                                           s.instance->damage_source_card).info_slot) != 0)
+                                      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
+                                                           PLAYER_CARD_INSTANCE(player, card).damage_source_card).info_slot) != 0)
     {
       charge_mana(player, COLOR_GREEN, 2);
       if (g_spell_fizzled != 1)
@@ -236,14 +233,14 @@ int card_aswan_jaguar(int player, int card, event_t event)
         if (C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE,
                                  0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                  -1,
-                                 PLAYER_CARD_INSTANCE((int)s.instance->damage_source_player,
-                                                      s.instance->damage_source_card).info_slot,
+                                 PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
+                                                      PLAYER_CARD_INSTANCE(player, card).damage_source_card).info_slot,
                                  -1, -1, TARGET_SPECIAL_0x10, 0, 0, g_text_lines[0], 1, &s.target))
         {
-          SET_TARGET(s.instance->targets[0], s.target);
-          s.instance->number_of_targets = 1;
+          SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
+          PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           s.selected_monster = *(int *)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id].id].subtype;
-          s.instance->state |= STATE_TAPPED;
+          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
         }
         else
         {
@@ -254,25 +251,25 @@ int card_aswan_jaguar(int player, int card, event_t event)
 
     if (event == EVENT_RESOLVE_ACTIVATION)
     {
-      if (C_real_validate_target(s.instance->targets[0].player, s.instance->targets[0].card,
+      if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                  (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                  TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
                                  COLOR_TEST_0, COLOR_TEST_0, -1,
-                                 PLAYER_CARD_INSTANCE((int)s.instance->damage_source_player,
-                                                      s.instance->damage_source_card).info_slot,
+                                 PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
+                                                      PLAYER_CARD_INSTANCE(player, card).damage_source_card).info_slot,
                                  -1, -1, TARGET_SPECIAL_0x10, 0, 0))
       {
         if (g_duel_ai_mode_state != 1)
         {
           play_sound_effect(0x2e);
         }
-        kill_card(s.instance->targets[0].player, s.instance->targets[0].card, KILL_BURY);
+        kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, KILL_BURY);
       }
       else
       {
         g_spell_fizzled = 1;
       }
-      PLAYER_CARD_INSTANCE(s.instance->parent_controller, s.instance->parent_card).number_of_targets = 0;
+      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
     }
   }
 
@@ -430,10 +427,7 @@ int card_faerie_dragon(int player, int card, event_t event)
     int candidate_count;
     int random_index;
     target_t candidates[300];
-    card_instance_t *instance;
   } s;
-
-  s.instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_ACTIVATE)
   {
@@ -455,11 +449,11 @@ int card_faerie_dragon(int player, int card, event_t event)
     {
       if ((g_duel_network_flags & 2) == 0)
       {
-        s.instance->info_slot = internal_rand(0x14);
+        PLAYER_CARD_INSTANCE(player, card).info_slot = internal_rand(0x14);
       }
       else
       {
-        s.instance->info_slot = network_random(player, 0x14);
+        PLAYER_CARD_INSTANCE(player, card).info_slot = network_random(player, 0x14);
       }
 
       s.candidate_count = choose_orcish_catapult_targets(player, card, s.candidates);
@@ -477,15 +471,15 @@ int card_faerie_dragon(int player, int card, event_t event)
         {
           s.random_index = network_random(player, s.candidate_count);
         }
-        s.instance->targets[0] = s.candidates[s.random_index];
-        s.instance->number_of_targets = 1;
+        PLAYER_CARD_INSTANCE(player, card).targets[0] = s.candidates[s.random_index];
+        PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
     }
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && s.instance->number_of_targets != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && PLAYER_CARD_INSTANCE(player, card).number_of_targets != 0)
   {
-    faerie_dragon_apply_effect(player, card, s.instance->info_slot);
+    faerie_dragon_apply_effect(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot);
   }
 
   return 0;
@@ -502,8 +496,6 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
   int current_player;
   int current_card;
   int amount;
-  card_instance_t *target;
-  card_instance_t *legacy;
 
   if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                              (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
@@ -512,7 +504,6 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
   {
     target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-    target = &PLAYER_CARD_INSTANCE(target_player, target_card);
     legacy_card = -1;
 
     if (effect_index >= 0 && effect_index < 0x14 && effect_index != 0xd && effect_index != 1)
@@ -533,15 +524,14 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_0f, target_player, target_card);
         if (legacy_card != -1)
         {
-          legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
-          legacy->info_slot = 0x80;
-          legacy->counter_power = target->power;
-          legacy->token_status |= 0x4000;
+          PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x80;
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = PLAYER_CARD_INSTANCE(target_player, target_card).power;
+          PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x4000;
         }
         break;
 
       case 1:
-        if (target->power < 3)
+        if (PLAYER_CARD_INSTANCE(target_player, target_card).power < 3)
         {
           load_text("prompts.txt", "FAERIEDRAGON_TAWNOSWAND");
           sprintf(dialog, "\n%s", g_text_lines[0]);
@@ -565,10 +555,9 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, LEGACY_EFFECT_PUMP, target_player, target_card);
         if (legacy_card != -1)
         {
-          legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
-          legacy->counter_power = 4;
-          amount = ClampIntToRange(4, 0, target->toughness - 1);
-          legacy->counter_toughness = -amount;
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = 4;
+          amount = ClampIntToRange(4, 0, PLAYER_CARD_INSTANCE(target_player, target_card).toughness - 1);
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = -amount;
         }
         break;
 
@@ -597,7 +586,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         {
           amount = get_sleighted_color(player, card, COLOR_BLUE);
         }
-        target->color = (char)(1 << ((unsigned char)amount));
+        PLAYER_CARD_INSTANCE(target_player, target_card).color = (char)(1 << ((unsigned char)amount));
         break;
 
       case 6:
@@ -608,9 +597,8 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_internal_card_id_03, target_player, target_card);
         if (legacy_card != -1)
         {
-          legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
-          legacy->regen_status = 0;
-          legacy->info_slot = 0x20;
+          PLAYER_CARD_INSTANCE(player, legacy_card).regen_status = 0;
+          PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x20;
         }
         break;
 
@@ -618,9 +606,8 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, LEGACY_EFFECT_PUMP, target_player, target_card);
         if (legacy_card != -1)
         {
-          legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
-          legacy->counter_power = 3;
-          legacy->counter_toughness = 3;
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = 3;
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = 3;
         }
         break;
 
@@ -630,7 +617,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         {
           PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x40;
         }
-        target->regen_status = 0x8000000;
+        PLAYER_CARD_INSTANCE(target_player, target_card).regen_status = 0x8000000;
         break;
 
       case 12:
@@ -639,7 +626,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         {
           PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x800000;
         }
-        target->regen_status = 0x8000000;
+        PLAYER_CARD_INSTANCE(target_player, target_card).regen_status = 0x8000000;
         break;
 
       case 13:
@@ -658,7 +645,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         }
         else
         {
-          target->state &= ~STATE_TAPPED;
+          PLAYER_CARD_INSTANCE(target_player, target_card).state &= ~STATE_TAPPED;
         }
         if (g_duel_ai_mode_state != 1)
         {
@@ -670,9 +657,8 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, LEGACY_EFFECT_PUMP, target_player, target_card);
         if (legacy_card != -1)
         {
-          legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
-          legacy->counter_power = -2;
-          legacy->counter_toughness = 0;
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = -2;
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = 0;
         }
         break;
 
@@ -701,10 +687,9 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
         legacy_card = create_legacy_effect(g_card_on_stack_controller, g_card_on_stack, g_duel_generated_iid_1b, target_player, target_card);
         if (legacy_card != -1)
         {
-          legacy = &PLAYER_CARD_INSTANCE(player, legacy_card);
-          legacy->token_status |= 0x1000000;
-          legacy->counter_power = -(global_cards_data[target->internal_card_id].power & 0xbfff);
-          legacy->counter_toughness = 2 - (global_cards_data[target->internal_card_id].toughness & 0xbfff);
+          PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= 0x1000000;
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = -(global_cards_data[PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id].power & 0xbfff);
+          PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = 2 - (global_cards_data[PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id].toughness & 0xbfff);
         }
         break;
 
@@ -720,8 +705,8 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
           play_sound_effect(0x38);
           Sleep(0xdac);
         }
-        --target->counter_toughness;
-        target->special_counters += 0x1000000;
+        --PLAYER_CARD_INSTANCE(target_player, target_card).counter_toughness;
+        PLAYER_CARD_INSTANCE(target_player, target_card).special_counters += 0x1000000;
         if (g_duel_ai_mode_state != 1)
         {
           play_sound_effect(0x37);
@@ -763,10 +748,7 @@ int card_whimsy(int player, int card, event_t event)
     int candidate_count;
     int random_index;
     target_t candidates[300];
-    card_instance_t *instance;
   } s;
-
-  s.instance = &PLAYER_CARD_INSTANCE(player, card);
 
   if (event == EVENT_CAN_CAST)
   {
@@ -779,12 +761,12 @@ int card_whimsy(int player, int card, event_t event)
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && player == g_affected_card_controller)
   {
-    s.instance->info_slot = g_x_value;
+    PLAYER_CARD_INSTANCE(player, card).info_slot = g_x_value;
   }
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    for (s.loop_index = 0; s.loop_index < s.instance->info_slot; ++s.loop_index)
+    for (s.loop_index = 0; s.loop_index < PLAYER_CARD_INSTANCE(player, card).info_slot; ++s.loop_index)
     {
       if ((g_duel_network_flags & 2) == 0)
       {
@@ -806,8 +788,8 @@ int card_whimsy(int player, int card, event_t event)
           }
           else
           {
-            s.instance->targets[0] = g_target_pair_network_packet.target;
-            s.instance->number_of_targets = 1;
+            PLAYER_CARD_INSTANCE(player, card).targets[0] = g_target_pair_network_packet.target;
+            PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           }
         }
         else
@@ -820,8 +802,8 @@ int card_whimsy(int player, int card, event_t event)
           else
           {
             s.random_index = internal_rand(s.candidate_count);
-            s.instance->targets[0] = s.candidates[s.random_index];
-            s.instance->number_of_targets = 1;
+            PLAYER_CARD_INSTANCE(player, card).targets[0] = s.candidates[s.random_index];
+            PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           }
 
           if ((g_duel_network_flags & 2) != 0)
@@ -833,8 +815,8 @@ int card_whimsy(int player, int card, event_t event)
             }
             else
             {
-              g_target_pair_network_packet.target.player = 1 - s.instance->targets[0].player;
-              g_target_pair_network_packet.target.card = s.instance->targets[0].card;
+              g_target_pair_network_packet.target.player = 1 - PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+              g_target_pair_network_packet.target.card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
             }
             TENTATIVE_send_network_result(player, 0x1b);
           }
@@ -862,7 +844,7 @@ int card_whimsy(int player, int card, event_t event)
     {
       play_sound_effect(0x39);
     }
-    s.instance->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
   }
 

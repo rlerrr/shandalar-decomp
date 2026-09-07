@@ -160,7 +160,6 @@ int send_arena_network_choice(int player, int choice)
 // FUNCTION: SHANDALAR 0x00552320
 int card_arena(int player, int card, event_t event)
 {
-  card_instance_t *parent;
   target_t target;
   int first_valid;
   int second_valid;
@@ -358,8 +357,7 @@ int card_arena(int player, int card, event_t event)
                       PLAYER_CARD_INSTANCE(player, card).targets[1].card);
     }
 
-    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
-    parent->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   return 0;
@@ -1082,7 +1080,6 @@ int card_elephant_graveyard(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00554f53
 int card_island_of_wak_wak(int player, int card, event_t event)
 {
-  card_instance_t *parent;
   target_t target;
   int legacy_card;
 
@@ -1200,8 +1197,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    parent = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card);
-    parent->number_of_targets = 0;
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   return 0;
