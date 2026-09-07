@@ -137,7 +137,7 @@ int card_oasis(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    can_activate = (g_land_can_be_played & 4) != 0;
+    can_activate = (g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0;
     if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0 ||
         is_animated_and_sick(player, card))
     {
@@ -174,7 +174,7 @@ int card_oasis(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_ACTIVATE && (g_land_can_be_played & 4) != 0)
+  if (event == EVENT_ACTIVATE && (g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
   {
     if (g_required_mana_color_mask != 0)
     {

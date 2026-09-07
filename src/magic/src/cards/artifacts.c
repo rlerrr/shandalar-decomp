@@ -229,7 +229,7 @@ int card_time_vault(int player, int card, event_t event)
     sprintf(prompt, " %s\n %s", g_text_lines, g_text_lines[1]);
     if (do_dialog(player, player, card, -1, -1, prompt, internal_rand(5) < 1) != 0)
     {
-      g_land_can_be_played |= 0x8000;
+      g_land_can_be_played |= LCBP_SKIP_TURN;
       PLAYER_CARD_INSTANCE(player, card).state &= ~STATE_TAPPED;
       add_special_counter(player, card);
       PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
@@ -918,7 +918,7 @@ int card_primal_clay(int player, int card, event_t event)
   }
 
   if (event == EVENT_CHANGE_TYPE &&
-      (g_land_can_be_played & 0x20000) == 0 &&
+      (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0 &&
       g_affected_card == card &&
       g_affected_card_controller == player &&
       (is_in_play(player, card) != 0 || (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) != 0))
@@ -2455,7 +2455,7 @@ int card_forcefield(int player, int card, event_t event)
   {
     if (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0 &&
          (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) ||
-        (g_land_can_be_played & 4) == 0 ||
+        (g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 ||
         (g_current_phase != PHASE_AFTER_BLOCKING && g_current_phase != 0x1a) ||
         has_mana(player, COLOR_ANY, 1) == 0 ||
         real_target_available((int *)0,
@@ -2491,7 +2491,7 @@ int card_forcefield(int player, int card, event_t event)
 
   if (event == EVENT_ACTIVATE)
   {
-    if (has_mana(player, COLOR_ANY, 1) != 0 && (g_land_can_be_played & 4) != 0 && (g_current_phase == PHASE_AFTER_BLOCKING || g_current_phase == 0x1a))
+    if (has_mana(player, COLOR_ANY, 1) != 0 && (g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 && (g_current_phase == PHASE_AFTER_BLOCKING || g_current_phase == 0x1a))
     {
       charge_mana(player, COLOR_COLORLESS, 1);
       if (g_duel_ai_mode_state != 1)
@@ -2863,7 +2863,7 @@ int card_conservator(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & 4) == 0 || is_animated_and_sick(player, card) || (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) || !has_mana(player, COLOR_ANY, 3) || !real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id, ~SUB_WALL, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 || is_animated_and_sick(player, card) || (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) || !has_mana(player, COLOR_ANY, 3) || !real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id, ~SUB_WALL, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
     {
       return 0;
     }
@@ -3894,7 +3894,7 @@ int card_jade_monolith(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & 4) != 0 && has_mana(player, COLOR_ANY, 1) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && real_target_available((int *)0, TARGET_SCAN_DAMAGE_TARGET, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0))
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 && has_mana(player, COLOR_ANY, 1) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 && real_target_available((int *)0, TARGET_SCAN_DAMAGE_TARGET, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0))
     {
       return 99;
     }
@@ -4048,7 +4048,7 @@ int card_amulet_of_kroog(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & 4) == 0 ||
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 ||
         is_animated_and_sick(player, card) ||
         (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0 ||
         !has_mana(player, COLOR_ANY, 2) ||

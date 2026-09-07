@@ -61,9 +61,9 @@ int card_fork(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, new_card).color = COLOR_TEST_RED;
       PLAYER_CARD_INSTANCE(player, new_card).token_status |= 8;
       g_x_value = PLAYER_CARD_INSTANCE(player, card).info_slot;
-      g_land_can_be_played |= 0x400;
+      g_land_can_be_played |= LCBP_CARD_BEING_COPIED;
       process_card_enters_play(player, new_card);
-      g_land_can_be_played &= ~0x400;
+      g_land_can_be_played &= ~LCBP_CARD_BEING_COPIED;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
@@ -250,7 +250,7 @@ int card_simulacrum(int player, int card, event_t event)
     {
       return 0;
     }
-    if ((g_land_can_be_played & 4) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
     {
       return 1;
     }
@@ -279,7 +279,7 @@ int card_simulacrum(int player, int card, event_t event)
                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1,
                                ~SUB_WALL, -1, -1, 0, 0, 0))
     {
-      if ((g_land_can_be_played & 4) != 0)
+      if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
       {
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
         for (current_player = 0; current_player < 2; ++current_player)
@@ -554,7 +554,7 @@ int card_twiddle(int player, int card, event_t event)
     {
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
-      if ((g_land_can_be_played & 0x400) != 0)
+      if ((g_land_can_be_played & LCBP_CARD_BEING_COPIED) != 0)
       {
         PLAYER_CARD_INSTANCE(player, card).info_slot =
             PLAYER_CARD_INSTANCE(g_current_spell_player, g_current_spell_card).info_slot;
@@ -1293,7 +1293,7 @@ int card_death_ward(int player, int card, event_t event)
     int target_player;
   } s;
 
-  if (event == EVENT_CAN_CAST && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_CAN_CAST && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     s.found_dead_creature = 0;
 
@@ -1322,7 +1322,7 @@ int card_death_ward(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     s.found_dead_creature = 0;
     do
@@ -1359,7 +1359,7 @@ int card_death_ward(int player, int card, event_t event)
     } while ((g_spell_fizzled != 1) && s.found_dead_creature == 0);
   }
 
-  if (event == EVENT_RESOLVE_SPELL && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_RESOLVE_SPELL && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
     s.current_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
@@ -3281,7 +3281,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
     {
       return 0;
     }
-    if ((g_land_can_be_played & 4) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
     {
       return 1;
     }
@@ -3291,7 +3291,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
   if (((event == EVENT_CAST_SPELL) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
     g_ai_modifier -= 0x60;
-    if ((g_land_can_be_played & 4) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
     {
       load_text("prompts.txt", "HEALING_SALVE");
       if (C_real_select_target(player,
@@ -3438,7 +3438,7 @@ int gain_life_or_prevent_damage(int player, int card, event_t event, int amount)
     {
       --PLAYER_CARD_INSTANCE(player, card).number_of_targets;
       SET_TARGET(selected_target, PLAYER_CARD_INSTANCE(player, card).targets[PLAYER_CARD_INSTANCE(player, card).number_of_targets]);
-      if ((g_land_can_be_played & 4) == 0)
+      if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
       {
         gain_life(selected_target.player, PLAYER_CARD_INSTANCE(player, card).info_slot);
       }
@@ -3500,7 +3500,7 @@ int card_reverse_damage(int player, int card, event_t event)
   if (event == EVENT_CAN_CAST)
   {
     load_recorded_action_target(0);
-    if ((g_land_can_be_played & 4) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
     {
       return 1;
     }
@@ -3530,7 +3530,7 @@ int card_reverse_damage(int player, int card, event_t event)
   }
   else
   {
-    if ((((event == EVENT_CAST_SPELL) && (card == g_affected_card)) && (player == g_affected_card_controller)) && ((g_land_can_be_played & 4) != 0))
+    if ((((event == EVENT_CAST_SPELL) && (card == g_affected_card)) && (player == g_affected_card_controller)) && ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0))
     {
       load_text("prompts.txt", "REVERSE_DAMAGE");
       if (C_real_select_target(player,
@@ -3566,7 +3566,7 @@ int card_reverse_damage(int player, int card, event_t event)
 
     if (event == EVENT_RESOLVE_SPELL)
     {
-      if ((g_land_can_be_played & 4) == 0)
+      if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
       {
         s.count = 0;
         s.best_damage = 0;
@@ -3693,7 +3693,7 @@ int card_eye_for_an_eye(int player, int card, event_t event)
   if (event == EVENT_CAN_CAST)
   {
     load_recorded_action_target(0);
-    return ((g_land_can_be_played & 4) != 0 &&
+    return ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
             real_target_available((int *)0,
                                   TARGET_SCAN_DIRECT,
                                   player,

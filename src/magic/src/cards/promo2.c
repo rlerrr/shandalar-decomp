@@ -153,7 +153,7 @@ int card_guardian_angel(int player, int card, event_t event)
 
   if (event == EVENT_CAN_CAST)
   {
-    return ((g_land_can_be_played & 4) != 0 && real_target_available((int *)0,
+    return ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 && real_target_available((int *)0,
                                                                      TARGET_SCAN_DIRECT,
                                                                      player,
                                                                      2,
@@ -431,7 +431,7 @@ int card_reverse_polarity(int player, int card, event_t event)
   if (event == EVENT_CAN_CAST)
   {
     load_recorded_action_target(0);
-    if ((g_land_can_be_played & 4) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
     {
       if (player == g_other_player && (g_duel_network_flags & 2) == 0 && g_damage_accumulators[1][150][player].amount == 0)
       {
@@ -445,7 +445,7 @@ int card_reverse_polarity(int player, int card, event_t event)
   }
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player &&
-      (g_land_can_be_played & 4) != 0)
+      (g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
   {
     load_text("promptsX1.txt", "REVERSE_POLARITY");
     if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE,
@@ -464,7 +464,7 @@ int card_reverse_polarity(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if ((g_land_can_be_played & 4) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
     {
       s.count = 0;
       s.best_damage = 0;

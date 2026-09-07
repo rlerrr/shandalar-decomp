@@ -1244,7 +1244,7 @@ int card_personal_incarnation(int player, int card, event_t event)
 
   if (event == 0x73)
   {
-    if ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) != 0 && (g_land_can_be_played & 4) != 0)
+    if ((PLAYER_CARD_INSTANCE(player, card).info_slot & 1) != 0 && (g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
     {
       return 99;
     }
@@ -1257,7 +1257,7 @@ int card_personal_incarnation(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_ACTIVATE && (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) != 0 && (g_land_can_be_played & 4) != 0)
+  if (event == EVENT_ACTIVATE && (PLAYER_CARD_INSTANCE(player, card).info_slot & 1) != 0 && (g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
   {
     damage_source_player = (PLAYER_CARD_INSTANCE(player, card).state & 0x1000) != 0;
     do
@@ -1456,7 +1456,7 @@ int card_fungusaur(int player, int card, event_t event)
 {
   if (event == EVENT_UNKNOWN80)
   {
-    if (((((g_land_can_be_played & 0x200) != 0) && (PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player == player)) && (PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == card)) && (0 < PLAYER_CARD_INSTANCE(player, card).damage_on_card))
+    if (((((g_land_can_be_played & LCBP_REGENERATION) != 0) && (PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player == player)) && (PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == card)) && (0 < PLAYER_CARD_INSTANCE(player, card).damage_on_card))
     {
       PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
     }
@@ -2325,7 +2325,7 @@ int generic_regeneration_ability(int player, int card, event_t event, unsigned i
 {
   int can_activate;
 
-  if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & 0x200) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
+  if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
     can_activate = 1;
     if (PLAYER_CARD_INSTANCE(player, card).kill_code != 2)
@@ -2355,7 +2355,7 @@ int generic_regeneration_ability(int player, int card, event_t event, unsigned i
     load_recorded_action_target(0);
     return 0;
   }
-  else if (event == EVENT_ACTIVATE && (g_land_can_be_played & 0x200) != 0)
+  else if (event == EVENT_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     charge_mana(player, color, amount);
     if (g_spell_fizzled != 1)
@@ -2366,7 +2366,7 @@ int generic_regeneration_ability(int player, int card, event_t event, unsigned i
 
     return 0;
   }
-  else if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & 0x200) != 0)
+  else if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).info_slot = 0;
     regenerate_card(g_card_on_stack_controller, g_card_on_stack);
@@ -4453,7 +4453,7 @@ int card_samite_healer(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE)
   {
     int result = 1;
-    if ((g_land_can_be_played & 4) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
     {
       result = 0;
     }
@@ -5799,7 +5799,7 @@ int card_scavenging_ghoul(int player, int card, event_t event)
     int can_activate_result;
   } s;
 
-  if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     s.can_activate_result = generic_regeneration_ability(player, card, event, 0, 0);
     if (C_get_special_counters(player, card) == 0)
@@ -5809,14 +5809,14 @@ int card_scavenging_ghoul(int player, int card, event_t event)
     return s.can_activate_result;
   }
 
-  if (event == EVENT_ACTIVATE && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     s.activate_result = generic_regeneration_ability(player, card, event, 0, 0);
     remove_special_counters(player, card, 1);
     return s.activate_result;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     return generic_regeneration_ability(player, card, event, 0, 0);
   }

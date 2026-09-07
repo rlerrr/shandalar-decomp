@@ -1716,7 +1716,7 @@ int card_fireball(int player, int card, event_t event)
 
         if (g_duel_ai_mode_state == 1)
         {
-          if ((g_land_can_be_played & 0x400) == 0)
+          if ((g_land_can_be_played & LCBP_CARD_BEING_COPIED) == 0)
           {
             illegal_abilities = get_protections_from(player, card);
             real_target_available(&s.possible_targets,
@@ -1807,7 +1807,7 @@ int card_fireball(int player, int card, event_t event)
           }
         }
       }
-      else if ((g_land_can_be_played & 0x400) == 0)
+      else if ((g_land_can_be_played & LCBP_CARD_BEING_COPIED) == 0)
       {
         mana_available_minus_one = has_mana(player, COLOR_ANY, 1) - 1;
         illegal_abilities = get_protections_from(player, card);
@@ -3427,7 +3427,7 @@ int card_drain_life(int player, int card, event_t event)
 
   if (((event == EVENT_CAST_SPELL) && (g_affected_card == card)) && (g_affected_card_controller == player))
   {
-    if ((g_land_can_be_played & 0x400) == 0)
+    if ((g_land_can_be_played & LCBP_CARD_BEING_COPIED) == 0)
     {
       g_x_value = 0;
       charge_mana(player, COLOR_BLACK, -1);

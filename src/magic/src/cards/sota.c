@@ -784,7 +784,7 @@ int card_jade_statue(int player, int card, event_t event)
       g_combat_assignment_cancelled = 1;
     }
   }
-  if ((event == 0x3c) && (g_land_can_be_played & 0x20000) == 0 && card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
+  if ((event == 0x3c) && (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0 && card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
   {
     g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }

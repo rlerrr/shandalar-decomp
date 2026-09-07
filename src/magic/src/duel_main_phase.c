@@ -446,7 +446,7 @@ int main_phase(unsigned int player, int phase_mode, int *phase_value)
   }
 
   g_attacking_creature_count = 0;
-  g_land_can_be_played &= -512;
+  g_land_can_be_played &= ~LCBP_FLAGS_CLEARED_EACH_TURN;
   g_current_phase = PHASE_MAIN1;
   update_phase_display(player, g_current_phase);
   g_phase_was_skipped = 0;
@@ -473,10 +473,10 @@ resume_main_phase_response_window:
     g_ai_side_score_player_0 = g_ai_side_score_player_1;
     g_duel_state_008a8de4 = g_ai_side_score_player_0;
     g_ai_modifier = g_duel_state_008a8de4;
-    if ((g_duel_ai_mode_state != 1) && (((g_land_can_be_played & 0x40U) == 0 && (g_duel_winner != '\0'))))
+    if ((g_duel_ai_mode_state != 1) && (((g_land_can_be_played & TENTATIVE_LCBP_UNUSED40) == 0 && (g_duel_winner != '\0'))))
     {
       show_opponent_taunt(&g_duel_winner);
-      g_land_can_be_played |= 0x40;
+      g_land_can_be_played |= TENTATIVE_LCBP_UNUSED40;
       g_duel_winner = '\0';
     }
   }
@@ -506,12 +506,12 @@ restart_main_phase_action_loop:
       do
       {
         s.retry_phase_prompt = 1;
-        g_land_can_be_played |= 0x80;
+        g_land_can_be_played |= TENTATIVE_LCBP_DURING_EITHER_MAIN_PHASE;
         strcpy(g_ui_message_buffer, "");
         if (g_current_phase <= PHASE_MAIN1)
         {
           strcpy(g_ui_message_buffer, gs_prompt_main_phase_precombat_cast_spells_008cc710);
-          if ((g_land_can_be_played & 1U) == 0)
+          if ((g_land_can_be_played & LCBP_LAND_HAS_BEEN_PLAYED) == 0)
           {
             strcpy(g_ui_message_buffer, gs_prompt_main_phase_precombat_cast_spells_play_land_00777970);
           }
@@ -519,7 +519,7 @@ restart_main_phase_action_loop:
         else if (g_current_phase >= PHASE_MAIN2)
         {
           strcpy(g_ui_message_buffer, gs_prompt_main_phase_postcombat_cast_spells_007ab2d0);
-          if ((g_land_can_be_played & 1U) == 0)
+          if ((g_land_can_be_played & LCBP_LAND_HAS_BEEN_PLAYED) == 0)
           {
             strcpy(g_ui_message_buffer, gs_prompt_main_phase_postcombat_cast_spells_play_land_0091cf50);
           }
@@ -626,7 +626,7 @@ restart_main_phase_action_loop:
           }
         }
       }
-      g_land_can_be_played &= -129;
+      g_land_can_be_played &= ~TENTATIVE_LCBP_DURING_EITHER_MAIN_PHASE;
       if ((g_target_selection_status_code == -2) &&
           ((((g_stop_phase_player == -1 || (g_stop_phase != -1)) || (g_previous_stop_phase_player == -1)) ||
             (g_previous_stop_phase != -1))))
@@ -878,7 +878,7 @@ restart_main_phase_action_loop:
       main_phase_selected_internal_card_id = global_card_instances[player][main_phase_selected_card].internal_card_id;
       if ((global_card_instances[player][main_phase_selected_card].state & 0x12) == 0)
       {
-        if (((global_cards_data[main_phase_selected_internal_card_id].type & 1) != 0) && ((g_land_can_be_played & 1U) != 0))
+        if (((global_cards_data[main_phase_selected_internal_card_id].type & 1) != 0) && ((g_land_can_be_played & LCBP_LAND_HAS_BEEN_PLAYED) != 0))
         {
           if (g_duel_ai_mode_state == 1)
           {
@@ -922,7 +922,7 @@ restart_main_phase_action_loop:
                 {
                   g_ai_search_time_limit = 0;
                 }
-                g_land_can_be_played |= 1;
+                g_land_can_be_played |= LCBP_LAND_HAS_BEEN_PLAYED;
               }
               if ((global_cards_data[main_phase_selected_internal_card_id].type & 2) != 0)
               {
@@ -1290,7 +1290,7 @@ resolve_combat_if_needed:
   if (((((0 < g_attacking_creature_count) ||
          (((player == g_active_player) || ((g_duel_network_flags & 2) != 0)) &&
           (human_has_phase_stop(PHASE_AFTER_BLOCKING) != 0))) &&
-        ((g_land_can_be_played & 8U) == 0))) ||
+        ((g_land_can_be_played & TENTATIVE_LCBP_DURING_COMBAT) == 0))) ||
       (((player == g_active_player) || ((g_duel_network_flags & 2) != 0)) && (g_duel_ai_mode_state == 1)))
   {
     do
@@ -1326,7 +1326,7 @@ resolve_combat_if_needed:
       append_to_trace_txt(s.trace_combat);
     }
     resolve_combat_damage(player);
-    g_land_can_be_played |= 8;
+    g_land_can_be_played |= TENTATIVE_LCBP_DURING_COMBAT;
     g_response_processing_flags = 1;
     dispatch_trigger_twice_once_with_each_player_as_reason(player, 0xcc, gs_end_of_combat_008b43a0, 0);
     cleanup_combat_state(player);
@@ -1372,7 +1372,7 @@ advance_to_postcombat_main:
       }
       goto finish_main_phase;
     }
-    g_land_can_be_played |= 0x100;
+    g_land_can_be_played |= TENTATIVE_LCBP_DURING_SECOND_MAIN_PHASE;
     goto restart_active_main_phase_ai_prompt;
   }
 finish_main_phase:

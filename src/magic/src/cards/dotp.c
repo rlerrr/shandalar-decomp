@@ -1694,7 +1694,7 @@ int card_goblin_digging_team(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004369d5
 int card_goblins_of_the_flarg(int player, int card, event_t event)
 {
-  if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & 0x20000) == 0)
+  if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0)
   {
     if (is_in_play(player, card) && PLAYER_CARD_INSTANCE(player, card).info_slot == 0 &&
         is_in_play(g_affected_card_controller, g_affected_card) &&
@@ -1745,7 +1745,7 @@ int card_hyperion_blacksmith(int player, int card, event_t event)
       SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-      if ((g_land_can_be_played & 0x400) != 0)
+      if ((g_land_can_be_played & LCBP_CARD_BEING_COPIED) != 0)
       {
         PLAYER_CARD_INSTANCE(player, card).info_slot =
             PLAYER_CARD_INSTANCE(g_current_spell_player, g_current_spell_card).info_slot;
@@ -3438,7 +3438,7 @@ int card_blood_moon(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & 0x20000) == 0 &&
+  if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0 &&
       is_in_play(player, card) &&
       is_in_play(g_affected_card_controller, g_affected_card))
   {
@@ -3480,7 +3480,7 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & 4) == 0 ||
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 ||
         has_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1) == 0 ||
         has_mana_w_global_cost_mod(player, card, COLOR_ANY, 2) == 0 ||
         real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY,

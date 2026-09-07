@@ -416,7 +416,7 @@ int put_card_on_stack(int player, int card, int mode)
 
     g_card_types_in_play[player] |= s.card_data->type;
     PLAYER_CARD_INSTANCE(player, card).state |= STATE_INVISIBLE;
-    g_land_can_be_played |= 0x20;
+    g_land_can_be_played |= LCBP_SPELL_BEING_PLAYED;
 
     if (player == g_active_player || (g_duel_network_flags & 2) != 0 || g_duel_ai_mode_state != 1)
     {
@@ -498,7 +498,7 @@ int put_card_on_stack(int player, int card, int mode)
       g_spell_fizzled = 1;
     }
 
-    g_land_can_be_played &= ~0x20;
+    g_land_can_be_played &= ~LCBP_SPELL_BEING_PLAYED;
     *(unsigned int *)&PLAYER_CARD_INSTANCE(player, card).state |= (((unsigned int)player < 1 ? 0 : 0x400000) | 0x80);
 
     if (g_duel_ai_mode_state != 1)
@@ -579,7 +579,7 @@ finish_put_card_on_stack:
     }
     g_spell_fizzled = 0;
     obliterate_top_card_of_stack();
-    g_land_can_be_played &= ~0x20;
+    g_land_can_be_played &= ~LCBP_SPELL_BEING_PLAYED;
     return 0;
   }
 
@@ -623,7 +623,7 @@ int resolve_card_on_stack(int player, int card)
 
   PLAYER_CARD_INSTANCE(player, card).state &= ~0x20;
   PLAYER_CARD_INSTANCE(player, card).state |= 2;
-  g_land_can_be_played &= ~0x20;
+  g_land_can_be_played &= ~LCBP_SPELL_BEING_PLAYED;
 
   if (PLAYER_CARD_INSTANCE(player, card).internal_card_id != internal_card_id)
   {
@@ -1464,13 +1464,13 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
   if (g_duel_active != 0)
   {
     C_dispatch_event_raw(event);
-    if (((g_land_can_be_played & 0x10000) != 0) && (event == EVENT_CHANGE_TYPE))
+    if (((g_land_can_be_played & LCBP_NEED_EVENT_CHANGE_TYPE_SECOND_PASS) != 0) && (event == EVENT_CHANGE_TYPE))
     {
-      g_land_can_be_played &= ~0x10000;
+      g_land_can_be_played &= ~LCBP_NEED_EVENT_CHANGE_TYPE_SECOND_PASS;
       s.instance->internal_card_id = g_event_result;
-      g_land_can_be_played |= 0x20000;
+      g_land_can_be_played |= LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS;
       C_dispatch_event_raw(event);
-      g_land_can_be_played &= ~0x20000;
+      g_land_can_be_played &= ~LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS;
     }
   }
 
@@ -1488,7 +1488,7 @@ int C_get_abilities(int player, int card, event_t event, int new_attacking_card)
 
 post_dispatch:
   s.result = g_event_result;
-  if (is_in_play(player, card) && event == EVENT_TOUGHNESS && (global_cards_data[g_affected_internal_card_id].type & TYPE_CREATURE) != 0 && ((int)s.result <= 0 || (int)s.result <= (int)(short)s.instance->damage_on_card) && ((PLAYER_CARD_INSTANCE(player, card).token_status & 0x04000000) == 0) && g_trigger_condition == -1 && (g_land_can_be_played & 0x204) == 0)
+  if (is_in_play(player, card) && event == EVENT_TOUGHNESS && (global_cards_data[g_affected_internal_card_id].type & TYPE_CREATURE) != 0 && ((int)s.result <= 0 || (int)s.result <= (int)(short)s.instance->damage_on_card) && ((PLAYER_CARD_INSTANCE(player, card).token_status & 0x04000000) == 0) && g_trigger_condition == -1 && (g_land_can_be_played & (LCBP_DAMAGE_PREVENTION | LCBP_REGENERATION)) == 0)
   {
     kill_card(player, card, KILL_DESTROY);
     regenerate_or_graveyard_triggers();
@@ -1758,7 +1758,7 @@ int dispatch_event_to_single_card(int player,
 
   result = (*global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].code_pointer)(player, card, event);
 
-  if (result != 0x63 && (g_land_can_be_played & 0x224) != 0 && (event == EVENT_CAN_CAST || event == EVENT_CAN_ACTIVATE))
+  if (result != 0x63 && (g_land_can_be_played & (LCBP_DAMAGE_PREVENTION | LCBP_SPELL_BEING_PLAYED | LCBP_REGENERATION)) != 0 && (event == EVENT_CAN_CAST || event == EVENT_CAN_ACTIVATE))
   {
     if (is_nonactivated_mana_source(player, card) == 0)
     {
@@ -2077,7 +2077,7 @@ int resolve_top_card_on_stack(void)
   }
   global_stack_cards[g_stack_size].player = -1;
   reassess_all_cards_and_mana();
-  if (g_nested_trigger_depth <= 1 && ((g_land_can_be_played & 0x200) == 0 || g_stack_size == 0))
+  if (g_nested_trigger_depth <= 1 && ((g_land_can_be_played & LCBP_REGENERATION) == 0 || g_stack_size == 0))
   {
     process_damage_prevention(g_current_player);
     regenerate_or_graveyard_triggers();
@@ -3274,7 +3274,7 @@ int process_response_actions(int reason_for_trigger_controller, const char *prom
   {
     if (g_duel_ai_mode_state == 1 || g_ai_action_replay_available != 0 ||
         (g_trigger_condition != -1 && g_current_turn == g_other_player) || g_current_action_event_code == 4 ||
-        (g_other_player == g_event_player && (g_land_can_be_played & 0x200) != 0))
+        (g_other_player == g_event_player && (g_land_can_be_played & LCBP_REGENERATION) != 0))
     {
       s.selected_card = choose_response_card(s.player);
       s.selected_player = g_target_player_choice;
@@ -3966,8 +3966,8 @@ int get_card_response_action_type(int player, int card)
         return 0;
       }
 
-      if ((g_land_can_be_played & 4) == 0 ||
-          ((g_land_can_be_played & 4) != 0 &&
+      if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 ||
+          ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
            (global_cards_data[s.internal_card_id].extra_ability & 0x1004) != 0) ||
           (g_current_action_event_code == 0xd3 &&
            (global_cards_data[s.internal_card_id].extra_ability & 0x4000) != 0))
@@ -4036,8 +4036,8 @@ int get_card_response_action_type(int player, int card)
 
     if ((g_response_card_type_mask & (unsigned char)global_cards_data[s.internal_card_id].type) != 0 &&
         can_pay_card_mana_cost(player, player, card) != 0 &&
-        ((g_land_can_be_played & 4) == 0 ||
-         ((g_land_can_be_played & 4) != 0 &&
+        ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 ||
+         ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
           (global_cards_data[s.internal_card_id].extra_ability & 0x1004) != 0) ||
          (g_current_action_event_code == 0xd3 &&
           (global_cards_data[s.internal_card_id].extra_ability & 0x2000) != 0)) &&
@@ -4104,12 +4104,12 @@ void process_damage_prevention(int player)
     int temp;         /* ebp-0x04 */
   } s;
 
-  if ((g_land_can_be_played & 2) == 0)
+  if ((g_land_can_be_played & LCBP_PENDING_DAMAGE_CARDS) == 0)
   {
     return;
   }
-  g_land_can_be_played &= ~2;
-  g_land_can_be_played |= 4;
+  g_land_can_be_played &= ~LCBP_PENDING_DAMAGE_CARDS;
+  g_land_can_be_played |= LCBP_DAMAGE_PREVENTION;
   TENTATIVE_reassess_all_cards(0, 0xff);
 
   for (s.test_player = 0; s.test_player < 2; ++s.test_player)
@@ -4183,14 +4183,14 @@ after_setup:
         }
         else
         {
-          g_land_can_be_played |= 2;
+          g_land_can_be_played |= LCBP_PENDING_DAMAGE_CARDS;
         }
       }
     }
   }
 
   kill_creatures_with_lethal_damage();
-  g_land_can_be_played &= ~4;
+  g_land_can_be_played &= ~LCBP_DAMAGE_PREVENTION;
 
   if (g_duel_ai_mode_state == 1 && s.did_setup != 0 && g_ai_decision_code == 9)
   {
@@ -4217,7 +4217,7 @@ after_setup:
       g_ai_search_target_depth = -1;
       g_ai_search_flags = s.saved_777854;
     }
-    g_land_can_be_played |= 4;
+    g_land_can_be_played |= LCBP_DAMAGE_PREVENTION;
     goto after_setup;
   }
 

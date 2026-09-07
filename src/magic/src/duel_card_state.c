@@ -755,9 +755,9 @@ int regenerate_or_graveyard_triggers(void)
 
   g_regenerate_or_graveyard_triggers_in_progress = 1;
 
-  g_land_can_be_played |= 0x200;
+  g_land_can_be_played |= LCBP_REGENERATION;
   allow_response(-2, g_current_phase, gs_use_regeneration_effects_0091c680, 0x70);
-  g_land_can_be_played &= ~0x200;
+  g_land_can_be_played &= ~LCBP_REGENERATION;
 
   dispatch_trigger_twice_once_with_each_player_as_reason(g_current_player, TRIGGER_GRAVEYARD_ORDER, gs_graveyard_order_0091cbd0, 0);
   dispatch_trigger_twice_once_with_each_player_as_reason(g_current_player, TRIGGER_GRAVEYARD_FROM_PLAY, gs_cards_to_graveyard_008a8ed0, 0);
@@ -1673,7 +1673,7 @@ int damage_creature(int target_player, int target_card, int amount, int source_p
     {
       *(unsigned int *)&PLAYER_CARD_INSTANCE(s.damage_player, s.result).display_pic_csv_id = 0xef;
     }
-    g_land_can_be_played |= 2;
+    g_land_can_be_played |= LCBP_PENDING_DAMAGE_CARDS;
   }
 
   return s.result;

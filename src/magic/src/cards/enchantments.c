@@ -1051,9 +1051,9 @@ int card_fastbond(int player, int card, event_t event)
     return 1;
   }
 
-  if (player == g_current_player && (g_land_can_be_played & 1) != 0 && g_current_phase > 0x13 && g_current_phase < 0x1f)
+  if (player == g_current_player && (g_land_can_be_played & LCBP_LAND_HAS_BEEN_PLAYED) != 0 && g_current_phase > 0x13 && g_current_phase < 0x1f)
   {
-    g_land_can_be_played &= ~1;
+    g_land_can_be_played &= ~LCBP_LAND_HAS_BEEN_PLAYED;
   }
 
   if ((g_trigger_condition == 0xdb || g_trigger_condition == 0xd3) && g_affected_card == card && g_affected_card_controller == player && g_duel_summary.land_entries > 0 && g_current_turn == player && g_trigger_cause_controller == player && PLAYER_CARD_INSTANCE(g_trigger_cause_controller, g_trigger_cause).internal_card_id != -1 && (global_cards_data[PLAYER_CARD_INSTANCE(g_trigger_cause_controller, g_trigger_cause).internal_card_id].type & TYPE_LAND) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0)

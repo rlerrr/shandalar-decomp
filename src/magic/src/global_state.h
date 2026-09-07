@@ -566,7 +566,7 @@ GLOBAL_STATE_EXTERN int g_life[2];
 
 // GLOBAL: MAGIC 0x008b4278
 // GLOBAL: SHANDALAR 0x008c83f8
-GLOBAL_STATE_EXTERN int g_land_can_be_played;
+GLOBAL_STATE_EXTERN land_can_be_played_t g_land_can_be_played;
 
 // GLOBAL: MAGIC 0x008b4dd0
 // GLOBAL: SHANDALAR 0x008c8f50

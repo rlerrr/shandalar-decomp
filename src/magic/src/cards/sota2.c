@@ -513,7 +513,7 @@ int card_argivian_blacksmith(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & 4) != 0 &&
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
         (PLAYER_CARD_INSTANCE(player, card).state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0 &&
         artifact_creature_damage_available())
     {
@@ -1101,7 +1101,7 @@ int card_clone(int player, int card, event_t event)
     }
   }
 
-  if (((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & 0x20000) == 0)) && ((card == g_affected_card) && (player == g_affected_card_controller)))
+  if (((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0)) && ((card == g_affected_card) && (player == g_affected_card_controller)))
   {
     g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }
@@ -1896,7 +1896,7 @@ int card_goblin_artisans(int player, int card, event_t event)
   {
     if (g_current_spell_player != -1)
     {
-      return (g_land_can_be_played & 0x20) != 0 &&
+      return (g_land_can_be_played & LCBP_SPELL_BEING_PLAYED) != 0 &&
                      (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
                      C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0, player,
                                             player, player, 0, TYPE_ARTIFACT, TYPE_NONE, 0, 0,
@@ -3474,7 +3474,7 @@ int card_rock_hydra(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((((g_land_can_be_played & 4) == 0) || ((iVar4 = has_mana(player, 4, 1)) == 0)) || (((uVar3 = C_get_special_counters(player, card)) == 0) || ((iVar4 = has_effect_source_type(player, card, 0xffffffff)) == 0)))
+    if ((((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0) || ((iVar4 = has_mana(player, 4, 1)) == 0)) || (((uVar3 = C_get_special_counters(player, card)) == 0) || ((iVar4 = has_effect_source_type(player, card, 0xffffffff)) == 0)))
     {
       if (((g_current_phase == 4) && (player == g_current_player) && (player == g_event_player)) && ((iVar4 = has_mana(player, 4, 3)) != 0))
       {
@@ -3503,7 +3503,7 @@ int card_rock_hydra(int player, int card, event_t event)
   {
     if (event == EVENT_ACTIVATE)
     {
-      if ((g_land_can_be_played & 4) == 0)
+      if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
       {
         charge_mana(player, 4, 3);
         if (g_spell_fizzled != 1)
@@ -3573,7 +3573,7 @@ int card_rock_hydra(int player, int card, event_t event)
                                PLAYER_CARD_INSTANCE(player, card).parent_card)
               .internal_card_id != -1)
       {
-        if ((g_land_can_be_played & 4) == 0)
+        if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
         {
           add_special_counter(g_card_on_stack_controller, g_card_on_stack);
           piVar1 = &PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_source_player,
@@ -4346,7 +4346,7 @@ int card_vesuvan_doppelganger(int player, int card, event_t event)
     }
   }
 
-  if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & 0x20000) == 0 && card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
+  if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0 && card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
   {
     g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }

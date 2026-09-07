@@ -228,7 +228,7 @@ int card_damage(int player, int card, event_t event)
   if (card == g_affected_card &&
       player == g_affected_card_controller &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_card != -1 &&
-      (g_land_can_be_played & 4) != 0)
+      (g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
   {
     s.target_abilities =
         C_get_abilities((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,

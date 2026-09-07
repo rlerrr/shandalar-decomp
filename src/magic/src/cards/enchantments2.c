@@ -133,9 +133,9 @@ int card_kormus_bell(int player, int card, event_t event)
 
   if (event == 0x3c && is_in_play(player, card) && ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) != 0))
   {
-    if ((g_land_can_be_played & 0x20000) == 0)
+    if ((g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0)
     {
-      g_land_can_be_played |= 0x10000;
+      g_land_can_be_played |= LCBP_NEED_EVENT_CHANGE_TYPE_SECOND_PASS;
     }
     else if (is_basic_land_internal_card_id_of_color(g_event_result, PLAYER_CARD_INSTANCE(player, card).info_slot) != 0 && dispatch_function_to_all_cards_in_play(player, card, find_land_animation_legacy, player) == -1)
     {
@@ -204,7 +204,7 @@ int card_living_lands(int player, int card, event_t event)
 
   if (event == 0x3c && is_in_play(player, card))
   {
-    if ((g_land_can_be_played & 0x20000) != 0)
+    if ((g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) != 0)
     {
       if (is_basic_land_internal_card_id_of_color(g_event_result, PLAYER_CARD_INSTANCE(player, card).info_slot) != 0 && dispatch_function_to_all_cards_in_play(player, card, find_land_animation_legacy, player) == -1)
       {
@@ -248,7 +248,7 @@ int card_living_lands(int player, int card, event_t event)
     }
     else
     {
-      g_land_can_be_played |= 0x10000;
+      g_land_can_be_played |= LCBP_NEED_EVENT_CHANGE_TYPE_SECOND_PASS;
     }
   }
 
@@ -1162,7 +1162,7 @@ int card_animate_artifact(int player, int card, event_t event)
     return 0;
   }
 
-  if ((((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & 0x20000) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && (g_affected_card != -1)))) && is_in_play(player, card))
+  if ((((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && (g_affected_card != -1)))) && is_in_play(player, card))
   {
     g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -3105,7 +3105,7 @@ int card_evil_presence(int player, int card, event_t event)
     return 0;
   }
 
-  if ((((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & 0x20000) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && (g_affected_card != -1)))) && is_in_play(player, card))
+  if ((((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && (g_affected_card != -1)))) && is_in_play(player, card))
   {
     g_event_result = get_hacked_color(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) - 1;
   }
@@ -7551,7 +7551,7 @@ int card_copy_artifact(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & 0x20000) == 0 &&
+  if (event == EVENT_CHANGE_TYPE && (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0 &&
       card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
   {
     g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
@@ -8192,7 +8192,7 @@ int card_regeneration(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & 0x200) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
+  if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
     can_activate = 1;
     if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -8221,7 +8221,7 @@ int card_regeneration(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_ACTIVATE && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     charge_mana_w_global_cost_mod(player, card, 3, 1);
     if (g_spell_fizzled != 1)
@@ -8232,7 +8232,7 @@ int card_regeneration(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                          PLAYER_CARD_INSTANCE(player, card).parent_card)
@@ -8439,7 +8439,7 @@ int card_the_brute(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & 0x200) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
+  if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
     can_activate = 1;
     if ((PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -8472,7 +8472,7 @@ int card_the_brute(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_ACTIVATE && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     charge_mana_w_global_cost_mod(player, card, COLOR_RED, 3);
     if (g_spell_fizzled != 1)
@@ -8483,7 +8483,7 @@ int card_the_brute(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & 0x200) != 0)
+  if (event == EVENT_RESOLVE_ACTIVATION && (g_land_can_be_played & LCBP_REGENERATION) != 0)
   {
     PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).info_slot = 0;
     regenerate_card((int)(char)PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).damage_target_player,
@@ -8556,7 +8556,7 @@ int helper_circle_of_protection(int player, int card, event_t event, int color)
 
     if (event == EVENT_CAN_ACTIVATE)
     {
-      if ((g_land_can_be_played & 4) == 0 || has_mana_w_global_cost_mod(player, card, 7, 1) == 0 || real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0, target_color, 0, g_damage_card_internal_card_id, -1, 0xffffffff, 0xffffffff, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0) == 0)
+      if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 || has_mana_w_global_cost_mod(player, card, 7, 1) == 0 || real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0, target_color, 0, g_damage_card_internal_card_id, -1, 0xffffffff, 0xffffffff, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0) == 0)
       {
         return 0;
       }
@@ -8675,7 +8675,7 @@ int card_co_p_artifacts(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & 4) != 0 &&
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
         has_mana_w_global_cost_mod(player, card, COLOR_ANY, 2) != 0 &&
         real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2,
                               TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0,
@@ -8861,7 +8861,7 @@ int card_phantasmal_terrain(int player, int card, event_t event)
     return 0;
   }
 
-  if ((((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & 0x20000) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && (g_affected_card != -1)))) && is_in_play(player, card))
+  if ((((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && (g_affected_card != -1)))) && is_in_play(player, card))
   {
     g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }
@@ -8904,7 +8904,7 @@ int card_conversion(int player, int card, event_t event)
     return 0;
   }
 
-  if ((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & 0x20000) == 0) && is_in_play(player, card) && is_in_play(g_affected_card_controller, g_affected_card) && is_basic_land_internal_card_id_of_color(g_event_result, get_hacked_color(player, card, 4)) != 0)
+  if ((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0) && is_in_play(player, card) && is_in_play(g_affected_card_controller, g_affected_card) && is_basic_land_internal_card_id_of_color(g_event_result, get_hacked_color(player, card, 4)) != 0)
   {
     g_event_result = get_hacked_color(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) - 1;
   }
@@ -9130,7 +9130,7 @@ int card_lifeforce(int player, int card, event_t event)
     {
       return 0;
     }
-    if (((g_land_can_be_played & 0x20) != 0) && (has_mana_w_global_cost_mod(player, card, COLOR_GREEN, 2) != 0))
+    if (((g_land_can_be_played & LCBP_SPELL_BEING_PLAYED) != 0) && (has_mana_w_global_cost_mod(player, card, COLOR_GREEN, 2) != 0))
     {
       if (C_real_validate_target(g_current_spell_player,
                                  g_current_spell_card,
@@ -9228,7 +9228,7 @@ int card_deathgrip(int player, int card, event_t event)
   {
     if (g_current_spell_player != -1)
     {
-      return ((g_land_can_be_played & 0x20) != 0 &&
+      return ((g_land_can_be_played & LCBP_SPELL_BEING_PLAYED) != 0 &&
               has_mana_w_global_cost_mod(player, card, COLOR_BLACK, 2) != 0 &&
               C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0, player, 2, 2, 0, TYPE_NONE, TYPE_NONE, 0, 0, 1 << get_sleighted_color(player, card, COLOR_GREEN), COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, TARGET_SPECIAL_SPELL_ON_STACK, 0, 0))
                  ? 99

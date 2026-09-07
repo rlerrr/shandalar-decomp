@@ -1768,6 +1768,7 @@ typedef enum
 
 typedef enum
 {
+	LCBP_NONE = 0,
 	LCBP_LAND_HAS_BEEN_PLAYED = 0x1,
 	LCBP_PENDING_DAMAGE_CARDS = 0x2, // There's a damage card in play attached to something that'll need to be resolved eventually by calling 0x477070.
 	LCBP_DAMAGE_PREVENTION = 0x4,	 // Turned on while resolving damage.
@@ -1777,6 +1778,7 @@ typedef enum
 	TENTATIVE_LCBP_UNUSED40 = 0x40,
 	TENTATIVE_LCBP_DURING_EITHER_MAIN_PHASE = 0x80,
 	TENTATIVE_LCBP_DURING_SECOND_MAIN_PHASE = 0x100,
+	LCBP_FLAGS_CLEARED_EACH_TURN = 0x1ff,
 	// All values above here are cleared at the start of each turn and the start of the first main phase.
 
 	LCBP_REGENERATION = 0x200,							 // Turned on while prompting for regeneration effects.

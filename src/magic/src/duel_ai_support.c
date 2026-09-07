@@ -370,7 +370,7 @@ int get_available_card_action(int player, int card)
         g_attack_action_available = 1;
       }
 
-      if ((((s.extra_ability & 0x1000) != 0 && (s.state & 0x10) == 0 && (((PLAYER_CARD_INSTANCE(player, card).state & 0x30000) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)) || ((s.extra_ability & 1) != 0 && (g_response_card_type_mask & 0x10) != 0) || ((s.extra_ability & 2) != 0 && (g_response_card_type_mask & 0x20) != 0)) && ((g_land_can_be_played & 4) == 0 || (s.extra_ability & 0x5004) != 0))
+      if ((((s.extra_ability & 0x1000) != 0 && (s.state & 0x10) == 0 && (((PLAYER_CARD_INSTANCE(player, card).state & 0x30000) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0)) || ((s.extra_ability & 1) != 0 && (g_response_card_type_mask & 0x10) != 0) || ((s.extra_ability & 2) != 0 && (g_response_card_type_mask & 0x20) != 0)) && ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 || (s.extra_ability & 0x5004) != 0))
       {
         g_activation_event_flags &= ~2;
         if ((s.state & 0x20) == 0 && dispatch_event_to_single_card(player, card, EVENT_CAN_ACTIVATE, 1 - player, -1) != 0)
@@ -402,7 +402,7 @@ int get_available_card_action(int player, int card)
       {
         if ((s.type & TYPE_LAND) != 0)
         {
-          if (player == g_current_player && (g_land_can_be_played & 1) == 0 && (g_current_phase == 0x14 || g_current_phase == 0x1e))
+          if (player == g_current_player && (g_land_can_be_played & LCBP_LAND_HAS_BEEN_PLAYED) == 0 && (g_current_phase == 0x14 || g_current_phase == 0x1e))
           {
             s.result = 4;
             goto finish_get_available_card_action;
@@ -415,7 +415,7 @@ int get_available_card_action(int player, int card)
           }
         }
 
-        if ((((g_active_player == g_current_player && (((g_response_selection_in_progress != 0 && (s.type & 0x30) != 0) || g_current_phase == 0x14) || g_current_phase == 0x1e)) || (g_active_player != g_current_player && g_response_selection_in_progress != 0 && ((s.type & 0x10) != 0 || (s.type & 0x20) != 0))) && (s.unused_18 = can_pay_card_mana_cost(player, player, card)) != 0 && (((g_land_can_be_played & 4) == 0 || (s.extra_ability & 0x3004) != 0) && ((s.type & 0x42) != 0 || dispatch_event_to_single_card(player, card, EVENT_CAN_CAST, 1 - player, -1) != 0))))
+        if ((((g_active_player == g_current_player && (((g_response_selection_in_progress != 0 && (s.type & 0x30) != 0) || g_current_phase == 0x14) || g_current_phase == 0x1e)) || (g_active_player != g_current_player && g_response_selection_in_progress != 0 && ((s.type & 0x10) != 0 || (s.type & 0x20) != 0))) && (s.unused_18 = can_pay_card_mana_cost(player, player, card)) != 0 && (((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 || (s.extra_ability & 0x3004) != 0) && ((s.type & 0x42) != 0 || dispatch_event_to_single_card(player, card, EVENT_CAN_CAST, 1 - player, -1) != 0))))
         {
           s.result = 4;
           goto finish_get_available_card_action;
