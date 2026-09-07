@@ -3567,7 +3567,7 @@ int card_lifeblood(int player, int card, event_t event)
   if ((event == EVENT_CAST_SPELL || event == EVENT_SHOULD_AI_PLAY) &&
       g_affected_card == card && g_affected_card_controller == player)
   {
-    g_ai_modifier += (g_basiclandtypes_controlled[g_active_player][get_hacked_color(player, card, COLOR_RED)] * 3 + 3) * 8;
+    g_ai_modifier += (g_basiclandtypes_controlled[g_active_player][get_hacked_color(player, card, COLOR_RED)] + 1) * 24;
   }
   return 0;
 }
@@ -4136,32 +4136,34 @@ int card_remove_soul(int player, int card, event_t event)
   if (event == EVENT_CAN_CAST)
   {
     load_recorded_action_target(0);
-    if (g_current_spell_player == -1)
+    if (g_current_spell_player != -1)
+    {
+
+      return ((global_cards_data[PLAYER_CARD_INSTANCE(g_current_spell_player, g_current_spell_card).internal_card_id].type &
+               (TYPE_CREATURE | TYPE_ARTIFACT)) == TYPE_CREATURE &&
+              C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0, player, 2, 2,
+                                     0, TYPE_CREATURE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, -1,
+                                     -1, -1, TARGET_SPECIAL_SPELL_ON_STACK, 0, 0) != 0)
+                 ? 99
+                 : 0;
+    }
+    else
     {
       return 0;
     }
-    if ((global_cards_data[PLAYER_CARD_INSTANCE(g_current_spell_player, g_current_spell_card).internal_card_id].type &
-         (TYPE_CREATURE | TYPE_ARTIFACT)) == TYPE_CREATURE &&
-        C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0, player, 2, 2,
-                               0, TYPE_CREATURE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0, -1, -1,
-                               -1, -1, TARGET_SPECIAL_SPELL_ON_STACK, 0, 0) != 0)
-    {
-      return 99;
-    }
-    return 0;
   }
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
-    if (g_current_spell_player == -1)
-    {
-      g_spell_fizzled = 1;
-    }
-    else
+    if (g_current_spell_player != -1)
     {
       PLAYER_CARD_INSTANCE(player, card).targets[0].player = g_current_spell_player;
       PLAYER_CARD_INSTANCE(player, card).targets[0].card = g_current_spell_card;
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
+    }
+    else
+    {
+      g_spell_fizzled = 1;
     }
     g_ai_modifier -= 0x24;
   }
@@ -4169,6 +4171,9 @@ int card_remove_soul(int player, int card, event_t event)
   if (event == EVENT_CAN_COUNTER && g_special_mana_pool[player][COLOR_BLUE] >= 2)
   {
     g_ai_modifier += 0x18;
+  }
+  else
+  {
   }
 
   if (event == EVENT_RESOLVE_SPELL)

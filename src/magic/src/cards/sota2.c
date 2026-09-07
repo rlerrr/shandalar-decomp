@@ -3850,7 +3850,6 @@ int card_serendib_djinn(int player, int card, event_t event)
 {
   target_t land;
   int current_card;
-  int blue;
 
   if (card == g_affected_card &&
       player == g_affected_card_controller &&
@@ -3885,16 +3884,11 @@ int card_serendib_djinn(int player, int card, event_t event)
   if (event == EVENT_UPKEEP_PHASE && g_affected_card == card && g_affected_card_controller == player)
   {
     ++PLAYER_CARD_INSTANCE(player, card).info_slot;
-    if (g_basiclandtypes_controlled[player][COLOR_ANY] == 0)
+    if (g_basiclandtypes_controlled[player][COLOR_ANY] != 0)
     {
-      g_event_result |= 1;
-    }
-    else
-    {
-      blue = get_hacked_color(player, card, COLOR_BLUE);
       if (player == g_other_player && (g_duel_network_flags & 2) == 0)
       {
-        select_ai_land_to_sacrifice(player, &land, 0, 1 << (unsigned char)blue);
+        select_ai_land_to_sacrifice(player, &land, 0, 1 << (unsigned char)get_hacked_color(player, card, COLOR_BLUE));
       }
       else
       {
@@ -3908,11 +3902,15 @@ int card_serendib_djinn(int player, int card, event_t event)
       {
         play_sound_effect(WAV_SACRFICE);
       }
-      if (card_has_basic_land_type(land.player, land.card, blue) != 0)
+      if (card_has_basic_land_type(land.player, land.card, get_hacked_color(player, card, COLOR_BLUE)) != 0)
       {
         damage_player(player, 3, player, card);
       }
       kill_card(land.player, land.card, KILL_SACRIFICE);
+    }
+    else
+    {
+      g_event_result |= 1;
     }
   }
 
@@ -3936,8 +3934,8 @@ int card_serendib_djinn(int player, int card, event_t event)
         kill_card(player, current_card, KILL_DESTROY);
       }
     }
-    blue = get_hacked_color(player, card, COLOR_BLUE);
-    if (g_basiclandtypes_controlled[player][blue] == g_basiclandtypes_controlled[player][COLOR_ANY])
+
+    if (g_basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLUE)] == g_basiclandtypes_controlled[player][COLOR_ANY])
     {
       damage_player(player, 3, player, card);
     }

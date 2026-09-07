@@ -1734,134 +1734,132 @@ int card_fellwar_stone(int player, int card, event_t event)
     }
     return 0;
   }
-  else if (event == EVENT_CAN_ACTIVATE)
+
+  if (event == EVENT_CAN_ACTIVATE)
   {
     return ((PLAYER_CARD_INSTANCE(player, card).state & 0x30000) == 0 ||
             (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE) == 0) &&
            (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0;
   }
-  else
-  {
-    if (event == EVENT_ACTIVATE)
-    {
-      if ((char)PLAYER_CARD_INSTANCE(player, card).mana_color < 1)
-      {
-        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-      }
-      else
-      {
-        s.available_colors = (unsigned int)(char)PLAYER_CARD_INSTANCE(player, card).mana_color;
-        if ((player == g_other_player && (g_duel_network_flags & 2) == 0) ||
-            g_duel_ai_mode_state == 1 ||
-            g_duel_network_state != 0)
-        {
-          s.choice = -1;
-          if ((g_required_mana_color_mask & 1) != 0)
-          {
-            s.color = COLOR_BLACK;
-            while (s.color <= COLOR_WHITE && s.choice == -1)
-            {
-              if ((s.available_colors & (1 << (unsigned char)s.color)) != 0)
-              {
-                s.choice = s.color;
-              }
-              ++s.color;
-            }
-          }
 
+  if (event == EVENT_ACTIVATE)
+  {
+    if ((int)PLAYER_CARD_INSTANCE(player, card).mana_color > 0)
+    {
+      s.available_colors = (unsigned int)(char)PLAYER_CARD_INSTANCE(player, card).mana_color;
+      if ((player == g_other_player && (g_duel_network_flags & 2) == 0) ||
+          g_duel_ai_mode_state == 1 ||
+          g_duel_network_state != 0)
+      {
+        s.choice = -1;
+        if ((g_required_mana_color_mask & 1) != 0)
+        {
           s.color = COLOR_BLACK;
-          while (s.color < 7 && s.choice == -1)
+          for (; s.color <= COLOR_WHITE && s.choice == -1; ++s.color)
           {
-            if ((g_required_mana_color_mask & (1 << (unsigned char)s.color)) != 0 &&
-                (s.available_colors & (1 << (unsigned char)s.color)) != 0)
+            if ((s.available_colors & (1 << (unsigned char)s.color)) != 0)
             {
               s.choice = s.color;
             }
-            ++s.color;
-          }
-          if (s.choice == -1)
-          {
-            g_spell_fizzled = 1;
           }
         }
-        else
+
+        s.color = COLOR_BLACK;
+        for (; s.color <= 6 && s.choice == -1; ++s.color)
         {
-          s.choice = -1;
+          if ((g_required_mana_color_mask & (1 << (unsigned char)s.color)) != 0 &&
+              (s.available_colors & (1 << (unsigned char)s.color)) != 0)
+          {
+            s.choice = s.color;
+          }
+        }
+
+        if (s.choice == -1)
+        {
+          g_spell_fizzled = 1;
+        }
+      }
+      else
+      {
+        s.choice = -1;
+      }
+
+      if (g_spell_fizzled != 1)
+      {
+        if (g_duel_ai_mode_state != 1)
+        {
+          load_text("prompts.txt", "FELLWAR_STONE");
+        }
+        s.choice = choose_a_color(player,
+                                  g_text_lines[0],
+                                  1,
+                                  s.choice,
+                                  (char)PLAYER_CARD_INSTANCE(player, card).mana_color);
+        if (s.choice == -1)
+        {
+          g_spell_fizzled = 1;
+        }
+        else if ((g_mana_pool_colorless_components[1 - player] & (1 << (unsigned char)s.choice)) == 0)
+        {
+          g_spell_fizzled = 1;
         }
 
         if (g_spell_fizzled != 1)
         {
-          if (g_duel_ai_mode_state != 1)
+          produce_mana(player, s.choice, 1);
+          undeclare_mana_available_hex(player,
+                                       (char)PLAYER_CARD_INSTANCE(player, card).mana_color,
+                                       1);
+          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
+          g_produced_mana_color = s.choice;
+          if (player == g_other_player &&
+              (g_duel_network_flags & 2) == 0 &&
+              g_duel_ai_mode_state != 1)
           {
             load_text("prompts.txt", "FELLWAR_STONE");
-          }
-          s.choice = choose_a_color(player,
-                                    g_text_lines[0],
-                                    1,
-                                    s.choice,
-                                    (char)PLAYER_CARD_INSTANCE(player, card).mana_color);
-          if (s.choice == -1)
-          {
-            g_spell_fizzled = 1;
-          }
-          else if ((g_mana_pool_colorless_components[1 - player] & (1 << (unsigned char)s.choice)) == 0)
-          {
-            g_spell_fizzled = 1;
-          }
-
-          if (g_spell_fizzled != 1)
-          {
-            produce_mana(player, s.choice, 1);
-            undeclare_mana_available_hex(player,
-                                         (char)PLAYER_CARD_INSTANCE(player, card).mana_color,
-                                         1);
-            PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-            g_produced_mana_color = s.choice;
-            if (player == g_other_player &&
-                (g_duel_network_flags & 2) == 0 &&
-                g_duel_ai_mode_state != 1)
+            if (s.choice == COLOR_COLORLESS)
             {
-              load_text("prompts.txt", "FELLWAR_STONE");
-              if (s.choice == COLOR_COLORLESS)
-              {
-                strcpy(s.prompt, g_text_lines[6]);
-              }
-              else if (s.choice == COLOR_BLACK)
-              {
-                strcpy(s.prompt, g_text_lines[1]);
-              }
-              else if (s.choice == COLOR_BLUE)
-              {
-                strcpy(s.prompt, g_text_lines[2]);
-              }
-              else if (s.choice == COLOR_GREEN)
-              {
-                strcpy(s.prompt, g_text_lines[3]);
-              }
-              else if (s.choice == COLOR_RED)
-              {
-                strcpy(s.prompt, g_text_lines[4]);
-              }
-              else
-              {
-                strcpy(s.prompt, g_text_lines[5]);
-              }
-              do_dialog(player, player, card, -1, -1, s.prompt, 0);
+              strcpy(s.prompt, g_text_lines[6]);
             }
+            else if (s.choice == COLOR_BLACK)
+            {
+              strcpy(s.prompt, g_text_lines[1]);
+            }
+            else if (s.choice == COLOR_BLUE)
+            {
+              strcpy(s.prompt, g_text_lines[2]);
+            }
+            else if (s.choice == COLOR_GREEN)
+            {
+              strcpy(s.prompt, g_text_lines[3]);
+            }
+            else if (s.choice == COLOR_RED)
+            {
+              strcpy(s.prompt, g_text_lines[4]);
+            }
+            else
+            {
+              strcpy(s.prompt, g_text_lines[5]);
+            }
+            do_dialog(player, player, card, -1, -1, s.prompt, 0);
           }
         }
       }
     }
-
-    if (event == EVENT_GRAVEYARD_FROM_PLAY &&
-        card == g_affected_card &&
-        player == g_affected_card_controller &&
-        (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+    else
     {
-      undeclare_mana_available_hex(player,
-                                   (char)PLAYER_CARD_INSTANCE(player, card).mana_color,
-                                   1);
+      PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
     }
+  }
+
+  if (event == EVENT_GRAVEYARD_FROM_PLAY &&
+      card == g_affected_card &&
+      player == g_affected_card_controller &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
+  {
+    undeclare_mana_available_hex(player,
+                                 (char)PLAYER_CARD_INSTANCE(player, card).mana_color,
+                                 1);
   }
 
   return 0;
@@ -3171,7 +3169,10 @@ int card_armageddon_clock(int player, int card, event_t event)
         return s.should_pay;
       }
     }
-    return 0;
+    else
+    {
+      return 0;
+    }
   }
 
   if (event == EVENT_ACTIVATE && card == g_affected_card && player == g_affected_card_controller)
@@ -3198,26 +3199,19 @@ int card_armageddon_clock(int player, int card, event_t event)
         s.should_pay = 0;
       }
 
-      if (g_duel_ai_mode_state == 1)
+      if (g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
       {
         s.network_should_pay = s.should_pay;
       }
       else
       {
-        if (g_duel_network_state != 0)
+        if (g_other_player == g_event_player && (g_duel_network_flags & 2) == 0)
         {
           s.network_should_pay = s.should_pay;
         }
         else
         {
-          if (g_other_player == g_event_player && (g_duel_network_flags & 2) == 0)
-          {
-            s.network_should_pay = s.should_pay;
-          }
-          else
-          {
-            s.network_should_pay = 1;
-          }
+          s.network_should_pay = 1;
         }
       }
 
@@ -3312,8 +3306,8 @@ int card_dingus_egg(int player, int card, event_t event)
 int card_soul_net(int player, int card, event_t event)
 {
   int dummy;
+  int should_skip;
 
-  dummy = 0;
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     g_ai_modifier += 0x90;
@@ -3331,17 +3325,12 @@ int card_soul_net(int player, int card, event_t event)
     }
   }
 
-  dummy = 0;
   if (g_trigger_condition == 0xd5 && g_affected_card == card && g_affected_card_controller == player &&
-      (PLAYER_CARD_INSTANCE(player, card).info_slot & 0xff) != 0 && player == g_current_turn)
+      (PLAYER_CARD_INSTANCE(player, card).info_slot & 0xff) != 0 && player == g_current_turn &&
+      (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) ||
+       (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot = (int)((unsigned int)PLAYER_CARD_INSTANCE(player, card).info_slot | 0x100);
-    dummy = ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) ||
-            (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE);
-  }
-
-  if (dummy)
-  {
     if (event == EVENT_TRIGGER)
     {
       if (!has_mana(player, COLOR_ANY, 1))
@@ -3359,18 +3348,34 @@ int card_soul_net(int player, int card, event_t event)
     }
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      push_card_onto_stack(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
-      charge_mana(player, COLOR_COLORLESS, 1);
-      obliterate_top_card_of_stack();
-      if (g_spell_fizzled == 1)
+      dummy = 0;
+      if (g_duel_ai_mode_state == 1 || g_duel_network_state != 0)
       {
-        g_spell_fizzled = -1;
+        should_skip = dummy;
+      }
+      else if (g_other_player == player && (g_duel_network_flags & 2) == 0)
+      {
+        should_skip = dummy;
       }
       else
       {
-        dispatch_event(player, card, EVENT_PLAY_ABILITY);
-        gain_life(player, 1, player, card);
-        --PLAYER_CARD_INSTANCE(player, card).info_slot;
+        should_skip = 0;
+      }
+      if (should_skip == 0)
+      {
+        push_card_onto_stack(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
+        charge_mana(player, COLOR_COLORLESS, 1);
+        obliterate_top_card_of_stack();
+        if (g_spell_fizzled == 1)
+        {
+          g_spell_fizzled = -1;
+        }
+        else
+        {
+          dispatch_event(player, card, EVENT_PLAY_ABILITY);
+          gain_life(player, 1, player, card);
+          --PLAYER_CARD_INSTANCE(player, card).info_slot;
+        }
       }
     }
     if ((PLAYER_CARD_INSTANCE(player, card).info_slot & 0xff) != 0)
@@ -4741,35 +4746,35 @@ int card_rod_of_ruin(int player, int card, event_t event)
            !is_animated_and_sick(player, card) &&
            (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0;
   }
-  else if (event == EVENT_GET_SELECTED_CARD)
+
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(1);
+    return 0;
   }
-  else
+
+  if (event == EVENT_ACTIVATE)
   {
-    if (event == EVENT_ACTIVATE)
+    charge_mana(player, COLOR_COLORLESS, 3);
+    if (g_spell_fizzled != 1)
     {
-      charge_mana(player, COLOR_COLORLESS, 3);
+      if (g_duel_ai_mode_state != 1)
+      {
+        load_text("prompts.txt", "ROD_OF_RUIN");
+      }
+      select_damage_target(player, card, 1);
       if (g_spell_fizzled != 1)
       {
-        if (g_duel_ai_mode_state != 1)
-        {
-          load_text("prompts.txt", "ROD_OF_RUIN");
-        }
-        select_damage_target(player, card, 1);
-        if (g_spell_fizzled != 1)
-        {
-          PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
-        }
+        PLAYER_CARD_INSTANCE(player, card).state |= STATE_TAPPED;
       }
     }
-    if (event == EVENT_RESOLVE_ACTIVATION)
-    {
-      deal_damage_to_selected_target(player, card, event, 1);
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
-    }
+  }
+  if (event == EVENT_RESOLVE_ACTIVATION)
+  {
+    deal_damage_to_selected_target(player, card, event, 1);
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
+                         PLAYER_CARD_INSTANCE(player, card).parent_card)
+        .number_of_targets = 0;
   }
 
   return 0;
@@ -5520,9 +5525,9 @@ int card_tawnos_s_wand(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return has_mana(player, COLOR_ANY, 2) &&
-           !is_animated_and_sick(player, card) &&
+    return !is_animated_and_sick(player, card) &&
            (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
+           has_mana(player, COLOR_ANY, 2) &&
            real_target_available((int *)0,
                                  TARGET_SCAN_DIRECT,
                                  player,
@@ -5592,12 +5597,13 @@ int card_tawnos_s_wand(int player, int card, event_t event)
         }
       }
     }
-    return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
     SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+
+    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
     if (C_real_validate_target(target.player,
                                target.card,
                                (char *)0,
@@ -5625,7 +5631,6 @@ int card_tawnos_s_wand(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
   }
 
   if (event == EVENT_SHOULD_AI_PLAY)

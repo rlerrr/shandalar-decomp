@@ -293,27 +293,7 @@ int card_control_FX(int player, int card, event_t event)
   {
     if ((PLAYER_CARD_INSTANCE(player, card).token_status & STATUS_CONTROLLED) != 0)
     {
-      if ((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player == -1)
-      {
-        if (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                 PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                    .internal_card_id != -1 &&
-            (((PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                    PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                   .state &
-               STATE_POWER_STRUGGLE) != 0 &&
-              (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_active_player) ||
-             ((PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                    PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                   .state &
-               STATE_POWER_STRUGGLE) == 0 &&
-              (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_other_player)))
-        {
-          gain_control((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                       PLAYER_CARD_INSTANCE(player, card).damage_target_card);
-        }
-      }
-      else
+      if ((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player != -1)
       {
         PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                              PLAYER_CARD_INSTANCE(player, card).damage_source_card)
@@ -324,6 +304,23 @@ int card_control_FX(int player, int card, event_t event)
           gain_control((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                        PLAYER_CARD_INSTANCE(player, card).damage_target_card);
         }
+      }
+      else if (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                    PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+                       .internal_card_id != -1 &&
+               (((PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                       PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+                      .state &
+                  STATE_POWER_STRUGGLE) != 0 &&
+                 (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_active_player) ||
+                ((PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                       PLAYER_CARD_INSTANCE(player, card).damage_target_card)
+                      .state &
+                  STATE_POWER_STRUGGLE) == 0 &&
+                 (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_other_player)))
+      {
+        gain_control((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                     PLAYER_CARD_INSTANCE(player, card).damage_target_card);
       }
     }
     else
@@ -707,11 +704,13 @@ int card_living_land_FX(int player, int card, event_t event)
       g_affected_card != -1 &&
       (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) != 0)
   {
-    if (is_basic_land_internal_card_id_of_color(g_event_result, PLAYER_CARD_INSTANCE(player, card).info_slot) != 0 &&
-        is_in_play(g_affected_card_controller, g_affected_card) != 0)
+    if (is_basic_land_internal_card_id_of_color(g_event_result, PLAYER_CARD_INSTANCE(player, card).info_slot) != 0)
     {
-      g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
-      PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).token_status |= STATUS_ANIMATED;
+      if (is_in_play(g_affected_card_controller, g_affected_card) != 0)
+      {
+        g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
+        PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).token_status |= STATUS_ANIMATED;
+      }
     }
     else
     {

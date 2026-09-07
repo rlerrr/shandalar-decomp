@@ -197,113 +197,102 @@ int card_balance(int player, int card, event_t event)
   {
     return 1;
   }
-  else
+
+  if (event == EVENT_RESOLVE_SPELL)
   {
-    if (event == EVENT_RESOLVE_SPELL)
+    if (g_duel_ai_mode_state != 1)
     {
-      if (g_duel_ai_mode_state != 1)
+      load_text("prompts.txt", "BALANCE");
+      strcpy(s.land_prompt, g_text_lines[0]);
+      strcpy(s.creature_prompt, g_text_lines[1]);
+    }
+
+    do
+    {
+      s.player_1_count = 0;
+      s.player_0_count = s.player_1_count;
+      s.current_card = 0;
+      for (; (g_active_cards_count[1] <= g_active_cards_count[0] ? g_active_cards_count[0] : g_active_cards_count[1]) > s.current_card; ++s.current_card)
       {
-        load_text("prompts.txt", "BALANCE");
-        strcpy(s.land_prompt, g_text_lines[0]);
-        strcpy(s.creature_prompt, g_text_lines[1]);
+        if (is_in_play(0, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(0, s.current_card).internal_card_id].type & TYPE_LAND) != 0)
+        {
+          ++s.player_0_count;
+        }
+        if (is_in_play(1, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(1, s.current_card).internal_card_id].type & TYPE_LAND) != 0)
+        {
+          ++s.player_1_count;
+        }
       }
 
-      do
+      if (g_duel_ai_mode_state != 1)
       {
-        s.player_1_count = 0;
-        s.player_0_count = s.player_1_count;
-        s.current_card = 0;
-        while (1)
-        {
-          if ((g_active_cards_count[1] <= g_active_cards_count[0] ? g_active_cards_count[0] : g_active_cards_count[1]) <= s.current_card)
-          {
-            break;
-          }
-          if (is_in_play(0, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(0, s.current_card).internal_card_id].type & TYPE_LAND) != 0)
-          {
-            ++s.player_0_count;
-          }
-          if (is_in_play(1, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(1, s.current_card).internal_card_id].type & TYPE_LAND) != 0)
-          {
-            ++s.player_1_count;
-          }
-          ++s.current_card;
-        }
+        strcpy(g_text_lines[0], s.land_prompt);
+      }
 
-        if (g_duel_ai_mode_state != 1)
-        {
-          strcpy(g_text_lines[0], s.land_prompt);
-        }
-
-        if (s.player_1_count < s.player_0_count)
-        {
-          sacrifice_a_land(0);
-        }
-        else if (s.player_0_count < s.player_1_count)
-        {
-          sacrifice_a_land(1);
-        }
-
-        TENTATIVE_reassess_all_cards(0, 0xff);
-      } while (s.player_0_count != s.player_1_count);
-
-      do
+      if (s.player_1_count < s.player_0_count)
       {
-        if (g_duel_summary.hand_counts[1] < g_duel_summary.hand_counts[0])
-        {
-          discard(0, 0, 0);
-        }
-        if (g_duel_summary.hand_counts[0] < g_duel_summary.hand_counts[1])
-        {
-          discard(1, 0, 0);
-        }
-      } while (g_duel_summary.hand_counts[0] != g_duel_summary.hand_counts[1]);
-
-      do
+        sacrifice_a_land(0);
+      }
+      else if (s.player_0_count < s.player_1_count)
       {
-        s.player_1_count = 0;
-        s.player_0_count = s.player_1_count;
-        s.current_card = 0;
-        while (1)
-        {
-          if ((g_active_cards_count[1] <= g_active_cards_count[0] ? g_active_cards_count[0] : g_active_cards_count[1]) <= s.current_card)
-          {
-            break;
-          }
-          if (is_in_play(0, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(0, s.current_card).internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(0, s.current_card).kill_code != 3)
-          {
-            ++s.player_0_count;
-          }
-          if (is_in_play(1, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(1, s.current_card).internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(0, s.current_card).kill_code != 3)
-          {
-            ++s.player_1_count;
-          }
-          ++s.current_card;
-        }
+        sacrifice_a_land(1);
+      }
 
-        if (g_duel_ai_mode_state != 1)
-        {
-          strcpy(g_text_lines[0], s.creature_prompt);
-        }
+      TENTATIVE_reassess_all_cards(0, 0xff);
+    } while (s.player_0_count != s.player_1_count);
 
-        if (s.player_1_count < s.player_0_count)
-        {
-          s.current_card = choose_creature_to_sacrifice(0);
-          kill_card(0, s.current_card, KILL_SACRIFICE);
-        }
-        if (s.player_0_count < s.player_1_count)
-        {
-          s.current_card = choose_creature_to_sacrifice(1);
-          kill_card(1, s.current_card, KILL_SACRIFICE);
-        }
+    do
+    {
+      if (g_duel_summary.hand_counts[1] < g_duel_summary.hand_counts[0])
+      {
+        discard(0, 0, 0);
+      }
+      if (g_duel_summary.hand_counts[0] < g_duel_summary.hand_counts[1])
+      {
+        discard(1, 0, 0);
+      }
+    } while (g_duel_summary.hand_counts[0] != g_duel_summary.hand_counts[1]);
 
-        TENTATIVE_reassess_all_cards(0, 0xff);
-      } while (s.player_0_count != s.player_1_count);
+    do
+    {
+      s.player_1_count = 0;
+      s.player_0_count = s.player_1_count;
+      s.current_card = 0;
+      for (; (g_active_cards_count[1] <= g_active_cards_count[0] ? g_active_cards_count[0] : g_active_cards_count[1]) > s.current_card; ++s.current_card)
+      {
+        if (is_in_play(0, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(0, s.current_card).internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(0, s.current_card).kill_code != 3)
+        {
+          ++s.player_0_count;
+        }
+        if (is_in_play(1, s.current_card) && (global_cards_data[PLAYER_CARD_INSTANCE(1, s.current_card).internal_card_id].type & TYPE_CREATURE) != 0 && PLAYER_CARD_INSTANCE(0, s.current_card).kill_code != 3)
+        {
+          ++s.player_1_count;
+        }
+      }
 
-      kill_card(player, card, KILL_BURY);
-    }
-    return 0;
+      if (g_duel_ai_mode_state != 1)
+      {
+        strcpy(g_text_lines[0], s.creature_prompt);
+      }
+
+      if (s.player_1_count < s.player_0_count)
+      {
+        s.current_card = choose_creature_to_sacrifice(0);
+        kill_card(0, s.current_card, KILL_SACRIFICE);
+      }
+      if (s.player_0_count < s.player_1_count)
+      {
+        s.current_card = choose_creature_to_sacrifice(1);
+        kill_card(1, s.current_card, KILL_SACRIFICE);
+      }
+
+      TENTATIVE_reassess_all_cards(0, 0xff);
+    } while (s.player_0_count != s.player_1_count);
+
+    kill_card(player, card, KILL_BURY);
   }
+
+  return 0;
 }
 
 // FUNCTION: MAGIC 0x004019b4
@@ -1522,7 +1511,7 @@ int card_winter_blast(int player, int card, event_t event)
     target_index = 0;
     stop_selecting = 0;
 
-    while (target_index < g_x_value && stop_selecting == 0 && g_spell_fizzled != 1)
+    for (; target_index < g_x_value && stop_selecting == 0 && g_spell_fizzled != 1; ++target_index)
     {
       if (g_duel_ai_mode_state != 1)
       {
@@ -1568,7 +1557,6 @@ int card_winter_blast(int player, int card, event_t event)
           stop_selecting = 1;
         }
       }
-      ++target_index;
     }
 
     for (target_index = 0; target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++target_index)
@@ -2707,10 +2695,13 @@ int card_demonic_tutor(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044d711
 int card_untamed_wilds(int player, int card, event_t event)
 {
-  int found_basic_land;
-  int hand_card;
-  int library_index;
-  int test_index;
+  struct
+  {
+    int test_index;
+    int hand_card;
+    int library_index;
+    int found_basic_land;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -2728,17 +2719,17 @@ int card_untamed_wilds(int player, int card, event_t event)
         g_duel_ai_mode_state == 1 ||
         g_duel_network_state != 0)
     {
-      library_index = find_highest_value_library_card_by_type(player, player, TYPE_LAND);
-      if (library_index != -1 && global_library[player][library_index] > 4)
+      s.library_index = find_highest_value_library_card_by_type(player, player, TYPE_LAND);
+      if (s.library_index != -1 && global_library[player][s.library_index] > 4)
       {
-        library_index = -1;
-        for (test_index = 0;
-             test_index < 500 && library_index == -1 && global_library[player][test_index] != -1;
-             ++test_index)
+        s.library_index = -1;
+        for (s.test_index = 0;
+             s.test_index < 500 && s.library_index == -1 && global_library[player][s.test_index] != -1;
+             ++s.test_index)
         {
-          if (global_library[player][test_index] < 5)
+          if (global_library[player][s.test_index] <= 4)
           {
-            library_index = test_index;
+            s.library_index = s.test_index;
           }
         }
       }
@@ -2750,48 +2741,44 @@ int card_untamed_wilds(int player, int card, event_t event)
         load_text("prompts.txt", "UNTAMED_WILDS");
       }
 
-      found_basic_land = 0;
-      for (test_index = 0;
-           test_index < 500 && found_basic_land == 0 && global_library[player][test_index] != -1;
-           ++test_index)
+      s.found_basic_land = 0;
+      for (s.test_index = 0;
+           s.test_index < 500 && s.found_basic_land == 0 && global_library[player][s.test_index] != -1;
+           ++s.test_index)
       {
-        if (global_library[player][test_index] < 5)
+        if (global_library[player][s.test_index] <= 4)
         {
-          found_basic_land = 1;
+          s.found_basic_land = 1;
         }
       }
 
-      if (found_basic_land)
+      if (s.found_basic_land)
       {
         do
         {
-          library_index = show_deck(player, global_library[player], 500, g_text_lines[0], 1, gs_cancel_008a8c20);
-          if (library_index == -1)
-          {
-            break;
-          }
-        } while (global_library[player][library_index] > 4);
+          s.library_index = show_deck(player, global_library[player], 500, g_text_lines[0], 1, gs_cancel_008a8c20);
+        } while (s.library_index != -1 && global_library[player][s.library_index] > 4);
       }
       else
       {
-        library_index = -1;
+        s.library_index = -1;
         show_deck(player, global_library[player], 500, g_text_lines[0], 0, gs_done_008b40e0);
       }
     }
 
-    if (library_index != -1 &&
-        (global_library[player][library_index] == -1 || global_library[player][library_index] > 4))
+    if (s.library_index != -1 &&
+        (global_library[player][s.library_index] == -1 || global_library[player][s.library_index] > 4))
     {
-      library_index = -1;
+      s.library_index = -1;
     }
 
-    if (library_index != -1 && global_library[player][library_index] != -1)
+    if (s.library_index != -1 && global_library[player][s.library_index] != -1)
     {
-      hand_card = add_card_to_hand(player, global_library[player][library_index]);
-      if (hand_card != -1)
+      s.hand_card = add_card_to_hand(player, global_library[player][s.library_index]);
+      if (s.hand_card != -1)
       {
-        remove_card_from_deck(player, library_index);
-        process_card_enters_play(player, hand_card);
+        remove_card_from_deck(player, s.library_index);
+        process_card_enters_play(player, s.hand_card);
         TENTATIVE_reassess_all_cards(0, 0x30);
       }
     }
