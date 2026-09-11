@@ -10,6 +10,11 @@ PyGhidra script which attempts to import `magic-trace.c`. Ghidra's version track
 ## `*.csv` files
 Ghidra "Functions" window exports from their respective binaries.  Useful for matching with `reccmp`
 
+`mok-manalinkeh-reroutes.csv` maps every five-byte jump stub found in MOK's
+`magic.exe` to its `ManalinkEh.asm` veneer address, zero-based veneer index,
+and symbol name.  Regenerate it with `inventory_manalink_bridges.py` and its
+`--redirect-csv` option.
+
 ## `check_symbol_gaps.py`
 Detects issues in the `.csv` files exported from Ghidra.  Ghidra tends to not include unreachable/jumptable code in its `size` which is problematice when used with `reccmp`
 

@@ -59,13 +59,46 @@ def read_recompiled_global_sizes(project_dir, target_id):
     return sizes
 
 
-def read_veneers(path):
-    veneers = {}
+def read_veneer_entries(path):
+    entries = []
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         match = VENEER_RE.match(line)
         if match:
-            veneers[int(match.group(2), 16)] = match.group(1)
-    return veneers
+            entries.append(
+                {
+                    "address": int(match.group(2), 16),
+                    "name": match.group(1),
+                    "index": len(entries),
+                }
+            )
+    return entries
+
+
+def write_redirect_csv(path, redirects):
+    fieldnames = (
+        "mok_address",
+        "mok_name",
+        "mok_orig_size",
+        "manalinkeh_address",
+        "manalinkeh_rva",
+        "manalinkeh_index_0based",
+        "manalinkeh_name",
+    )
+    with path.open("w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        for row in redirects:
+            writer.writerow(
+                {
+                    "mok_address": f"0x{row['exe_address']:08x}",
+                    "mok_name": row["exe_name"],
+                    "mok_orig_size": row["orig_size"],
+                    "manalinkeh_address": f"0x{row['veneer_address']:08x}",
+                    "manalinkeh_rva": f"0x{row['veneer_address'] - 0x02000000:08x}",
+                    "manalinkeh_index_0based": row["veneer_index"],
+                    "manalinkeh_name": row["veneer_name"],
+                }
+            )
 
 
 def scan_veneer_jumps(image, veneers):
@@ -282,6 +315,7 @@ def main():
     parser.add_argument("source_dir", type=Path)
     parser.add_argument("--project-dir", type=Path)
     parser.add_argument("--target")
+    parser.add_argument("--redirect-csv", type=Path)
     parser.add_argument("--json", type=Path)
     args = parser.parse_args()
 
@@ -289,7 +323,9 @@ def main():
         parser.error("--project-dir and --target must be used together")
 
     image = detect_image(args.magic_exe)
-    veneers = read_veneers(args.manalink_asm)
+    veneer_entries = read_veneer_entries(args.manalink_asm)
+    veneers = {row["address"]: row["name"] for row in veneer_entries}
+    veneer_indices = {row["address"]: row["index"] for row in veneer_entries}
     functions = read_csv(args.functions_csv)
     annotations = read_csv(args.annotations_csv)
     recomp_global_sizes = {}
@@ -372,6 +408,12 @@ def main():
                 "exe_name": annotated_by_address.get(address, suggested_name),
                 "veneer_address": target,
                 "veneer_name": veneers[target],
+                "veneer_index": veneer_indices[target],
+                "orig_size": (
+                    int(function_row["orig_size"])
+                    if function_row is not None
+                    else 5
+                ),
                 "at_function_start": function_row is not None,
                 "containing_function": (
                     containing_row["name"] if containing_row is not None else None
@@ -583,6 +625,8 @@ def main():
 
     if args.json:
         args.json.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    if args.redirect_csv:
+        write_redirect_csv(args.redirect_csv, redirects)
 
     print(f"Veneers: {result['veneer_count']}")
     print(f"Manalink rel32 jumps: {result['redirect_count']}")
