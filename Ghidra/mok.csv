@@ -1668,3 +1668,15 @@ address,name,type,orig_size
 004d4ca0,get_card_special_counter_icon,function,5
 004d4cbe,extract_numbered_text_choice,function,528
 004d4ed0,draw_summoning_sickness_dib_overlay,function,226
+00728710,g_screen_name_profile,global,
+00608ce0,global_debug_pens,global,
+007392b4,g_duel_status_text,global,
+0056b498,g_default_screen_name,global,
+0056b8c0,g_screen_name_unknown_date_text,global,
+00620864,g_custom_duel_action_text,global,
+00620cf4,gs_cuecard_opponent_library_00789bd0,global,
+00735ed8,gs_cuecard_scrollbar_008b2900,global,
+007872e0,gs_cuecard_your_library_0091ca20,global,
+0078fe74,gs_window_title_your_attack_00926010,global,
+007905dc,gs_window_title_opponent_attack_009267a0,global,
+007a349c,gs_cuecard_scroll_thumb_0093a810,global,
