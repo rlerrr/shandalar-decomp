@@ -221,6 +221,7 @@ def read_source_references(source_dir, image):
                         "address": literal_address,
                         "file": str(path.relative_to(source_dir)),
                         "line": text.count("\n", 0, match.start()) + 1,
+                        "context": original_line.strip()[:300],
                         "inferred_name": inferred_reference_name(
                             code_line, original_line, column
                         ),
@@ -306,10 +307,11 @@ def main():
         for row in annotations
         if row["type"].lower() == "global"
     }
-    all_annotations_by_address = dict(globals_by_address)
-    all_annotations_by_address.update(annotated_by_address)
     annotations_by_address = {
         int(row["address"], 16): row for row in annotations
+    }
+    all_annotations_by_address = {
+        address: row["name"] for address, row in annotations_by_address.items()
     }
 
     global_spans = []
@@ -457,7 +459,9 @@ def main():
         kinds = set(row["macros"])
         if kinds & {"EXE_FN", "EXE_STDCALL_FN"}:
             item["suggested_types"].add("function")
-        if kinds - {"EXE_FN", "EXE_STDCALL_FN"}:
+        if "EXE_STR" in kinds:
+            item["suggested_types"].add("string")
+        if kinds - {"EXE_FN", "EXE_STDCALL_FN", "EXE_STR"}:
             item["suggested_types"].add("global")
         for name in row["inferred_names"]:
             item["suggested_names"].add(name)
