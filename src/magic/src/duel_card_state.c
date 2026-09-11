@@ -156,7 +156,6 @@ void discard(int player, int flags, int player_who_controls_effect)
   }
 }
 
-// FUNCTION: MOK 0x004358f0
 // FUNCTION: MAGIC 0x00442763
 // FUNCTION: SHANDALAR 0x0040dffd
 color_t single_color_test_bit_to_color_t(color_test_t color_test)
@@ -1467,7 +1466,6 @@ void get_landwalk_evasion_masks(unsigned int *out_landwalk_mask, unsigned int *o
   }
 }
 
-// FUNCTION: MOK 0x004a09a0
 // FUNCTION: MAGIC 0x004ef850
 // FUNCTION: SHANDALAR 0x004a9910
 int create_legacy_effect(int player, int card, int legacy_iid, int target_player, int target_card)

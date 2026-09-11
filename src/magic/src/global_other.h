@@ -61,7 +61,6 @@ ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39];
 extern ShandalarMonsterDefinition g_shandalar_monster_definitions[0x39];
 #endif
 
-// GLOBAL: MOK 0x543c10
 // GLOBAL: MAGIC 0x00791560
 // GLOBAL: SHANDALAR 0x007a82f0
 GLOBAL_OTHERS_EXTERN card_instance_t global_displayed_card_instances[2][151];

@@ -2933,7 +2933,6 @@ int card_wooden_sphere(int player, int card, event_t event)
   return helper_lucky_charm(player, card, event, 3);
 }
 
-// FUNCTION: MOK 0x00423dc0
 // FUNCTION: MAGIC 0x0041626b
 // FUNCTION: SHANDALAR 0x00518a81
 int helper_lucky_charm(int player, int card, int event, int color)
@@ -5850,7 +5849,6 @@ int card_sunglasses_of_urza(int player, int card, event_t event)
   return 0;
 }
 
-// FUNCTION: MOK 0x00427740
 // FUNCTION: MAGIC 0x0041f4c0
 // FUNCTION: SHANDALAR 0x00521cd0
 int helper_mox(int player, int card, event_t event, int color)

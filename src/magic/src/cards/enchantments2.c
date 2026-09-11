@@ -6921,7 +6921,6 @@ int card_white_ward(int player, int card, event_t event)
   return helper_ward(player, card, event, get_sleighted_color(player, card, COLOR_WHITE));
 }
 
-// FUNCTION: MOK 0x004bc490
 // FUNCTION: MAGIC 0x0052e400
 // FUNCTION: SHANDALAR 0x004e5bfd
 int helper_ward(int player, int card, event_t event, int color)
@@ -8349,7 +8348,6 @@ int card_co_p_green(int player, int card, event_t event)
   return helper_circle_of_protection(player, card, event, get_sleighted_color(player, card, COLOR_GREEN));
 }
 
-// FUNCTION: MOK 0x004bdc80
 // FUNCTION: MAGIC 0x00532bea
 // FUNCTION: SHANDALAR 0x004ea3e7
 int helper_circle_of_protection(int player, int card, event_t event, int color)

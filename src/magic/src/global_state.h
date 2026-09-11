@@ -15,7 +15,6 @@
 // See manalink.lds and ai.c for more some of these addresses and types
 // A lot of these can potentially be correlated through save_or_load_ver1 and save_or_load_ver2
 
-// GLOBAL: MOK 0x004ef540
 // GLOBAL: MAGIC 0x008b60f0
 // GLOBAL: SHANDALAR 0x008ca270
 GLOBAL_STATE_EXTERN card_instance_t global_card_instances[2][151];
@@ -285,12 +284,10 @@ GLOBAL_STATE_EXTERN int g_encounter_color_match_mode;
 // GLOBAL: SHANDALAR 0x008a9410
 GLOBAL_STATE_EXTERN int global_library[2][500];
 
-// GLOBAL: MOK 0x507ec0
 // GLOBAL: MAGIC 0x0093a990
 // GLOBAL: SHANDALAR 0x0094eab0
 GLOBAL_STATE_EXTERN int TENTATIVE_timestamp_player[500];
 
-// GLOBAL: MOK 0x5076f0
 // GLOBAL: MAGIC 0x8b5910
 // GLOBAL: SHANDALAR 0x008c9a90
 GLOBAL_STATE_EXTERN int TENTATIVE_timestamp_card[500];
@@ -299,12 +296,10 @@ GLOBAL_STATE_EXTERN int TENTATIVE_timestamp_card[500];
 // GLOBAL: SHANDALAR 0x005854f8
 GLOBAL_STATE_EXTERN int g_cyclopean_tomb_cast_sequence;
 
-// GLOBAL: MOK 0x5096b0
 // GLOBAL: MAGIC 0x9251e0
 // GLOBAL: SHANDALAR 0x00939310
 GLOBAL_STATE_EXTERN target_t global_stack_cards[32];
 
-// GLOBAL: MOK 0x5097b0
 // GLOBAL: MAGIC 0x926810
 // GLOBAL: SHANDALAR 0x0093a940
 GLOBAL_STATE_EXTERN target_t global_stack_damage_targets[32];
@@ -381,7 +376,6 @@ typedef struct
   int unknown_c;
 } damage_accumulator_t;
 
-// GLOBAL: MOK 0x005098b0
 // GLOBAL: MAGIC 0x0093b280
 // GLOBAL: SHANDALAR 0x0094f3a0
 GLOBAL_STATE_EXTERN damage_accumulator_t g_damage_accumulators[2][151][2];

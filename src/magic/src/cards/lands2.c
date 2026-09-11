@@ -1337,7 +1337,6 @@ int card_urza_s_tower(int player, int card, event_t event)
   return 0;
 }
 
-// FUNCTION: MOK 0x004a9310
 // FUNCTION: MAGIC 0x005058b1
 // FUNCTION: SHANDALAR 0x00555944
 int helper_dual_land(int player, int card, event_t event, color_test_t available_colors)

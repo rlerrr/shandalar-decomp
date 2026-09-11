@@ -429,7 +429,6 @@ int select_card_from_graveyard(int player,
 }
 
 #ifndef SHANDALAR
-// FUNCTION: MOK 0x0047936d
 // FUNCTION: MAGIC 0x004b42aa
 int show_deck(int player, int *cards, int count, char *title, int require_selection, char *prompt)
 {

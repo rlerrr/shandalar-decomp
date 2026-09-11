@@ -503,7 +503,6 @@ int load_recorded_action_target(int a1)
   return 0;
 }
 
-// FUNCTION: MOK 0x00499010
 // FUNCTION: MAGIC 0x004e503e
 // FUNCTION: SHANDALAR 0x004c42ae
 int load_recorded_action_code(int a1)

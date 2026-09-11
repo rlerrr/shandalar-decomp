@@ -15,7 +15,6 @@
 #include "global_strings.h"
 #include "shared_startup.h"
 
-// FUNCTION: MOK 0x0042de60
 // FUNCTION: MAGIC 0x00432f00
 // FUNCTION: SHANDALAR 0x004143e0
 int charge_mana(int player, color_t color, int amount)
@@ -1324,7 +1323,6 @@ int refund_paid_mana(int *mana_paid_by_color)
   }
 }
 
-// FUNCTION: MOK 0x004302c0
 // FUNCTION: MAGIC 0x00435e27
 // FUNCTION: SHANDALAR 0x00417301
 int charge_mana_w_global_cost_mod(int player, int card, int color, int amount)
@@ -1859,7 +1857,6 @@ int undeclare_mana_available_and_produce_it(int player, color_t color, int amoun
   return g_raw_mana_available[player][color];
 }
 
-// FUNCTION: MOK 0x0049d510
 // FUNCTION: MAGIC 0x004eaf09
 // FUNCTION: SHANDALAR 0x00441699
 int has_mana(int player, color_t color, int amount)
@@ -1969,7 +1966,6 @@ int has_mana(int player, color_t color, int amount)
   }
 }
 
-// FUNCTION: MOK 0x0049d710
 // FUNCTION: MAGIC 0x004eb23d
 // FUNCTION: SHANDALAR 0x004419ca
 int has_mana_w_global_cost_mod(int player, int card, color_t color, int amount)

@@ -3126,7 +3126,6 @@ int contains_player_card_pair(int *card_pairs, int card_pair_count, int player, 
   return s.result;
 }
 
-// FUNCTION: MOK 0x00459AA0
 // FUNCTION: MAGIC 0x00485060
 // FUNCTION: SHANDALAR 0x00488b70
 int dispatch_function_to_all_cards_in_play(int player, int card, in_play_card_callback_t callback, int who_to_check)
@@ -4294,7 +4293,6 @@ int legacy_clear_graphics_page_stub()
 {
 }
 
-// FUNCTION: MOK 0x0044e050
 // FUNCTION: MAGIC 0x004e1d6d
 int legacy_blit_graphics_rect_stub()
 {
