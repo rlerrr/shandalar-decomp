@@ -1840,7 +1840,7 @@ int card_fellwar_stone(int player, int card, event_t event)
 int card_ashnod_s_battle_gear(int player, int card, event_t event)
 {
   target_t target;
-  int legacy_card;
+  int created_legacy_card;
 
   if (event == EVENT_UNTAP && g_affected_card == card && g_affected_card_controller == player)
   {
@@ -1858,6 +1858,8 @@ int card_ashnod_s_battle_gear(int player, int card, event_t event)
           g_duel_ai_mode_state == 1 ||
           g_duel_network_state != 0)
       {
+        int legacy_card;
+
         legacy_card = PLAYER_CARD_INSTANCE(player, card).info_slot;
         if (legacy_card == -1 ||
             ((PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_player,
@@ -1947,17 +1949,17 @@ int card_ashnod_s_battle_gear(int player, int card, event_t event)
                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                -1, -1, -1, -1, 0, 0, 0))
     {
-      legacy_card = create_legacy_effect(g_card_on_stack_controller,
-                                         g_card_on_stack,
-                                         LEGACY_EFFECT_PUMP,
-                                         target.player,
-                                         target.card);
-      if (legacy_card != -1)
+      created_legacy_card = create_legacy_effect(g_card_on_stack_controller,
+                                                 g_card_on_stack,
+                                                 LEGACY_EFFECT_PUMP,
+                                                 target.player,
+                                                 target.card);
+      if (created_legacy_card != -1)
       {
-        PARENT_CARD_INSTANCE(player, card).info_slot = legacy_card;
-        PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= STATUS_PERMANENT;
-        PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = 2;
-        PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = -2;
+        PARENT_CARD_INSTANCE(player, card).info_slot = created_legacy_card;
+        PLAYER_CARD_INSTANCE(player, created_legacy_card).token_status |= STATUS_PERMANENT;
+        PLAYER_CARD_INSTANCE(player, created_legacy_card).counter_power = 2;
+        PLAYER_CARD_INSTANCE(player, created_legacy_card).counter_toughness = -2;
       }
     }
     else
@@ -1988,7 +1990,7 @@ int card_ashnod_s_battle_gear(int player, int card, event_t event)
 int card_tawnos_s_weaponry(int player, int card, event_t event)
 {
   target_t target;
-  int legacy_card;
+  int created_legacy_card;
 
   if (event == EVENT_UNTAP && g_affected_card == card && g_affected_card_controller == player)
   {
@@ -2006,6 +2008,8 @@ int card_tawnos_s_weaponry(int player, int card, event_t event)
           g_duel_ai_mode_state == 1 ||
           g_duel_network_state != 0)
       {
+        int legacy_card;
+
         legacy_card = PLAYER_CARD_INSTANCE(player, card).damage_source_card;
         if (legacy_card == -1 ||
             ((PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_player,
@@ -2043,13 +2047,13 @@ int card_tawnos_s_weaponry(int player, int card, event_t event)
                                  get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                  -1, -1, -1, -1, 0, 0, 0);
   }
-  else if (event == EVENT_GET_SELECTED_CARD)
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
+    return 0;
   }
-  else
-  {
-    if (event == EVENT_ACTIVATE &&
+
+  if (event == EVENT_ACTIVATE &&
         (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0 &&
         has_mana(player, COLOR_ANY, 2))
     {
@@ -2085,18 +2089,18 @@ int card_tawnos_s_weaponry(int player, int card, event_t event)
                                  get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                  -1, -1, -1, -1, 0, 0, 0))
       {
-        legacy_card = create_legacy_effect(g_card_on_stack_controller,
-                                           g_card_on_stack,
-                                           LEGACY_EFFECT_PUMP,
-                                           target.player,
-                                           target.card);
-        if (legacy_card != -1)
+        created_legacy_card = create_legacy_effect(g_card_on_stack_controller,
+                                                   g_card_on_stack,
+                                                   LEGACY_EFFECT_PUMP,
+                                                   target.player,
+                                                   target.card);
+        if (created_legacy_card != -1)
         {
-          PLAYER_CARD_INSTANCE(player, legacy_card).token_status |= STATUS_PERMANENT;
-          PLAYER_CARD_INSTANCE(player, legacy_card).counter_power = 1;
-          PLAYER_CARD_INSTANCE(player, legacy_card).counter_toughness = 1;
+          PLAYER_CARD_INSTANCE(player, created_legacy_card).token_status |= STATUS_PERMANENT;
+          PLAYER_CARD_INSTANCE(player, created_legacy_card).counter_power = 1;
+          PLAYER_CARD_INSTANCE(player, created_legacy_card).counter_toughness = 1;
           PARENT_CARD_INSTANCE(player, card).damage_source_player = (char)player;
-          PARENT_CARD_INSTANCE(player, card).damage_source_card = legacy_card;
+          PARENT_CARD_INSTANCE(player, card).damage_source_card = created_legacy_card;
         }
       }
       else
@@ -2138,8 +2142,6 @@ int card_tawnos_s_weaponry(int player, int card, event_t event)
       g_global_power_bonus[player]++;
       g_global_toughness_bonus[player]++;
     }
-  }
-
   return 0;
 }
 

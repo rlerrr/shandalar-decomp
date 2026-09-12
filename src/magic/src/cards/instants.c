@@ -234,28 +234,44 @@ int card_ancestral_recall(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004b0777
 int card_simulacrum(int player, int card, event_t event)
 {
-  int current_card;
-  int current_player;
-  int target_card;
-  int target_player;
+  struct
+  {
+    int target_player;
+    int target_card;
+    int current_player;
+    int current_card;
+    int result;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
     load_recorded_action_target(0);
-    if (!real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, 0x200, 2, 0, 0,
-                               get_protections_from(player, card), 0, 0, -1, -1, 0xffffffff,
-                               0xffffffff, 0, 0, 0))
+    s.result = real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player, 0x200, 2, 0, 0,
+                                     get_protections_from(player, card), 0, 0, -1, -1, 0xffffffff,
+                                     0xffffffff, 0, 0, 0);
+    if (s.result != 0)
+    {
+      if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
+      {
+        if (real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, 0, 0, 0, 0, 0, 0,
+                                  g_damage_card_internal_card_id, -1, 0xffffffff, 0xffffffff, 0x20, 0, 0))
+        {
+          return 99;
+        }
+        else
+        {
+          return 0;
+        }
+      }
+      else
+      {
+        return 1;
+      }
+    }
+    else
     {
       return 0;
     }
-    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
-    {
-      return 1;
-    }
-    return real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, 0x200, 0, 0, 0, 0, 0, 0,
-                                 g_damage_card_internal_card_id, -1, 0xffffffff, 0xffffffff, 0x20, 0, 0)
-               ? 99
-               : 0;
   }
 
   if ((event == EVENT_CAST_SPELL) && (card == g_affected_card) && (player == g_affected_card_controller))
@@ -269,10 +285,10 @@ int card_simulacrum(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+    s.target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
 
-    if (C_real_validate_target(target_player, target_card, (char *)0, player, player, player,
+    if (C_real_validate_target(s.target_player, s.target_card, (char *)0, player, player, player,
                                TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
                                get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1,
                                ~SUB_WALL, -1, -1, 0, 0, 0))
@@ -280,34 +296,34 @@ int card_simulacrum(int player, int card, event_t event)
       if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
       {
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-        for (current_player = 0; current_player < 2; ++current_player)
+        for (s.current_player = 0; s.current_player < 2; ++s.current_player)
         {
-          for (current_card = 0; current_card < g_active_cards_count[current_player]; ++current_card)
+          for (s.current_card = 0; s.current_card < g_active_cards_count[s.current_player]; ++s.current_card)
           {
-            if (PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id == g_damage_card_internal_card_id && PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_player == player && PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_card == -1)
+            if (PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id == g_damage_card_internal_card_id && PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_target_player == player && PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_target_card == -1)
             {
-              damage_creature(target_player, target_card, PLAYER_CARD_INSTANCE(current_player, current_card).info_slot,
-                              (int)PLAYER_CARD_INSTANCE(current_player, current_card).damage_source_player, PLAYER_CARD_INSTANCE(current_player, current_card).damage_source_card);
-              PLAYER_CARD_INSTANCE(player, card).eot_toughness += PLAYER_CARD_INSTANCE(current_player, current_card).info_slot;
-              PLAYER_CARD_INSTANCE(current_player, current_card).info_slot = 0;
+              damage_creature(s.target_player, s.target_card, PLAYER_CARD_INSTANCE(s.current_player, s.current_card).info_slot,
+                              (int)PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_source_player, PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_source_card);
+              PLAYER_CARD_INSTANCE(player, card).eot_toughness += PLAYER_CARD_INSTANCE(s.current_player, s.current_card).info_slot;
+              PLAYER_CARD_INSTANCE(s.current_player, s.current_card).info_slot = 0;
             }
           }
         }
       }
 
       PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
-      for (current_player = 0; current_player < 2; ++current_player)
+      for (s.current_player = 0; s.current_player < 2; ++s.current_player)
       {
-        for (current_card = 0; current_card < 150; ++current_card)
+        for (s.current_card = 0; s.current_card < 150; ++s.current_card)
         {
-          if (g_damage_accumulators[current_player][current_card][player].amount > 0)
+          if (g_damage_accumulators[s.current_player][s.current_card][player].amount > 0)
           {
-            damage_creature(target_player, target_card,
-                            g_damage_accumulators[current_player][current_card][player].amount,
-                            current_player, current_card);
+            damage_creature(s.target_player, s.target_card,
+                            g_damage_accumulators[s.current_player][s.current_card][player].amount,
+                            s.current_player, s.current_card);
             PLAYER_CARD_INSTANCE(player, card).info_slot +=
-                g_damage_accumulators[current_player][current_card][player].amount;
-            g_damage_accumulators[current_player][current_card][player].amount = 0;
+                g_damage_accumulators[s.current_player][s.current_card][player].amount;
+            g_damage_accumulators[s.current_player][s.current_card][player].amount = 0;
           }
         }
       }

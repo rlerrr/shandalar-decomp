@@ -706,6 +706,7 @@ int card_relic_barrier(int player, int card, event_t event)
 int card_serpent_generator(int player, int card, event_t event)
 {
   int snake_card;
+  int internal_card_id;
 
   if (event == EVENT_CAN_ACTIVATE)
   {
@@ -739,7 +740,8 @@ int card_serpent_generator(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    snake_card = add_card_to_hand(player, find_internal_card_id_by_csv_id(CARD_ID_POISON_SNAKE));
+    internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_POISON_SNAKE);
+    snake_card = add_card_to_hand(player, internal_card_id);
     if (snake_card != -1)
     {
       process_card_enters_play(player, snake_card);
@@ -2103,8 +2105,6 @@ int card_miracle_worker(int player, int card, event_t event)
 int card_mold_demon(int player, int card, event_t event)
 {
   char dialog[600];
-  int color;
-  int choice;
 
   if (g_trigger_condition == 0xdb &&
       g_affected_card == card &&
@@ -2123,27 +2123,25 @@ int card_mold_demon(int player, int card, event_t event)
       {
         load_text("promptsX2.txt", "MOLD_DEMON");
       }
-      color = get_hacked_color(player, card, COLOR_BLACK);
-      sprintf(dialog, " %s\n %s", g_text_lines[0], g_text_lines[color]);
-      color = get_hacked_color(player, card, COLOR_BLACK);
-      if (g_basiclandtypes_controlled[player][color] > 1)
+      sprintf(dialog, " %s\n %s", g_text_lines[0],
+              g_text_lines[get_hacked_color(player, card, COLOR_BLACK)]);
+
+      if ((g_basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLACK)] > 1) &&
+          (do_dialog(player,
+                     player,
+                     card,
+                     -1,
+                     -1,
+                     dialog,
+                     g_basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLACK)] > 1) != 0))
       {
-        color = get_hacked_color(player, card, COLOR_BLACK);
-        choice = do_dialog(player,
-                           player,
-                           card,
-                           -1,
-                           -1,
-                           dialog,
-                           g_basiclandtypes_controlled[player][color] > 1);
-        if (choice != 0)
-        {
-          color = get_hacked_color(player, card, COLOR_BLACK);
-          TENTATIVE_sacrifice_basic_land_type(player, card, 2, color, 0);
-          return 0;
-        }
+        TENTATIVE_sacrifice_basic_land_type(player, card, 2,
+                                            get_hacked_color(player, card, COLOR_BLACK), 0);
       }
-      kill_card(player, card, KILL_BURY);
+      else
+      {
+        kill_card(player, card, KILL_BURY);
+      }
     }
   }
 
@@ -2153,27 +2151,25 @@ int card_mold_demon(int player, int card, event_t event)
     {
       load_text("promptsX2.txt", "MOLD_DEMON");
     }
-    color = get_hacked_color(player, card, COLOR_BLACK);
-    sprintf(dialog, " %s\n %s", g_text_lines[0], g_text_lines[color]);
-    color = get_hacked_color(player, card, COLOR_BLACK);
-    if (g_basiclandtypes_controlled[player][color] > 1)
+    sprintf(dialog, " %s\n %s", g_text_lines[0],
+            g_text_lines[get_hacked_color(player, card, COLOR_BLACK)]);
+
+    if ((g_basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLACK)] > 1) &&
+        (do_dialog(player,
+                   player,
+                   card,
+                   -1,
+                   -1,
+                   dialog,
+                   g_basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_BLACK)] > 1) != 0))
     {
-      color = get_hacked_color(player, card, COLOR_BLACK);
-      choice = do_dialog(player,
-                         player,
-                         card,
-                         -1,
-                         -1,
-                         dialog,
-                         g_basiclandtypes_controlled[player][color] > 1);
-      if (choice != 0)
-      {
-        color = get_hacked_color(player, card, COLOR_BLACK);
-        TENTATIVE_sacrifice_basic_land_type(player, card, 2, color, 0);
-        return 0;
-      }
+      TENTATIVE_sacrifice_basic_land_type(player, card, 2,
+                                          get_hacked_color(player, card, COLOR_BLACK), 0);
     }
-    kill_card(player, card, KILL_BURY);
+    else
+    {
+      kill_card(player, card, KILL_BURY);
+    }
   }
 
   return 0;
@@ -3373,13 +3369,14 @@ int card_blood_moon(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0043cdfb
 int card_greater_realm_of_preservation(int player, int card, event_t event)
 {
-  target_t target;
-  unsigned int target_color;
-  int target_player;
-  int target_card;
+  struct
+  {
+    target_t target;
+    unsigned int target_color;
+  } s;
 
-  target_color = (1 << (unsigned char)get_sleighted_color(player, card, COLOR_RED)) |
-                 (1 << (unsigned char)get_sleighted_color(player, card, COLOR_BLACK));
+  s.target_color = (1 << (unsigned char)get_sleighted_color(player, card, COLOR_RED)) |
+                   (1 << (unsigned char)get_sleighted_color(player, card, COLOR_BLACK));
 
   if (event == EVENT_CAN_CAST)
   {
@@ -3389,24 +3386,27 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player &&
       count_permanents_by_internal_card_id(player, PLAYER_CARD_INSTANCE(player, card).internal_card_id, player) == 0)
   {
-    g_ai_modifier += (g_basiclandtypes_controlled[g_active_player][target_color] +
-                      g_creature_power_by_color[g_active_player][target_color] / 2) *
+    g_ai_modifier += (g_basiclandtypes_controlled[g_active_player][s.target_color] +
+                      g_creature_power_by_color[g_active_player][s.target_color] / 2) *
                      0x18;
   }
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0 ||
-        has_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1) == 0 ||
-        has_mana_w_global_cost_mod(player, card, COLOR_ANY, 2) == 0 ||
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
+        has_mana_w_global_cost_mod(player, card, COLOR_WHITE, 1) != 0 &&
+        has_mana_w_global_cost_mod(player, card, COLOR_ANY, 2) != 0 &&
         real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY,
-                              TYPE_NONE, TYPE_NONE, 0, 0, target_color, COLOR_TEST_0,
+                              TYPE_NONE, TYPE_NONE, 0, 0, s.target_color, COLOR_TEST_0,
                               g_damage_card_internal_card_id, -1, 0xffffffff, 0xffffffff,
-                              TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0) == 0)
+                              TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0) != 0)
+    {
+      return 99;
+    }
+    else
     {
       return 0;
     }
-    return 99;
   }
 
   if (event == EVENT_ACTIVATE && (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0)
@@ -3421,12 +3421,12 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
       }
 
       if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE,
-                               0, 0, target_color, COLOR_TEST_0,
+                               0, 0, s.target_color, COLOR_TEST_0,
                                g_damage_card_internal_card_id, -1, -1, -1,
                                TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0,
-                               g_text_lines[0], 1, &target))
+                               g_text_lines[0], 1, &s.target))
       {
-        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
       else
@@ -3438,17 +3438,17 @@ int card_greater_realm_of_preservation(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card,
+    SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+
+    if (C_real_validate_target(s.target.player, s.target.card,
                                (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
-                               TYPE_NONE, TYPE_NONE, 0, 0, target_color, COLOR_TEST_0,
+                               TYPE_NONE, TYPE_NONE, 0, 0, s.target_color, COLOR_TEST_0,
                                g_damage_card_internal_card_id, -1, -1, -1,
                                TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
     {
-      target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-      target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-      if (PLAYER_CARD_INSTANCE(target_player, target_card).info_slot != 0)
+      if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
       {
-        PLAYER_CARD_INSTANCE(target_player, target_card).info_slot = 0;
+        PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
       }
     }
     else

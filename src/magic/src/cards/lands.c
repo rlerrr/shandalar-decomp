@@ -427,10 +427,14 @@ int card_library_of_alexandria(int player, int card, event_t event)
     char dialog[0x384];
     int default_action;
     int action;
-    int unused;
   } s;
 
-  if (event == EVENT_COUNT_MANA || event == EVENT_CAN_ACTIVATE)
+  if (event == EVENT_COUNT_MANA)
+  {
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
+  }
+
+  if (event == EVENT_CAN_ACTIVATE)
   {
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }
@@ -463,26 +467,23 @@ int card_library_of_alexandria(int player, int card, event_t event)
     {
       s.action = 0;
     }
-    else if (g_required_mana_color_mask == 0)
+    else if (g_required_mana_color_mask != 0)
     {
-      if (player == g_active_player || (g_duel_network_flags & 2) != 0)
-      {
-        s.action = do_dialog(player, player, card, -1, -1, s.dialog, s.default_action);
-      }
-      else
-      {
-        s.action = s.default_action;
-      }
+      s.action = 0;
+    }
+    else if (player == g_active_player || (g_duel_network_flags & 2) != 0)
+    {
+      s.action = do_dialog(player, player, card, -1, -1, s.dialog, s.default_action);
     }
     else
     {
-      s.action = 0;
+      s.action = s.default_action;
     }
 
     PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
     if (s.action == 0)
     {
-      mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
+      return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
     }
     else if (s.action == 1)
     {
@@ -509,7 +510,12 @@ int card_library_of_alexandria(int player, int card, event_t event)
     return 0;
   }
 
-  if (event == EVENT_UNTAP_PHASE || event == EVENT_RESOLVE_SPELL)
+  if (event == EVENT_UNTAP_PHASE)
+  {
+    return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
+  }
+
+  if (event == EVENT_RESOLVE_SPELL)
   {
     return mana_producer_sound_on_resolve(player, card, event, COLOR_COLORLESS);
   }

@@ -768,7 +768,7 @@ int card_rukh_egg_FX(int player, int card, event_t event)
     {
       process_card_enters_play(player, rukh_card);
       PLAYER_CARD_INSTANCE(player, rukh_card).color =
-          (char)(2 << ((unsigned char)get_sleighted_color(
+          (char)(2 << (get_sleighted_color(
                            (int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
                            PLAYER_CARD_INSTANCE(player, card).damage_source_card,
                            COLOR_RED) -

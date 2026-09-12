@@ -2316,12 +2316,16 @@ int card_relic_bind(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d6d23
 int card_power_leak(int player, int card, event_t event)
 {
-  target_t target;
-  char message[900];
-  int damage;
-  int dialog_result;
-  int source_player;
-  int source_card;
+  struct
+  {
+    target_t target;
+    char message[900];
+    int source_player;
+    int damage;
+    int unused;
+    int dialog_result;
+    int source_card;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -2371,9 +2375,9 @@ int card_power_leak(int player, int card, event_t event)
                              0,
                              g_text_lines[0],
                              1,
-                             &target))
+                             &s.target))
     {
-      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       if ((player == g_other_player) && (PLAYER_CARD_INSTANCE(player, card).targets[0].player == g_other_player))
       {
@@ -2449,50 +2453,50 @@ int card_power_leak(int player, int card, event_t event)
 
   if (event == EVENT_UPKEEP_COSTS_UNPAID)
   {
-    damage = has_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, COLOR_ANY, 1);
-    if ((damage == 1) && (10 < g_life[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player]))
+    s.damage = has_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, COLOR_ANY, 1);
+    if ((s.damage == 1) && (10 < g_life[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player]))
     {
-      damage = 0;
+      s.damage = 0;
     }
-    if (damage >= 2)
+    if (s.damage >= 2)
     {
-      if (((damage > 7) || ((g_duel_summary.hand_counts[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player]) <= 3) || (g_life[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player] <= 7)))
+      if (((s.damage > 7) || ((g_duel_summary.hand_counts[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player]) <= 3) || (g_life[(int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player] <= 7)))
       {
-        damage = 2;
+        s.damage = 2;
       }
       else
       {
-        damage = 0;
+        s.damage = 0;
       }
     }
 
     load_text("prompts.txt", "POWERLEAK");
-    sprintf(message, " %s\n %s\n %s", g_text_lines[1], g_text_lines[2], g_text_lines[3]);
-    dialog_result = do_dialog((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                              player,
-                              card,
-                              (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                              PLAYER_CARD_INSTANCE(player, card).damage_target_card,
-                              message,
-                              damage);
-    source_player = g_card_on_stack_controller;
-    source_card = g_card_on_stack;
-    if (dialog_result == 0)
+    sprintf(s.message, " %s\n %s\n %s", g_text_lines[1], g_text_lines[2], g_text_lines[3]);
+    s.dialog_result = do_dialog((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                player,
+                                card,
+                                (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                PLAYER_CARD_INSTANCE(player, card).damage_target_card,
+                                s.message,
+                                s.damage);
+    s.source_player = g_card_on_stack_controller;
+    s.source_card = g_card_on_stack;
+    if (s.dialog_result == 0)
     {
-      damage = 2;
+      s.damage = 2;
     }
-    else if (dialog_result == 1)
+    else if (s.dialog_result == 1)
     {
       push_card_onto_stack(player, card, 0x7e, 0, 0);
       charge_mana((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, 0, 1);
       obliterate_top_card_of_stack();
       if (g_spell_fizzled != 1)
       {
-        damage = 1;
+        s.damage = 1;
       }
       else
       {
-        damage = 2;
+        s.damage = 2;
       }
     }
     else
@@ -2502,14 +2506,15 @@ int card_power_leak(int player, int card, event_t event)
       obliterate_top_card_of_stack();
       if (g_spell_fizzled != 1)
       {
-        damage = 0;
+        s.damage = 0;
       }
       else
       {
-        damage = 2;
+        s.damage = 2;
       }
     }
-    damage_player((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, damage, source_player, source_card);
+    damage_player((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                  s.damage, s.source_player, s.source_card);
     g_spell_fizzled = -1;
     return 0;
   }
@@ -8547,9 +8552,13 @@ int helper_circle_of_protection(int player, int card, event_t event, int color)
 // FUNCTION: SHANDALAR 0x004ea8c1
 int card_co_p_artifacts(int player, int card, event_t event)
 {
-  target_t target;
-  int target_player;
-  int target_card;
+  struct
+  {
+    target_t target;
+    int color;
+  } s;
+
+  s.color = COLOR_ARTIFACT;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -8570,16 +8579,14 @@ int card_co_p_artifacts(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
-        has_mana_w_global_cost_mod(player, card, COLOR_ANY, 2) != 0 &&
-        real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2,
-                              TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0,
-                              COLOR_TEST_ARTIFACT, COLOR_TEST_0, g_damage_card_internal_card_id,
-                              -1, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0) != 0)
-    {
-      return 99;
-    }
-    return 0;
+    return ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 &&
+            has_mana_w_global_cost_mod(player, card, COLOR_ANY, 2) != 0 &&
+            real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2,
+                                  TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0,
+                                  1 << (unsigned char)s.color, COLOR_TEST_0, g_damage_card_internal_card_id,
+                                  -1, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0) != 0)
+               ? 99
+               : 0;
   }
 
   if (event == EVENT_ACTIVATE && (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0)
@@ -8593,12 +8600,12 @@ int card_co_p_artifacts(int player, int card, event_t event)
       }
       if (C_real_select_target(player, 2, 2, TARGET_ZONE_IN_PLAY,
                                TYPE_NONE, TYPE_NONE, 0, 0,
-                               COLOR_TEST_ARTIFACT, COLOR_TEST_0,
+                               1 << (unsigned char)s.color, COLOR_TEST_0,
                                g_damage_card_internal_card_id, -1, -1, -1,
                                TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0,
-                               g_text_lines[0], 1, &target))
+                               g_text_lines[0], 1, &s.target))
       {
-        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
       else
@@ -8606,6 +8613,8 @@ int card_co_p_artifacts(int player, int card, event_t event)
         g_spell_fizzled = 1;
       }
     }
+
+    return 0;
   }
 
   if (event == EVENT_RESOLVE_ACTIVATION)
@@ -8613,15 +8622,14 @@ int card_co_p_artifacts(int player, int card, event_t event)
     if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card,
                                (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                TYPE_NONE, TYPE_NONE, 0, 0,
-                               COLOR_TEST_ARTIFACT, COLOR_TEST_0,
+                               1 << (unsigned char)s.color, COLOR_TEST_0,
                                g_damage_card_internal_card_id, -1, -1, -1,
                                TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
     {
-      target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-      target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-      if (PLAYER_CARD_INSTANCE(target_player, target_card).info_slot != 0)
+      SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+      if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
       {
-        PLAYER_CARD_INSTANCE(target_player, target_card).info_slot = 0;
+        PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
       }
     }
     else

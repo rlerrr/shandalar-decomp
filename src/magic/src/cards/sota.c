@@ -578,14 +578,10 @@ int select_land_for_cyclopean_tomb_ai(int player, int card, int target_player)
 // FUNCTION: SHANDALAR 0x00456897
 int card_gauntlet_of_might(int player, int card, event_t event)
 {
-  int chosen_color;
-  unsigned int affected_color;
-
-  if ((event == EVENT_POWER || event == EVENT_TOUGHNESS) && is_in_play(player, card) && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
+  if ((event == EVENT_TOUGHNESS || event == EVENT_POWER) && is_in_play(player, card) && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
   {
-    chosen_color = get_sleighted_color(player, card, 4);
-    affected_color = (unsigned char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).color;
-    if (((1 << ((unsigned char)chosen_color)) & affected_color) != 0)
+    if (((1 << (unsigned char)get_sleighted_color(player, card, 4)) &
+         (char)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).color) != 0)
     {
       ++g_event_result;
     }
@@ -593,8 +589,12 @@ int card_gauntlet_of_might(int player, int card, event_t event)
 
   if (event == EVENT_TAP_CARD)
   {
-    chosen_color = get_hacked_color(player, card, 4);
-    if (card_has_basic_land_type(g_affected_card_controller, g_affected_card, chosen_color) != 0 && is_in_play(player, card) && ((((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)) && g_produced_mana_color != -1))
+    if (card_has_basic_land_type(g_affected_card_controller, g_affected_card,
+                                 get_hacked_color(player, card, 4)) != 0 &&
+        is_in_play(player, card) &&
+        ((((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) ||
+          (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)) &&
+         g_produced_mana_color != -1))
     {
       produce_mana(g_affected_card_controller, COLOR_RED, 1);
     }
@@ -602,8 +602,11 @@ int card_gauntlet_of_might(int player, int card, event_t event)
 
   if (event == EVENT_COUNT_MANA)
   {
-    chosen_color = get_hacked_color(player, card, 4);
-    if (card_has_basic_land_type(g_affected_card_controller, g_affected_card, chosen_color) != 0 && is_in_play(player, card) && (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) || (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
+    if (card_has_basic_land_type(g_affected_card_controller, g_affected_card,
+                                 get_hacked_color(player, card, 4)) != 0 &&
+        is_in_play(player, card) &&
+        (((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0) ||
+         (global_cards_data[PLAYER_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_CREATURE)))
     {
       declare_mana_available(g_affected_card_controller, COLOR_RED, 1);
     }

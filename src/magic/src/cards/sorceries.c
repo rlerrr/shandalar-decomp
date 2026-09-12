@@ -3332,10 +3332,12 @@ int card_pyrotechnics(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x0044f1ac
 int card_disintegrate(int player, int card, event_t event)
 {
-  int target_player;
-  int target_card;
-  int damage_dealt;
-  int legacy_card;
+  struct
+  {
+    int target_player;
+    int target_card;
+    int legacy_card;
+  } s;
 
   if (event == EVENT_CAN_CAST)
   {
@@ -3361,17 +3363,17 @@ int card_disintegrate(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-    target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-    damage_dealt = deal_damage_to_selected_target(player, card, EVENT_RESOLVE_SPELL, PLAYER_CARD_INSTANCE(player, card).info_slot);
-    if (damage_dealt != 0 && target_card != -1)
+    s.target_player = PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+    s.target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+    if (deal_damage_to_selected_target(player, card, event, PLAYER_CARD_INSTANCE(player, card).info_slot) != 0 && PLAYER_CARD_INSTANCE(player, card).targets[0].card != -1)
     {
-      legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_17, target_player, target_card);
-      if (legacy_card != -1)
+      s.legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_17,
+                                                  s.target_player, s.target_card);
+      if (s.legacy_card != -1)
       {
-        PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = 0x200;
+        PLAYER_CARD_INSTANCE(player, s.legacy_card).info_slot = 0x200;
       }
-      PLAYER_CARD_INSTANCE(target_player, target_card).regen_status = 0x8000000;
+      PLAYER_CARD_INSTANCE(s.target_player, s.target_card).regen_status = 0x8000000;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);

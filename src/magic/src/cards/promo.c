@@ -389,7 +389,7 @@ int polka_apply_effect(int player, int card, int amount)
   return s.tapped_count;
 }
 
-// FUNCTION: MAGIC 0x004a904f
+// FUNCTION: MAGIC 0x004a904e
 // FUNCTION: SHANDALAR 0x0041a64f
 int polka_has_target_available(int player, int card)
 {
