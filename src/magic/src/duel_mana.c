@@ -1729,17 +1729,18 @@ void C_count_colors_of_lands_in_play(void)
 // FUNCTION: SHANDALAR 0x004412ec
 void declare_mana_available_hex(int player, color_test_t colors, int amount)
 {
-  int i;
-
   if ((int)colors > 0)
   {
-    for (i = 0; i < 0x32; ++i)
+    int result = 0;
+    int i = 0;
+    for (; i < 50 && result == 0; ++i)
     {
       if (g_raw_mana_available_hex[player][i] == -1)
       {
+        result = 1;
+
         g_raw_mana_available_hex[player][i] = (amount << 16) | colors;
         g_raw_mana_available_hex[player][i + 1] = -1;
-        break;
       }
     }
   }
@@ -1759,30 +1760,17 @@ void undeclare_mana_available_hex(int player, color_test_t color, int amount)
   s.found = 0;
   s.i = 0;
 
-  while (s.i < 0x32)
+  for (; s.i < 50 && g_raw_mana_available_hex[player][s.i] != -1 && s.found == 0; s.i++)
   {
-    if (g_raw_mana_available_hex[player][s.i] == -1)
-    {
-      break;
-    }
-
-    if (s.found != 0)
-    {
-      break;
-    }
-
     if (g_raw_mana_available_hex[player][s.i] == ((amount << 16) | color))
     {
       s.found = 1;
-      s.j = s.i;
-      while (s.j < 0x31)
+
+      for (s.j = s.i; s.j < 49; s.j++)
       {
         g_raw_mana_available_hex[player][s.j] = g_raw_mana_available_hex[player][s.j + 1];
-        ++s.j;
       }
     }
-
-    ++s.i;
   }
 }
 
