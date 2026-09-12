@@ -984,9 +984,7 @@ int card_volcanic_eruption(int player, int card, event_t event)
 
     for (current_target = 0; current_target < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++current_target)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[current_target].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[current_target].card)
-          .state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
+      TARGET_CARD_INSTANCE(player, card, current_target).state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
     }
 
     if (g_spell_fizzled == 1)
@@ -1280,9 +1278,7 @@ int card_ashes_to_ashes(int player, int card, event_t event)
                                1,
                                &PLAYER_CARD_INSTANCE(player, card).targets[target_index]))
       {
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
-                             PLAYER_CARD_INSTANCE(player, card).targets[target_index].card)
-            .state |= STATE_CANNOT_TARGET | STATE_TARGETTED;
+        TARGET_CARD_INSTANCE(player, card, target_index).state |= STATE_CANNOT_TARGET | STATE_TARGETTED;
         TENTATIVE_reassess_all_cards(0, 0x20);
       }
       else
@@ -1297,9 +1293,7 @@ int card_ashes_to_ashes(int player, int card, event_t event)
          target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets;
          ++target_index)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[target_index].card)
-          .state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
+      TARGET_CARD_INSTANCE(player, card, target_index).state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
     }
 
     if (g_spell_fizzled == 1)
@@ -1561,9 +1555,7 @@ int card_winter_blast(int player, int card, event_t event)
 
     for (target_index = 0; target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++target_index)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[target_index].card)
-          .state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
+      TARGET_CARD_INSTANCE(player, card, target_index).state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
     }
 
     if (g_spell_fizzled == 1)
@@ -1788,9 +1780,7 @@ int card_fireball(int player, int card, event_t event)
           }
           else
           {
-            PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                 PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                .state |= STATE_CANNOT_TARGET | STATE_TARGETTED;
+            TARGET_CARD_INSTANCE(player, card, 0).state |= STATE_CANNOT_TARGET | STATE_TARGETTED;
           }
         }
 
@@ -1801,9 +1791,7 @@ int card_fireball(int player, int card, event_t event)
         {
           if (PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].card != -1)
           {
-            PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].player,
-                                 PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].card)
-                .state &= ~0x300000;
+            TARGET_CARD_INSTANCE(player, card, s.target_index).state &= ~0x300000;
           }
         }
       }
@@ -1932,10 +1920,7 @@ int card_fireball(int player, int card, event_t event)
             {
               if (PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].card != -1)
               {
-                PLAYER_CARD_INSTANCE(
-                    PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].player,
-                    PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].card)
-                    .state &= ~0x300000;
+                TARGET_CARD_INSTANCE(player, card, s.target_index).state &= ~0x300000;
               }
             }
 
@@ -2031,9 +2016,7 @@ int card_fireball(int player, int card, event_t event)
         {
           if (PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].card != -1)
           {
-            PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].player,
-                                 PLAYER_CARD_INSTANCE(player, card).targets[s.target_index].card)
-                .state &= ~0x300000;
+            TARGET_CARD_INSTANCE(player, card, s.target_index).state &= ~0x300000;
           }
         }
 
@@ -2382,9 +2365,7 @@ int card_word_of_binding(int player, int card, event_t event)
 
     for (target_index = 0; target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++target_index)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[target_index].card)
-          .state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
+      TARGET_CARD_INSTANCE(player, card, target_index).state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
     }
 
     if (g_spell_fizzled == 1)
@@ -2500,16 +2481,12 @@ int card_raise_dead(int player, int card, event_t event)
     if (s.graveyard_index != -1 && global_graveyard_slots[player][s.graveyard_index] != -1 && (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_CREATURE) != 0)
     {
       remove_card_from_graveyard(player, s.graveyard_index);
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .state &= ~STATE_INVISIBLE;
+      TARGET_CARD_INSTANCE(player, card, 0).state &= ~STATE_INVISIBLE;
       ++g_duel_summary.hand_counts[player];
     }
     else
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .internal_card_id = -1;
+      TARGET_CARD_INSTANCE(player, card, 0).internal_card_id = -1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
@@ -2578,16 +2555,12 @@ int card_regrowth(int player, int card, event_t event)
     if (s.graveyard_index != -1 && global_graveyard_slots[player][s.graveyard_index] != -1)
     {
       remove_card_from_graveyard(player, s.graveyard_index);
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .state &= ~STATE_INVISIBLE;
+      TARGET_CARD_INSTANCE(player, card, 0).state &= ~STATE_INVISIBLE;
       ++g_duel_summary.hand_counts[player];
     }
     else
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .internal_card_id = -1;
+      TARGET_CARD_INSTANCE(player, card, 0).internal_card_id = -1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
@@ -3283,9 +3256,7 @@ int card_pyrotechnics(int player, int card, event_t event)
 
       for (target_index = 0; target_index < PLAYER_CARD_INSTANCE(player, card).number_of_targets; ++target_index)
       {
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[target_index].player,
-                             PLAYER_CARD_INSTANCE(player, card).targets[target_index].card)
-            .state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
+        TARGET_CARD_INSTANCE(player, card, target_index).state &= ~(STATE_CANNOT_TARGET | STATE_TARGETTED);
       }
 
       if (g_spell_fizzled == 1)

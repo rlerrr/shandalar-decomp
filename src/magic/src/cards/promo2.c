@@ -393,7 +393,7 @@ int card_psionic_blast(int player, int card, event_t event)
     select_damage_target(player, card, 4);
     if (player == g_other_player)
     {
-      g_ai_modifier += (3 - PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).toughness) * 0xc;
+      g_ai_modifier += (3 - TARGET_CARD_INSTANCE(player, card, 0).toughness) * 0xc;
     }
   }
 
@@ -549,9 +549,7 @@ int card_reverse_polarity(int player, int card, event_t event)
       {
         g_spell_fizzled = 1;
       }
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
+      PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
 
     kill_card(player, card, KILL_BURY);
@@ -664,9 +662,7 @@ int card_artifact_blast(int player, int card, event_t event)
                                COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1,
                                TARGET_SPECIAL_SPELL_ON_STACK, 0, 0) != 0)
     {
-      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-               .state &
+      if ((TARGET_CARD_INSTANCE(player, card, 0).state &
            STATE_INVISIBLE) != 0)
       {
         kill_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
@@ -707,9 +703,7 @@ int card_sacrifice(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    iid = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                               PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-              .original_internal_card_id;
+    iid = TARGET_CARD_INSTANCE(player, card, 0).original_internal_card_id;
     amount = (int)(char)global_cards_data[iid].cc[0] + (int)(char)global_cards_data[iid].cc[1];
     if ((int)(char)global_cards_data[iid].cc[1] == -1)
     {

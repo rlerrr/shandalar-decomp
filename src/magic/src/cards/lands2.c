@@ -314,17 +314,17 @@ int card_arena(int player, int card, event_t event)
 
     if (first_valid)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).state |= STATE_TAPPED;
+      TARGET_CARD_INSTANCE(player, card, 0).state |= STATE_TAPPED;
     }
     if (second_valid)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card).state |= STATE_TAPPED;
+      TARGET_CARD_INSTANCE(player, card, 1).state |= STATE_TAPPED;
     }
 
     if (first_valid && second_valid)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).regen_status |= 0x04000000;
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card).regen_status |= 0x04000000;
+      TARGET_CARD_INSTANCE(player, card, 0).regen_status |= 0x04000000;
+      TARGET_CARD_INSTANCE(player, card, 1).regen_status |= 0x04000000;
       first_power = C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, EVENT_POWER, -1);
       second_power = C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card, EVENT_POWER, -1);
       damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
@@ -338,7 +338,7 @@ int card_arena(int player, int card, event_t event)
                       PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                       PLAYER_CARD_INSTANCE(player, card).targets[0].card);
     }
-    else if (first_valid && PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card).internal_card_id != -1)
+    else if (first_valid && TARGET_CARD_INSTANCE(player, card, 1).internal_card_id != -1)
     {
       first_power = C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, EVENT_POWER, -1);
       damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[1].player,
@@ -347,7 +347,7 @@ int card_arena(int player, int card, event_t event)
                       PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                       PLAYER_CARD_INSTANCE(player, card).targets[0].card);
     }
-    else if (second_valid && PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).internal_card_id != -1)
+    else if (second_valid && TARGET_CARD_INSTANCE(player, card, 0).internal_card_id != -1)
     {
       second_power = C_get_abilities(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card, EVENT_POWER, -1);
       damage_creature(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
@@ -357,7 +357,7 @@ int card_arena(int player, int card, event_t event)
                       PLAYER_CARD_INSTANCE(player, card).targets[1].card);
     }
 
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   return 0;
@@ -730,9 +730,7 @@ int card_desert(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   if (event == EVENT_COUNT_MANA)
@@ -978,20 +976,13 @@ int card_elephant_graveyard(int player, int card, event_t event)
         else
         {
           subtype = global_raw_cards_storage
-                        [global_cards_data[PLAYER_CARD_INSTANCE(
-                                               PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                               PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                                               .internal_card_id]
+                        [global_cards_data[TARGET_CARD_INSTANCE(player, card, 0).internal_card_id]
                              .id]
                             .subtype;
-          if ((int)(char)PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                      .kill_code == KILL_DESTROY &&
+          if ((int)(char)TARGET_CARD_INSTANCE(player, card, 0).kill_code == KILL_DESTROY &&
               (subtype == 0x42 || subtype == 0x78))
           {
-            if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                      PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                     .regen_status &
+            if ((TARGET_CARD_INSTANCE(player, card, 0).regen_status &
                  KEYWORD_REGENERATION) != 0 ||
                 PLAYER_CARD_INSTANCE(player, card).targets[0].player == g_active_player)
             {
@@ -1004,9 +995,7 @@ int card_elephant_graveyard(int player, int card, event_t event)
           else if (g_duel_ai_mode_state != 1)
           {
             load_text("prompts.txt", "ELEPHANT_GRAVEYARD");
-            if ((int)(char)PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                                PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                    .kill_code != KILL_DESTROY)
+            if ((int)(char)TARGET_CARD_INSTANCE(player, card, 0).kill_code != KILL_DESTROY)
             {
               set_duel_prompt_text(g_text_lines[4]);
             }
@@ -1054,9 +1043,7 @@ int card_elephant_graveyard(int player, int card, event_t event)
                                 0,
                                 0,
                                 0) &&
-        (int)(char)PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                        PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                .kill_code == KILL_DESTROY)
+        (int)(char)TARGET_CARD_INSTANCE(player, card, 0).kill_code == KILL_DESTROY)
     {
       regenerate_card(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                       PLAYER_CARD_INSTANCE(player, card).targets[0].card);
@@ -1197,7 +1184,7 @@ int card_island_of_wak_wak(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   return 0;

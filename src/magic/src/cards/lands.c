@@ -266,9 +266,7 @@ int card_oasis(int player, int card, event_t event)
         g_spell_fizzled = 1;
       }
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
   }
 
@@ -403,9 +401,7 @@ int card_strip_mine(int player, int card, event_t event)
       g_spell_fizzled = 1;
     }
 
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
   }
 
@@ -505,13 +501,9 @@ int card_library_of_alexandria(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .info_slot == 1)
+    if (PARENT_CARD_INSTANCE(player, card).info_slot == 1)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .info_slot = 0;
+      PARENT_CARD_INSTANCE(player, card).info_slot = 0;
       draw_card_for_player(player);
     }
     return 0;
@@ -742,9 +734,7 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-                .internal_card_id == -1 ||
+    if (PARENT_CARD_INSTANCE(player, card).internal_card_id == -1 ||
         PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
     {
       return 0;
@@ -752,27 +742,17 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
 
     if (PLAYER_CARD_INSTANCE(player, card).info_slot == 1)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .dummy3 = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-                        .internal_card_id;
+      PARENT_CARD_INSTANCE(player, card).internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
+      PARENT_CARD_INSTANCE(player, card).dummy3 = PARENT_CARD_INSTANCE(player, card).internal_card_id;
       ++g_duel_summary.creature_counts[PLAYER_CARD_INSTANCE(player, card).parent_controller];
       ++g_duel_summary.artifact_counts[PLAYER_CARD_INSTANCE(player, card).parent_controller];
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .state |= STATE_IN_PLAY;
+      PARENT_CARD_INSTANCE(player, card).state |= STATE_IN_PLAY;
       dispatch_event_to_single_card(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     PLAYER_CARD_INSTANCE(player, card).parent_card,
                                     EVENT_CAST_SPELL,
                                     1 - PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     -1);
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .state |= STATE_SUMMONSICK;
+      PARENT_CARD_INSTANCE(player, card).state |= STATE_SUMMONSICK;
       dispatch_event_to_single_card(PLAYER_CARD_INSTANCE(player, card).parent_controller,
                                     PLAYER_CARD_INSTANCE(player, card).parent_card,
                                     EVENT_RESOLVE_SPELL,
@@ -819,9 +799,7 @@ static __inline int mishras_factory_common(int player, int card, event_t event, 
         g_spell_fizzled = 1;
       }
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     return 0;
   }
 
@@ -1055,35 +1033,23 @@ int card_mishra_s_factory(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-                .internal_card_id != -1 &&
+    if (PARENT_CARD_INSTANCE(player, card).internal_card_id != -1 &&
         PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       s.choice = PLAYER_CARD_INSTANCE(player, card).info_slot;
       if (s.choice == 1)
       {
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .dummy3 = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-                          .internal_card_id;
+        PARENT_CARD_INSTANCE(player, card).internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
+        PARENT_CARD_INSTANCE(player, card).dummy3 = PARENT_CARD_INSTANCE(player, card).internal_card_id;
         ++g_duel_summary.creature_counts[g_card_on_stack_controller];
         ++g_duel_summary.artifact_counts[g_card_on_stack_controller];
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .state |= STATE_IN_PLAY;
+        PARENT_CARD_INSTANCE(player, card).state |= STATE_IN_PLAY;
         dispatch_event_to_single_card(g_card_on_stack_controller,
                                       g_card_on_stack,
                                       EVENT_CAST_SPELL,
                                       1 - g_card_on_stack_controller,
                                       -1);
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .state |= STATE_SUMMONSICK;
+        PARENT_CARD_INSTANCE(player, card).state |= STATE_SUMMONSICK;
         dispatch_event_to_single_card(g_card_on_stack_controller,
                                       g_card_on_stack,
                                       EVENT_RESOLVE_SPELL,
@@ -1130,9 +1096,7 @@ int card_mishra_s_factory(int player, int card, event_t event)
           g_spell_fizzled = 1;
         }
       }
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
+      PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
     return 0;
   }
@@ -1399,35 +1363,23 @@ int card_assembly_worker(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-                .internal_card_id != -1 &&
+    if (PARENT_CARD_INSTANCE(player, card).internal_card_id != -1 &&
         PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
     {
       s.choice = PLAYER_CARD_INSTANCE(player, card).info_slot;
       if (s.choice == 1)
       {
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .dummy3 = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-                          .internal_card_id;
+        PARENT_CARD_INSTANCE(player, card).internal_card_id = find_internal_card_id_by_csv_id(CARD_ID_ASSEMBLY_WORKER);
+        PARENT_CARD_INSTANCE(player, card).dummy3 = PARENT_CARD_INSTANCE(player, card).internal_card_id;
         ++g_duel_summary.creature_counts[g_card_on_stack_controller];
         ++g_duel_summary.artifact_counts[g_card_on_stack_controller];
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .state |= STATE_IN_PLAY;
+        PARENT_CARD_INSTANCE(player, card).state |= STATE_IN_PLAY;
         dispatch_event_to_single_card(g_card_on_stack_controller,
                                       g_card_on_stack,
                                       EVENT_CAST_SPELL,
                                       1 - g_card_on_stack_controller,
                                       -1);
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .state |= STATE_SUMMONSICK;
+        PARENT_CARD_INSTANCE(player, card).state |= STATE_SUMMONSICK;
         dispatch_event_to_single_card(g_card_on_stack_controller,
                                       g_card_on_stack,
                                       EVENT_RESOLVE_SPELL,
@@ -1478,9 +1430,7 @@ int card_assembly_worker(int player, int card, event_t event)
           g_spell_fizzled = 1;
         }
       }
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
+      PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
     return 0;
   }

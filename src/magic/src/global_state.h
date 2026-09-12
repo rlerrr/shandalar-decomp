@@ -22,6 +22,15 @@ GLOBAL_STATE_EXTERN card_instance_t global_card_instances[2][151];
 
 #define PLAYER_CARD_INSTANCE(player_, card_) global_card_instances[player_][card_]
 
+#define PARENT_CARD_INSTANCE(player_, card_) \
+  PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player_, card_).parent_controller, PLAYER_CARD_INSTANCE(player_, card_).parent_card)
+
+#define DAMAGE_TARGET_CARD_INSTANCE(player_, card_) \
+  PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player_, card_).damage_target_player, PLAYER_CARD_INSTANCE(player_, card_).damage_target_card)
+
+#define TARGET_CARD_INSTANCE(player_, card_, target_index_) \
+  PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player_, card_).targets[target_index_].player, PLAYER_CARD_INSTANCE(player_, card_).targets[target_index_].card)
+
 #define IS_SICK(player_, card_) (((PLAYER_CARD_INSTANCE(player_, card_).state & STATE_SUMMONSICK_BOTH) != 0) && \
                                  ((global_cards_data[PLAYER_CARD_INSTANCE(player_, card_).internal_card_id].type & TYPE_CREATURE) != 0))
 

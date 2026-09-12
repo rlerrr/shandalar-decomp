@@ -33,14 +33,10 @@ int card_artifact_possession(int player, int card, event_t event)
         }
         else
         {
-          if ((global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                                      PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                                     .internal_card_id]
+          if ((global_cards_data[TARGET_CARD_INSTANCE(player, card, 0).internal_card_id]
                    .type &
                TYPE_CREATURE) != 0 ||
-              (global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                                      PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                                     .internal_card_id]
+              (global_cards_data[TARGET_CARD_INSTANCE(player, card, 0).internal_card_id]
                    .extra_ability &
                0x1001) != 0)
           {
@@ -105,9 +101,7 @@ int card_artifact_ward(int player, int card, event_t event)
     {
       if (player == g_other_player && (g_duel_network_flags & 2) == 0 &&
           (is_selected_target_already_attached(player, card, PLAYER_CARD_INSTANCE(player, card).internal_card_id) != 0 ||
-           (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                 PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                .regen_status &
+           (TARGET_CARD_INSTANCE(player, card, 0).regen_status &
             KEYWORD_PROT_ARTIFACTS) != 0))
       {
         g_ai_modifier -= 0x60;
@@ -879,9 +873,7 @@ int card_earthbind(int player, int card, event_t event)
           (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card =
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                                PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-               .regen_status &
+      if ((TARGET_CARD_INSTANCE(player, card, 0).regen_status &
            KEYWORD_FLYING) != 0)
       {
         damage_creature(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
@@ -1029,9 +1021,7 @@ int card_farmstead(int player, int card, event_t event)
               1,
               g_card_on_stack_controller,
               g_card_on_stack);
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   if (event == EVENT_CLEANUP || event == EVENT_SHOULD_AI_PLAY)
@@ -1087,9 +1077,7 @@ int card_fishliver_oil(int player, int card, event_t event)
   if (event == EVENT_CAST_SPELL && card == g_affected_card && player == g_affected_card_controller &&
       player == g_other_player)
   {
-    if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                              PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-             .regen_status &
+    if ((TARGET_CARD_INSTANCE(player, card, 0).regen_status &
          (1 << ((unsigned char)(get_hacked_color(player, card, COLOR_BLUE) - 1)))) != 0 ||
         PLAYER_CARD_INSTANCE(player, card).targets[0].player == g_active_player)
     {
@@ -1239,7 +1227,7 @@ int card_gate_to_phyrexia(int player, int card, event_t event)
     }
     else
     {
-      if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[1].player, PLAYER_CARD_INSTANCE(player, card).targets[1].card).internal_card_id == -1)
+      if (TARGET_CARD_INSTANCE(player, card, 1).internal_card_id == -1)
       {
         g_spell_fizzled = 1;
       }
@@ -1264,7 +1252,7 @@ int card_gate_to_phyrexia(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   return 0;

@@ -323,16 +323,12 @@ int card_reconstruction(int player, int card, event_t event)
         (global_cards_data[global_graveyard_slots[player][s.graveyard_index]].type & TYPE_ARTIFACT) != 0)
     {
       remove_card_from_graveyard(player, s.graveyard_index);
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .state &= ~STATE_INVISIBLE;
+      TARGET_CARD_INSTANCE(player, card, 0).state &= ~STATE_INVISIBLE;
       ++g_duel_summary.hand_counts[player];
     }
     else
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .internal_card_id = -1;
+      TARGET_CARD_INSTANCE(player, card, 0).internal_card_id = -1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
     kill_card(player, card, KILL_BURY);
@@ -414,9 +410,7 @@ int card_resurrection(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                             PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-                .internal_card_id == global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot] &&
+    if (TARGET_CARD_INSTANCE(player, card, 0).internal_card_id == global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot] &&
         (global_cards_data[global_graveyard_slots[player][PLAYER_CARD_INSTANCE(player, card).info_slot]].type & TYPE_CREATURE) != 0)
     {
       process_card_enters_play(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
@@ -426,9 +420,7 @@ int card_resurrection(int player, int card, event_t event)
     }
     else
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                           PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-          .token_status |= 4;
+      TARGET_CARD_INSTANCE(player, card, 0).token_status |= 4;
       kill_card(player, card, KILL_DESTROY);
       g_spell_fizzled = 1;
     }

@@ -224,8 +224,8 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
       {
         g_ai_modifier -= 0x18;
       }
-      if (global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).internal_card_id].subtype == 0 &&
-          (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).token_status & 0x800) == 0)
+      if (global_cards_data[TARGET_CARD_INSTANCE(player, card, 0).internal_card_id].subtype == 0 &&
+          (TARGET_CARD_INSTANCE(player, card, 0).token_status & 0x800) == 0)
       {
         g_ai_modifier -= 0x18;
       }
@@ -256,10 +256,10 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
         }
       }
 
-      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).counters & 0xff00) < 0xff01)
+      if ((TARGET_CARD_INSTANCE(player, card, 0).counters & 0xff00) < 0xff01)
       {
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).counters = ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).counters + 0x100) & 0xff00) |
-                                                                                                                                                  (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).counters & 0xffff00ff);
+        TARGET_CARD_INSTANCE(player, card, 0).counters = ((TARGET_CARD_INSTANCE(player, card, 0).counters + 0x100) & 0xff00) |
+                                                                                                                                                  (TARGET_CARD_INSTANCE(player, card, 0).counters & 0xffff00ff);
       }
       if (g_duel_ai_mode_state != 1)
       {
@@ -270,9 +270,7 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   if (event == EVENT_CHECK_PUMP && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
@@ -335,15 +333,11 @@ int card_basalt_monolith(int player, int card, event_t event)
     }
   }
 
-  if ((event == EVENT_RESOLVE_ACTIVATION) && (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).state & STATE_TAPPED) && PLAYER_CARD_INSTANCE(player, card).eot_toughness != 0)
+  if ((event == EVENT_RESOLVE_ACTIVATION) && (PARENT_CARD_INSTANCE(player, card).state & STATE_TAPPED) && PLAYER_CARD_INSTANCE(player, card).eot_toughness != 0)
   {
     g_battlefield_extra_ability_flags |= 2;
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .info_slot = 1;
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .eot_toughness = 0;
+    PARENT_CARD_INSTANCE(player, card).info_slot = 1;
+    PARENT_CARD_INSTANCE(player, card).eot_toughness = 0;
   }
 
   if ((((((g_trigger_condition == 0xcb) || (g_trigger_condition == 0xe2)) || (g_trigger_condition == 0xe3)) || (g_trigger_condition == 0xe4)) && ((card == g_affected_card) && (player == g_affected_card_controller))) && ((g_current_turn == player) && ((PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) != 0) && PLAYER_CARD_INSTANCE(player, card).info_slot != 0))
@@ -494,7 +488,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
       {
         PLAYER_CARD_INSTANCE(player, legacy_card).dummy3 = get_hacked_color(player, card, 1) - 1;
         PLAYER_CARD_INSTANCE(player, legacy_card).token_status = 0x10000;
-        PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).info_slot;
+        PLAYER_CARD_INSTANCE(player, legacy_card).info_slot = PARENT_CARD_INSTANCE(player, card).info_slot;
         PLAYER_CARD_INSTANCE(player, legacy_card).eot_toughness = 1;
       }
     }
@@ -502,7 +496,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   if (event == 0x77 && g_affected_card == card && g_affected_card_controller == player)
@@ -720,7 +714,7 @@ int card_icy_manipulator(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   return 0;
@@ -1162,9 +1156,7 @@ int card_obelisk_of_undoing(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   return 0;
@@ -1425,7 +1417,7 @@ int card_pyramids(int player, int card, event_t event)
       }
     }
 
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   return 0;
@@ -1492,9 +1484,7 @@ int card_rakalite(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   if (event == EVENT_CLEANUP && PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
@@ -1641,16 +1631,10 @@ int card_rocket_launcher(int player, int card, event_t event)
   {
     deal_damage_to_selected_target(player, card, event, 1);
 
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id != -1)
+    if (PARENT_CARD_INSTANCE(player, card).internal_card_id != -1)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .info_slot = 1;
+      PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
+      PARENT_CARD_INSTANCE(player, card).info_slot = 1;
     }
   }
 
@@ -1732,9 +1716,7 @@ int card_sandals_of_abdallah(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   return 0;
@@ -1804,9 +1786,7 @@ int card_staff_of_zegon(int player, int card, event_t event)
     {
       g_spell_fizzled = 1;
     }
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   return 0;
@@ -2201,9 +2181,7 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id != -1)
+    if (PARENT_CARD_INSTANCE(player, card).internal_card_id != -1)
     {
       if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                                  PLAYER_CARD_INSTANCE(player, card).targets[0].card,
@@ -2211,15 +2189,9 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
                                  TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
                                  COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0) != 0)
       {
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .damage_source_player = (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .damage_source_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .info_slot = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+        PARENT_CARD_INSTANCE(player, card).damage_source_player = (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
+        PARENT_CARD_INSTANCE(player, card).damage_source_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
+        PARENT_CARD_INSTANCE(player, card).info_slot = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
         tawnos_coffin_phase_out(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
                                 PLAYER_CARD_INSTANCE(player, card).targets[0].card);
       }
@@ -2227,9 +2199,7 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
       {
         g_spell_fizzled = 1;
       }
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                           PLAYER_CARD_INSTANCE(player, card).parent_card)
-          .number_of_targets = 0;
+      PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
   }
 

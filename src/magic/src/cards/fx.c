@@ -56,20 +56,14 @@ int card_beast_FX(int player, int card, event_t event)
 
       if (PLAYER_CARD_INSTANCE(player, card).targets[0].card != -1)
       {
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                             PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-            .token_status |= STATUS_CONTROLLED;
+        TARGET_CARD_INSTANCE(player, card, 0).token_status |= STATUS_CONTROLLED;
         if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player !=
             PLAYER_CARD_INSTANCE(player, card).targets[0].player)
         {
           current_card = gain_control((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                                       PLAYER_CARD_INSTANCE(player, card).damage_target_card);
-          PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                               PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-              .damage_target_player = PLAYER_CARD_INSTANCE(player, card).damage_target_player;
-          PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player,
-                               PLAYER_CARD_INSTANCE(player, card).targets[0].card)
-              .damage_target_card = PLAYER_CARD_INSTANCE(player, card).damage_target_card;
+          TARGET_CARD_INSTANCE(player, card, 0).damage_target_player = PLAYER_CARD_INSTANCE(player, card).damage_target_player;
+          TARGET_CARD_INSTANCE(player, card, 0).damage_target_card = PLAYER_CARD_INSTANCE(player, card).damage_target_card;
         }
       }
     }
@@ -583,17 +577,15 @@ int card_guardian_FX(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                             PLAYER_CARD_INSTANCE(player, card).parent_card)
-            .internal_card_id != -1)
+    if (PARENT_CARD_INSTANCE(player, card).internal_card_id != -1)
     {
       if (C_real_validate_target(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card, (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                  TYPE_NONE, TYPE_NONE, 0, 0, COLOR_TEST_0, COLOR_TEST_0,
                                  g_damage_card_internal_card_id, -1, -1, -1, 0, 0, 0))
       {
-        if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).info_slot > 0)
+        if (TARGET_CARD_INSTANCE(player, card, 0).info_slot > 0)
         {
-          --PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).targets[0].player, PLAYER_CARD_INSTANCE(player, card).targets[0].card).info_slot;
+          --TARGET_CARD_INSTANCE(player, card, 0).info_slot;
         }
       }
       else
@@ -602,9 +594,7 @@ int card_guardian_FX(int player, int card, event_t event)
       }
     }
 
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller,
-                         PLAYER_CARD_INSTANCE(player, card).parent_card)
-        .number_of_targets = 0;
+    PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
   if (event == EVENT_CLEANUP || event == EVENT_SHOULD_AI_PLAY)

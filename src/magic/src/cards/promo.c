@@ -269,7 +269,7 @@ int card_aswan_jaguar(int player, int card, event_t event)
       {
         g_spell_fizzled = 1;
       }
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+      PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
   }
 
@@ -314,7 +314,7 @@ int card_goblin_polka_band(int player, int card, event_t event)
       play_sound_effect(0x33);
     }
     polka_apply_effect(g_card_on_stack_controller, g_card_on_stack, PLAYER_CARD_INSTANCE(player, card).info_slot);
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).info_slot = 0;
+    PARENT_CARD_INSTANCE(player, card).info_slot = 0;
   }
 
   return 0;
@@ -732,7 +732,7 @@ int faerie_dragon_apply_effect(int player, int card, int effect_index)
     g_spell_fizzled = 1;
   }
 
-  PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).parent_controller, PLAYER_CARD_INSTANCE(player, card).parent_card).number_of_targets = 0;
+  PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
 
   return 0;
 }
