@@ -1072,7 +1072,7 @@ int can_activate_mana_source(int player, int card, int activation_flags)
   s.csvid = global_cards_data[s.internal_card_id].id;
   s.result = 1;
 
-  if ((PLAYER_CARD_INSTANCE(player, card).state & 0x800002) == 2 && (global_cards_data[s.internal_card_id].extra_ability & 0x1000) != 0 && (global_cards_data[s.internal_card_id].extra_ability & 0x10000) == 0)
+  if ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_OUBLIETTED | STATE_IN_PLAY)) == STATE_IN_PLAY && (global_cards_data[s.internal_card_id].extra_ability & 0x1000) != 0 && (global_cards_data[s.internal_card_id].extra_ability & 0x10000) == 0)
   {
     if ((activation_flags & 1) && (s.internal_card_id <= 4 || s.csvid == 0x366 || PLAYER_CARD_INSTANCE(player, card).mana_color == '@'))
     {
@@ -1082,7 +1082,7 @@ int can_activate_mana_source(int player, int card, int activation_flags)
     {
       s.result = 0;
     }
-    if ((activation_flags & 4) && (PLAYER_CARD_INSTANCE(player, card).state & 0x40000) != 0)
+    if ((activation_flags & 4) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_NO_AUTO_TAPPING) != 0)
     {
       s.result = 0;
     }

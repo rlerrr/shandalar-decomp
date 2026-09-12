@@ -2982,7 +2982,7 @@ int card_witch_hunter(int player, int card, event_t event)
   }
 
   if (event == EVENT_CHECK_PUMP &&
-      (PLAYER_CARD_INSTANCE(player, card).state & 0x20014) == 0)
+      (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED | STATE_ATTACKING)) == 0)
   {
     --g_global_toughness_bonus[1 - player];
     return 0;

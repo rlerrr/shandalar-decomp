@@ -434,7 +434,7 @@ void assign_blocker_combat_damage(int player, int blocker_index, int multiple_at
   }
   else
   {
-    if ((PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[blocker_index]).state & 0x10) != 0)
+    if ((PLAYER_CARD_INSTANCE(s.defending_player, ai_blocker_cards[blocker_index]).state & STATE_TAPPED) != 0)
     {
       assign_blocker_combat_damage(player, blocker_index + 1, multiple_attackers, damage_ids, damage_step, mode, best_low, best_high);
     }
@@ -634,7 +634,7 @@ void resolve_combat_damage(int player)
         if (((s.scan_card == s.card ||
               PLAYER_CARD_INSTANCE(player, s.scan_card).blocking == s.card) &&
              PLAYER_CARD_INSTANCE(player, s.scan_card).internal_card_id != -1) &&
-            ((PLAYER_CARD_INSTANCE(player, s.scan_card).state & 0x800006) == 6))
+            ((PLAYER_CARD_INSTANCE(player, s.scan_card).state & (STATE_OUBLIETTED | STATE_ATTACKING | STATE_IN_PLAY)) == (STATE_ATTACKING | STATE_IN_PLAY)))
         {
           combat_damage_attacker_cards[combat_damage_attacker_count] = s.scan_card;
           combat_damage_attacker_toughness[combat_damage_attacker_count] =
@@ -688,7 +688,7 @@ void resolve_combat_damage(int player)
 
           combat_damage_blocker_damage[ai_blocker_count] = s.blocker_damage_remaining = 0;
 
-          if ((PLAYER_CARD_INSTANCE(s.defending_player, s.scan_card).state & 0x10) == 0 &&
+          if ((PLAYER_CARD_INSTANCE(s.defending_player, s.scan_card).state & STATE_TAPPED) == 0 &&
               is_combat_damage_ability_in_step(s.damage_step, combat_damage_blocker_abilities[ai_blocker_count]) != 0)
           {
             s.blocker_damage_remaining = C_get_abilities(s.defending_player, s.scan_card, 0x32, s.card);

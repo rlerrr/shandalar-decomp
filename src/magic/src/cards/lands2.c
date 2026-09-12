@@ -421,7 +421,7 @@ int card_bazaar_of_baghdad(int player, int card, event_t event)
         s.internal_card_id = PLAYER_CARD_INSTANCE(player, s.i).internal_card_id;
         if (s.internal_card_id != -1)
         {
-          if ((PLAYER_CARD_INSTANCE(player, s.i).state & 0x22) == 0 &&
+          if ((PLAYER_CARD_INSTANCE(player, s.i).state & (STATE_INVISIBLE | STATE_IN_PLAY)) == 0 &&
               (global_cards_data[s.internal_card_id].type & TYPE_INTERRUPT) == 0)
           {
             ++s.num_available;

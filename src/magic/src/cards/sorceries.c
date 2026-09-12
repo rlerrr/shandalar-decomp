@@ -165,7 +165,7 @@ int card_time_walk(int player, int card, event_t event)
       {
         for (current_card = 0; current_card < g_active_cards_count[effect_card]; ++current_card)
         {
-          if (PLAYER_CARD_INSTANCE(effect_card, current_card).internal_card_id == g_duel_generated_internal_card_id_0f && (PLAYER_CARD_INSTANCE(effect_card, current_card).token_status & 0x100) != 0)
+          if (PLAYER_CARD_INSTANCE(effect_card, current_card).internal_card_id == g_duel_generated_internal_card_id_0f && (PLAYER_CARD_INSTANCE(effect_card, current_card).token_status & STATUS_TIMEWALK) != 0)
           {
             effect_found = 1;
           }
@@ -1628,7 +1628,7 @@ int count_active_card_instances_plus_one(int player, int internal_card_id)
   result = 1;
   for (card = 0; card < g_active_cards_count[player]; ++card)
   {
-    if (PLAYER_CARD_INSTANCE(player, card).internal_card_id == internal_card_id && (PLAYER_CARD_INSTANCE(player, card).state & 2) == 0)
+    if (PLAYER_CARD_INSTANCE(player, card).internal_card_id == internal_card_id && (PLAYER_CARD_INSTANCE(player, card).state & STATE_IN_PLAY) == 0)
     {
       ++result;
     }
@@ -2561,7 +2561,7 @@ int card_demonic_tutor(int player, int card, event_t event)
     return 1;
   }
 
-  if (event == 0x6c && g_affected_card == card && g_affected_card_controller == player && player == g_other_player && (g_duel_network_flags & 2) == 0 && global_library[player][0] == -1)
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player && player == g_other_player && (g_duel_network_flags & 2) == 0 && global_library[player][0] == -1)
   {
     g_spell_fizzled = 1;
   }
@@ -2845,7 +2845,7 @@ int card_mind_twist(int player, int card, event_t event)
     return 1;
   }
 
-  if (event == 0x6c && g_affected_card == card && g_affected_card_controller == player)
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     if (g_duel_ai_mode_state != 1)
     {
@@ -3534,7 +3534,7 @@ int card_drain_power(int player, int card, event_t event)
     return 1;
   }
 
-  if (event == 0x6c && g_affected_card == card && g_affected_card_controller == player)
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     if (g_duel_ai_mode_state != 1)
     {

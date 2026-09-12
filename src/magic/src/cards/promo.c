@@ -280,7 +280,7 @@ int card_goblin_polka_band(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (has_mana(player, COLOR_ANY, 2) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & 0x20014) == 0) ? 1 : 0;
+    return (has_mana(player, COLOR_ANY, 2) != 0 && (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED | STATE_ATTACKING)) == 0) ? 1 : 0;
   }
 
   if (event == EVENT_GET_SELECTED_CARD)

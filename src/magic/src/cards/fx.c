@@ -620,7 +620,7 @@ int card_nettling_imp_FX(int player, int card, event_t event)
   int target_internal_card_id;
 
   /* Original uses event 0x89 for declare-attackers legality. */
-  if (event == 0x89 &&
+  if (event == EVENT_MUST_ATTACK &&
       (DAMAGE_TARGET_CARD_INSTANCE(player, card).state &
        STATE_UNKNOWN8000) == 0 &&
       (global_cards_data[DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id]

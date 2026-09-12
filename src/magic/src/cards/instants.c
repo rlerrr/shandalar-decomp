@@ -541,7 +541,7 @@ int card_twiddle(int player, int card, event_t event)
                                  0);
   }
 
-  if (event == 0x6c && g_affected_card == card && g_affected_card_controller == player)
+  if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player)
   {
     g_ai_modifier -= 0x30;
     load_text("prompts.txt", "TWIDDLE");
@@ -2066,7 +2066,7 @@ int card_giant_growth(int player, int card, event_t event)
     kill_card(player, card, KILL_BURY);
   }
 
-  if ((event == 0x3b) && has_mana(player, 3, 1) != 0)
+  if ((event == EVENT_CHECK_PUMP) && has_mana(player, 3, 1) != 0)
   {
     g_global_power_bonus[player] += 3;
     g_global_toughness_bonus[player] += 3;
@@ -2902,7 +2902,7 @@ int card_counterspell(int player, int card, event_t event)
                                TARGET_SPECIAL_SPELL_ON_STACK, 0, 0))
     {
       SET_TARGET(target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
-      if ((PLAYER_CARD_INSTANCE(target.player, target.card).state & 0x20) != 0)
+      if ((PLAYER_CARD_INSTANCE(target.player, target.card).state & STATE_INVISIBLE) != 0)
       {
         kill_card(target.player, target.card, KILL_BURY);
       }

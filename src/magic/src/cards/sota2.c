@@ -330,7 +330,7 @@ int card_argivian_archaeologist(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 &&
            has_mana(player, COLOR_WHITE, 2) &&
            ((g_graveyard_card_types)[player] & TYPE_ARTIFACT) != 0;
   }
@@ -763,7 +763,7 @@ int card_citanul_druid(int player, int card, event_t event)
       g_affected_card == card &&
       g_affected_card_controller == player &&
       player == g_current_turn &&
-      (PLAYER_CARD_INSTANCE(player, card).state & 0x20) == 0 &&
+      (PLAYER_CARD_INSTANCE(player, card).state & STATE_INVISIBLE) == 0 &&
       player != g_trigger_cause_controller &&
       PLAYER_CARD_INSTANCE(g_trigger_cause_controller, g_trigger_cause).internal_card_id != -1 &&
       (global_cards_data[PLAYER_CARD_INSTANCE(g_trigger_cause_controller, g_trigger_cause).internal_card_id].type &
@@ -1039,7 +1039,7 @@ int card_cuombajj_witches(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0;
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0;
   }
 
   if (event == EVENT_GET_SELECTED_CARD)
@@ -1101,7 +1101,7 @@ int card_demonic_hordes(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 && real_target_available((int *)0,
+    return ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 && real_target_available((int *)0,
                                                                                                TARGET_SCAN_DIRECT,
                                                                                                player,
                                                                                                2,
@@ -1321,7 +1321,7 @@ int card_dwarven_demolition_team(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return ((PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 && real_target_available((int *)0,
+    return ((PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 && real_target_available((int *)0,
                                                                                                TARGET_SCAN_DIRECT,
                                                                                                player,
                                                                                                2,
@@ -1430,7 +1430,7 @@ int card_dwarven_weaponsmith(int player, int card, event_t event)
     if (g_current_phase == PHASE_UPKEEP &&
         g_current_player == player)
     {
-      return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
+      return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 &&
              real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player,
                                    TARGET_ZONE_IN_PLAY, TYPE_ARTIFACT, TYPE_NONE, 0,
                                    get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
@@ -1667,7 +1667,7 @@ int card_erhnam_djinn(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).info_slot &= ~1;
     }
 
-    if (event == 199 && g_current_phase == 0x1f &&
+    if (event == EVENT_SHOULD_AI_PLAY && g_current_phase == 0x1f &&
         g_basiclandtypes_controlled[player][get_hacked_color(player, card, COLOR_GREEN)] == 0)
     {
       g_ai_modifier += 0x60;
@@ -1793,7 +1793,7 @@ int card_goblin_artisans(int player, int card, event_t event)
     if (g_current_spell_player != -1)
     {
       return (g_land_can_be_played & LCBP_SPELL_BEING_PLAYED) != 0 &&
-                     (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
+                     (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 &&
                      C_real_validate_target(g_current_spell_player, g_current_spell_card, (char *)0, player,
                                             player, player, 0, TYPE_ARTIFACT, TYPE_NONE, 0, 0,
                                             COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1,
@@ -2586,7 +2586,7 @@ int card_nettling_imp(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 && player != g_current_player && g_current_phase < 0x1a && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 1 - player, 1 - player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1, -1, 0xffffffff, 0xffffffff, 0x80, 0, 0x1000);
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 && player != g_current_player && g_current_phase < 0x1a && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 1 - player, 1 - player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1, -1, 0xffffffff, 0xffffffff, 0x80, 0, 0x1000);
   }
 
   if (event == EVENT_GET_SELECTED_CARD)
@@ -3072,7 +3072,7 @@ int card_phyrexian_gremlins(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 &&
            real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2,
                                  TARGET_ZONE_IN_PLAY, TYPE_ARTIFACT, TYPE_NONE, 0,
                                  get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
@@ -3503,7 +3503,7 @@ int card_sage_of_lat_nam(int player, int card, event_t event)
 {
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 &&
            real_target_available((int *)0, TARGET_SCAN_DIRECT, player, player, player,
                                  TARGET_ZONE_IN_PLAY, TYPE_ARTIFACT, TYPE_NONE, 0, 0,
                                  COLOR_TEST_0, COLOR_TEST_0, -1, -1, -1, -1, 0, 0, 0);
@@ -3891,11 +3891,11 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
 
   if (g_trigger_condition == 0xdf && g_affected_card == card && g_affected_card_controller == player && g_current_turn == player && player != g_current_player && player == g_trigger_cause_controller && card == g_trigger_cause)
   {
-    if (event == 0x7d)
+    if (event == EVENT_TRIGGER)
     {
       g_event_result |= 2;
     }
-    if (event == 0x7e)
+    if (event == EVENT_RESOLVE_TRIGGER)
     {
       s.u.giant_copy_internal_id = create_a_card_type(PLAYER_CARD_INSTANCE(player, card).internal_card_id);
       if (s.u.giant_copy_internal_id != -1)
@@ -3907,7 +3907,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
         s.giant_copy_card = add_card_to_hand(player, s.u.giant_copy_internal_id);
         if (s.giant_copy_card != -1)
         {
-          PLAYER_CARD_INSTANCE(player, s.giant_copy_card).state = PLAYER_CARD_INSTANCE(player, card).state & 0xfffffff7;
+          PLAYER_CARD_INSTANCE(player, s.giant_copy_card).state = PLAYER_CARD_INSTANCE(player, card).state & ~STATE_BLOCKING;
           PLAYER_CARD_INSTANCE(player, s.giant_copy_card).regen_status = PLAYER_CARD_INSTANCE(player, card).regen_status;
           PLAYER_CARD_INSTANCE(player, s.giant_copy_card).token_status = 0x8000008;
           PLAYER_CARD_INSTANCE(player, s.giant_copy_card).info_slot = 2;
@@ -3922,11 +3922,11 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
 
   if (g_trigger_condition == 0xd4 && g_affected_card == card && g_affected_card_controller == player && g_current_turn == player && player == g_trigger_cause_controller && card == g_trigger_cause)
   {
-    if (event == 0x7d)
+    if (event == EVENT_TRIGGER)
     {
       g_event_result |= 2;
     }
-    if (event == 0x7e && PLAYER_CARD_INSTANCE(player, card).blocking != -1)
+    if (event == EVENT_RESOLVE_TRIGGER && PLAYER_CARD_INSTANCE(player, card).blocking != -1)
     {
       for (s.u.current_card = 0; s.u.current_card < g_active_cards_count[player]; ++s.u.current_card)
       {
@@ -3938,7 +3938,7 @@ int card_two_headed_giant_of_foriys(int player, int card, event_t event)
     }
   }
 
-  if (event == 0x77 && g_affected_card == card && g_affected_card_controller == player && PLAYER_CARD_INSTANCE(player, card).blocking != -1)
+  if (event == EVENT_GRAVEYARD_FROM_PLAY && g_affected_card == card && g_affected_card_controller == player && PLAYER_CARD_INSTANCE(player, card).blocking != -1)
   {
     for (s.u.current_card = 0; s.u.current_card < g_active_cards_count[player]; ++s.u.current_card)
     {
@@ -4551,7 +4551,7 @@ int card_wyluli_wolf(int player, int card, event_t event)
 
   if (event == EVENT_CAN_ACTIVATE)
   {
-    return (PLAYER_CARD_INSTANCE(player, card).state & 0x20010) == 0 &&
+    return (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED)) == 0 &&
            real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2,
                                  TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0,
                                  get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
@@ -4606,7 +4606,7 @@ int card_wyluli_wolf(int player, int card, event_t event)
   }
 
   if (event == EVENT_CHECK_PUMP &&
-      (PLAYER_CARD_INSTANCE(player, card).state & 0x20014) == 0)
+      (PLAYER_CARD_INSTANCE(player, card).state & (STATE_SUMMONSICK_NOTAP | STATE_TAPPED | STATE_ATTACKING)) == 0)
   {
     ++g_global_power_bonus[player];
     ++g_global_toughness_bonus[player];

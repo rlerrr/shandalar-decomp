@@ -1359,7 +1359,7 @@ unsigned int C_real_validate_target(int tgt_player,
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_will_untap_008ceb50);
       }
-      if ((required_state & TARGET_STATE_SUMMONING_SICK) != 0 && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & 0x30000) == 0x30000)
+      if ((required_state & TARGET_STATE_SUMMONING_SICK) != 0 && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_SUMMONSICK_BOTH) == STATE_SUMMONSICK_BOTH)
       {
         s.is_illegal = 1;
         strcat(s.errbuf, ",summoning sickness");
@@ -1443,7 +1443,7 @@ unsigned int C_real_validate_target(int tgt_player,
         s.is_illegal = 1;
         strcat(s.errbuf, gs_illegal_target_why_will_untap_008ceb50);
       }
-      if ((illegal_state & TARGET_STATE_SUMMONING_SICK) != 0 && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & 0x30000) != 0)
+      if ((illegal_state & TARGET_STATE_SUMMONING_SICK) != 0 && (PLAYER_CARD_INSTANCE(tgt_player, tgt_card).state & STATE_SUMMONSICK_BOTH) != 0)
       {
         s.is_illegal = 1;
         strcat(s.errbuf, ",summoning sickness");
@@ -1528,7 +1528,7 @@ int select_card_for_action(int player,
           continue;
         }
 
-        if (((PLAYER_CARD_INSTANCE(s.current_player, s.current_card).state & 0x800002) != 2) &&
+        if (((PLAYER_CARD_INSTANCE(s.current_player, s.current_card).state & (STATE_OUBLIETTED | STATE_IN_PLAY)) != STATE_IN_PLAY) &&
             !(g_active_player == player && g_duel_network_state != 0))
         {
           continue;
@@ -1589,26 +1589,26 @@ int select_card_for_action(int player,
 
         s.selected_internal_id = PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).internal_card_id;
         if (((global_cards_data[s.selected_internal_id].type & 1) != 0) &&
-            ((PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).state & 2) != 0))
+            ((PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).state & STATE_IN_PLAY) != 0))
         {
           goto select_card_for_action_retry;
         }
         if (((global_cards_data[s.selected_internal_id].type & 2) != 0) &&
-            ((PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).state & 4) != 0))
+            ((PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).state & STATE_ATTACKING) != 0))
         {
           goto select_card_for_action_retry;
         }
 
         if (g_current_phase > 0x14 && g_current_phase < 0x1e)
         {
-          if ((global_cards_data[s.selected_internal_id].type & 2) == 0 || (PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).state & 2) == 0)
+          if ((global_cards_data[s.selected_internal_id].type & 2) == 0 || (PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).state & STATE_IN_PLAY) == 0)
           {
             goto select_card_for_action_retry;
           }
           goto select_card_for_action_return_candidate;
         }
 
-        if ((global_cards_data[s.selected_internal_id].type & 0x4b) == 0 || (PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).state & 2) != 0)
+        if ((global_cards_data[s.selected_internal_id].type & 0x4b) == 0 || (PLAYER_CARD_INSTANCE(g_target_player_choice, s.candidate_cards[s.candidate_count]).state & STATE_IN_PLAY) != 0)
         {
           goto select_card_for_action_retry;
         }
@@ -1805,7 +1805,7 @@ int choose_creature_to_sacrifice(int player)
     {
       s.internal_card_id = PLAYER_CARD_INSTANCE(player, s.current_card).internal_card_id;
       if (s.internal_card_id != -1 &&
-          (PLAYER_CARD_INSTANCE(player, s.current_card).state & 0x800002) == 2 &&
+          (PLAYER_CARD_INSTANCE(player, s.current_card).state & (STATE_OUBLIETTED | STATE_IN_PLAY)) == STATE_IN_PLAY &&
           (global_cards_data[s.internal_card_id].type & TYPE_CREATURE) != 0 &&
           PLAYER_CARD_INSTANCE(player, s.current_card).kill_code != 3 &&
           (PLAYER_CARD_INSTANCE(player, s.current_card).state & STATE_CANNOT_TARGET) == 0)

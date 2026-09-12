@@ -919,7 +919,7 @@ int untap_phase_exe(unsigned int player)
     for (s.card = 0; s.card < g_active_cards_count[player]; s.card = s.card + 1)
     {
       if ((is_in_play(player, s.card) != 0) &&
-          ((global_card_instances[player][s.card].state & 0x10) != 0))
+          ((global_card_instances[player][s.card].state & STATE_TAPPED) != 0))
       {
         global_card_instances[player][s.card].untap_status = 3;
         dispatch_event(player, s.card, 0x82);
@@ -1317,7 +1317,7 @@ int discard_phase(unsigned int player, int phase_mode)
   for (s.card = 0; s.card < g_active_cards_count[player]; s.card = s.card + 1)
   {
     if ((global_card_instances[player][s.card].internal_card_id != -1) &&
-        ((global_card_instances[player][s.card].state & 2) != 0) &&
+        ((global_card_instances[player][s.card].state & STATE_IN_PLAY) != 0) &&
         (global_cards_data[global_card_instances[player][s.card].internal_card_id].id == 0x8c))
     {
       return 0;
@@ -1413,7 +1413,7 @@ int discard_phase(unsigned int player, int phase_mode)
       for (s.card = 0; s.card < g_active_cards_count[player]; s.card = s.card + 1)
       {
         if ((global_card_instances[player][s.card].internal_card_id != -1) &&
-            ((global_card_instances[player][s.card].state & 2) == 0))
+            ((global_card_instances[player][s.card].state & STATE_IN_PLAY) == 0))
         {
           s.hand_count_for_discard++;
         }
@@ -1612,13 +1612,13 @@ int end_turn_phase(unsigned int player)
            s.dynamic_card_index++)
       {
         if ((global_card_instances[g_active_player][s.dynamic_card_index].internal_card_id != -1) &&
-            ((global_card_instances[g_active_player][s.dynamic_card_index].state & 2) != 0) &&
+            ((global_card_instances[g_active_player][s.dynamic_card_index].state & STATE_IN_PLAY) != 0) &&
             (global_card_instances[g_active_player][s.dynamic_card_index].dummy3 == s.card))
         {
           s.found = 1;
         }
         if ((global_card_instances[g_other_player][s.dynamic_card_index].internal_card_id != -1) &&
-            ((global_card_instances[g_other_player][s.dynamic_card_index].state & 2) != 0) &&
+            ((global_card_instances[g_other_player][s.dynamic_card_index].state & STATE_IN_PLAY) != 0) &&
             (global_card_instances[g_other_player][s.dynamic_card_index].dummy3 == s.card))
         {
           s.found = 1;

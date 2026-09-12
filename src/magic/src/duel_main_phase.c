@@ -876,7 +876,7 @@ restart_main_phase_action_loop:
     if (main_phase_selected_card != 0xffffffff)
     {
       main_phase_selected_internal_card_id = global_card_instances[player][main_phase_selected_card].internal_card_id;
-      if ((global_card_instances[player][main_phase_selected_card].state & 0x12) == 0)
+      if ((global_card_instances[player][main_phase_selected_card].state & (STATE_TAPPED | STATE_IN_PLAY)) == 0)
       {
         if (((global_cards_data[main_phase_selected_internal_card_id].type & 1) != 0) && ((g_land_can_be_played & LCBP_LAND_HAS_BEEN_PLAYED) != 0))
         {
@@ -946,7 +946,7 @@ restart_main_phase_action_loop:
         g_max_x_value = -1;
         g_ai_recorded_action = -1;
         if (((((global_cards_data[main_phase_selected_internal_card_id].extra_ability & 3) != 0) &&
-              ((global_card_instances[player][main_phase_selected_card].state & 0x24) == 0)) ||
+              ((global_card_instances[player][main_phase_selected_card].state & (STATE_INVISIBLE | STATE_ATTACKING)) == 0)) ||
              ((global_cards_data[main_phase_selected_internal_card_id].extra_ability & 0x1000) != 0)) &&
             (dispatch_event_to_single_card(player, main_phase_selected_card, 0x73, s.other_player, -1) != 0))
         {
@@ -1014,8 +1014,8 @@ restart_main_phase_action_loop:
       }
       else if ((((player == g_active_player) || ((g_duel_network_flags & 2) != 0)) &&
                 (((global_cards_data[main_phase_selected_internal_card_id].type & 2) != 0 ||
-                  ((global_card_instances[player][main_phase_selected_card].state & 0x1000000) != 0)))) &&
-               (((global_card_instances[player][main_phase_selected_card].state & 0x10014) == 0 &&
+                  ((global_card_instances[player][main_phase_selected_card].state & STATE_NONCREATURE_CAN_ATTACK) != 0)))) &&
+               (((global_card_instances[player][main_phase_selected_card].state & (STATE_SUMMONSICK_NOATTACK | STATE_TAPPED | STATE_ATTACKING)) == 0 &&
                  (g_attacking_creature_count >= 0))) &&
                (can_attack(player, main_phase_selected_card) != 0))
       {
@@ -1121,7 +1121,7 @@ restart_main_phase_action_loop:
            g_trigger_cause = g_trigger_cause + 1)
       {
         if ((global_card_instances[g_trigger_cause_controller][g_trigger_cause].internal_card_id != -1) &&
-            ((global_card_instances[g_trigger_cause_controller][g_trigger_cause].state & 0x800006) == 6))
+            ((global_card_instances[g_trigger_cause_controller][g_trigger_cause].state & (STATE_OUBLIETTED | STATE_ATTACKING | STATE_IN_PLAY)) == (STATE_ATTACKING | STATE_IN_PLAY)))
         {
           g_combat_assignment_cancelled = 0;
           if ((g_battlefield_extra_ability_flags & 0x400000) != 0)

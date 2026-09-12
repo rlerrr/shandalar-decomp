@@ -1175,9 +1175,9 @@ int card_graveyard(int player, int card, event_t event)
       }
 
       if (PLAYER_CARD_INSTANCE(player, card).original_internal_card_id == find_internal_card_id_by_csv_id(CARD_ID_PERSONAL_INCARNATION) &&
-          g_life[(PLAYER_CARD_INSTANCE(player, card).state & 0x1000) >> 12] >= 0)
+          g_life[(PLAYER_CARD_INSTANCE(player, card).state & STATE_OWNED_BY_OPPONENT) >> 12] >= 0)
       {
-        g_life[(PLAYER_CARD_INSTANCE(player, card).state & 0x1000) >> 12] /= 2;
+        g_life[(PLAYER_CARD_INSTANCE(player, card).state & STATE_OWNED_BY_OPPONENT) >> 12] /= 2;
       }
 
       if (PLAYER_CARD_INSTANCE(player, card).original_internal_card_id == find_internal_card_id_by_csv_id(CARD_ID_CREATURE_BOND))

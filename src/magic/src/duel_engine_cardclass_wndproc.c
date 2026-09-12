@@ -781,7 +781,7 @@ unsigned int get_displayed_card_regen_status(int player, int card)
   EnterCriticalSection(&g_duel_render_lock);
   regen_status = global_displayed_card_instances[player][card].regen_status;
   if ((global_displayed_card_instances[player][card].regen_status & 0x200000) != 0 &&
-      (global_displayed_card_instances[player][card].state & 4) != 0)
+      (global_displayed_card_instances[player][card].state & STATE_ATTACKING) != 0)
   {
     regen_status |= 0x40;
   }

@@ -292,7 +292,7 @@ int find_matching_inactive_control_effect(int player, int card, int source_playe
 int dispatch_function_to_all_cards_in_play(int player, int card, int(__cdecl *callback)(int, int, int, int, int), int who_to_check);
 int card_fellwar_stone(int player, int card, event_t event);
 unsigned int get_protections_from(int player, int card);
-void regenerate_card(int player, int card);
+int regenerate_card(int player, int card);
 int generic_creature_stat_aura(int player, int card, event_t event, int power_modifier, int toughness_modifier);
 int mark_zombie_as_nonregenerable(int player, int card, int internal_card_id);
 int select_target_creature_and_store(int player, unsigned int preferred_controller, int card);

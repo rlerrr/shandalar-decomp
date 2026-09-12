@@ -225,7 +225,7 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
         g_ai_modifier -= 0x18;
       }
       if (global_cards_data[TARGET_CARD_INSTANCE(player, card, 0).internal_card_id].subtype == 0 &&
-          (TARGET_CARD_INSTANCE(player, card, 0).token_status & 0x800) == 0)
+          (TARGET_CARD_INSTANCE(player, card, 0).token_status & STATUS_WALL_CAN_ATTACK) == 0)
       {
         g_ai_modifier -= 0x18;
       }
@@ -499,7 +499,7 @@ int card_cyclopean_tomb(int player, int card, event_t event)
     PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
   }
 
-  if (event == 0x77 && g_affected_card == card && g_affected_card_controller == player)
+  if (event == EVENT_GRAVEYARD_FROM_PLAY && g_affected_card == card && g_affected_card_controller == player)
   {
     legacy_card = create_legacy_effect(player, card, g_duel_generated_internal_card_id_23, -1, -1);
     if (legacy_card != -1)
@@ -630,7 +630,7 @@ int card_icy_manipulator(int player, int card, event_t event)
     return (has_mana(player, COLOR_ANY, 1) && CAN_TAP(player, card) && real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY, TYPE_ARTIFACT | TYPE_CREATURE | TYPE_LAND, TYPE_NONE, 0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0, -1, -1, 0xffffffff, 0xffffffff, 0, 0, 0));
   }
 
-  if (event == 0x90)
+  if (event == EVENT_GET_SELECTED_CARD)
   {
     load_recorded_action_target(0);
     return 0;
@@ -738,7 +738,7 @@ int card_jade_statue(int player, int card, event_t event)
     PLAYER_CARD_INSTANCE(player, card).state |= 0x3000000;
     PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
   }
-  if (((event == 0x79) || ((event == 0x78) && (card == g_affected_card) && (player == g_affected_card_controller))) && (PLAYER_CARD_INSTANCE(player, card).state & 4) == 0 && !has_mana(player, 7, 2))
+  if (((event == EVENT_ATTACK_LEGALITY) || ((event == EVENT_BLOCK_LEGALITY) && (card == g_affected_card) && (player == g_affected_card_controller))) && (PLAYER_CARD_INSTANCE(player, card).state & STATE_ATTACKING) == 0 && !has_mana(player, 7, 2))
   {
     g_event_result = 1;
   }
@@ -746,11 +746,11 @@ int card_jade_statue(int player, int card, event_t event)
   {
     if (has_mana(player, 7, 2))
     {
-      if (event == 0x7d)
+      if (event == EVENT_TRIGGER)
       {
         g_event_result |= 2;
       }
-      if (event == 0x7e)
+      if (event == EVENT_RESOLVE_TRIGGER)
       {
         push_card_onto_stack(player, card, EVENT_RESOLVE_ACTIVATION, 0, 0);
         charge_mana(player, 0, 2);
@@ -781,17 +781,17 @@ int card_jade_statue(int player, int card, event_t event)
       g_combat_assignment_cancelled = 1;
     }
   }
-  if ((event == 0x3c) && (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0 && card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
+  if ((event == EVENT_CHANGE_TYPE) && (g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0 && card == g_affected_card && player == g_affected_card_controller && is_in_play(player, card))
   {
     g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
   }
   if (g_trigger_condition == 0xcc && card == g_affected_card && player == g_affected_card_controller && g_current_turn == player && PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
   {
-    if (event == 0x7d)
+    if (event == EVENT_TRIGGER)
     {
       g_event_result |= 2;
     }
-    if (event == 0x7e)
+    if (event == EVENT_RESOLVE_TRIGGER)
     {
       invalidate_dynamic_card_type(PLAYER_CARD_INSTANCE(player, card).dummy3);
       PLAYER_CARD_INSTANCE(player, card).dummy3 = PLAYER_CARD_INSTANCE(player, card).info_slot;

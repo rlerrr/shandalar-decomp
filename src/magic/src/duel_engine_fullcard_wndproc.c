@@ -146,7 +146,7 @@ int displayed_card_has_changed_color_words(int player, int card)
   }
 
   EnterCriticalSection(&g_duel_render_lock);
-  if ((DISPLAYED_PLAYER_CARD_INSTANCE(player, card).token_status & 6) != 0)
+  if ((DISPLAYED_PLAYER_CARD_INSTANCE(player, card).token_status & (STATUS_HACKED | STATUS_SLEIGHTED)) != 0)
   {
     s.result = 1;
   }
