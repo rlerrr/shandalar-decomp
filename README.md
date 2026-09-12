@@ -17,14 +17,14 @@ Within the `src` folder there should eventually be 1 directory for each of the g
 * deck.exe (release /Od) ![matching](https://img.shields.io/badge/matching-99.62%25-green) : A trivial wrapper for showing the deck builder UI
 * deckdll.dll (release /Od) ![matching](https://img.shields.io/badge/matching-97.65%25-green) : The deck builder UI implementation, imported by deck.exe, magic.exe and shandalar.exe
 * drawcardlib.dll (debug) ![matching](https://img.shields.io/badge/matching-98.32%25-green) : Library for rendering full card representations
-* facemaker.exe (release partially optimized) ![matching](https://img.shields.io/badge/matching-77.41%25-green): UI for designing your character.  Invoked via shandalar.exe with shared memory space.  Shares most of its code with shandalar.exe
-* gcconn.dll (debug, C++) : Seems to be netcode for manalink.  Has a ton of asserts with function/filenames embedded.
-* magic.exe ![matching](https://img.shields.io/badge/matching-81.97%25-orange): The duel UI.  Shares a tremendous amount of code with shandalar.exe
+* facemaker.exe (release partially optimized) ![matching](https://img.shields.io/badge/matching-77.60%25-green): UI for designing your character.  Invoked via shandalar.exe with shared memory space.  Shares most of its code with shandalar.exe
+* gcconn.dll (debug, C++) ![matching](https://img.shields.io/badge/matching-0%25-red) : Seems to be netcode for manalink.  Has a ton of asserts with function/filenames embedded.
+* magic.exe ![matching](https://img.shields.io/badge/matching-89.04%25-orange): The duel UI.  Shares a tremendous amount of code with shandalar.exe
 * magsnd.dll (release /Od) ![matching](https://img.shields.io/badge/matching-99.15%25-green) : Small dll that wraps DirectSound
-* magvid.dll (release C++) : Presumably plays video.  Only referenced by statwin.
-* manalink.exe : Multiplayer.  Has a ton of debug logging with function/filenames embedded.  Called `FamiliarWS` internally?
+* magvid.dll (release C++) ![matching](https://img.shields.io/badge/matching-0%25-red) : Plays video.  Only referenced by statwin.
+* manalink.exe ![matching](https://img.shields.io/badge/matching-0%25-red) : Multiplayer.  Has a ton of debug logging with function/filenames embedded.  Called `FamiliarWS` internally?
 * manalinkinterface.dll (static release /Od) ![matching](https://img.shields.io/badge/matching-100.00%25-green) : Small dll with several exports, used by magic.exe not manalink.exe
-* shandalar.exe ![matching](https://img.shields.io/badge/matching-86.47%25-blue): The main game.
+* shandalar.exe ![matching](https://img.shields.io/badge/matching-89.61%25-green): The main game.
 * statwin.dll (release /Od, C++) ![matching](https://img.shields.io/badge/matching-98.65%25-green): Renders shandalar wiz stats screen and passes through magvid.dll calls
 
 Additionally:
