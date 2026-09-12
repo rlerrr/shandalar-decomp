@@ -892,18 +892,12 @@ int card_animate_dead(int player, int card, event_t event)
       {
         PLAYER_CARD_INSTANCE(player, card).damage_target_card = current_player;
         PLAYER_CARD_INSTANCE(player, card).damage_target_player = player;
-        *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                               PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-             .state &= ~STATE_OWNED_BY_OPPONENT;
+        *(unsigned int *)&DAMAGE_TARGET_CARD_INSTANCE(player, card).state &= ~STATE_OWNED_BY_OPPONENT;
         if (chosen_graveyard != 0)
         {
-          *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                                 PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-               .state |= 0x1000;
+          *(unsigned int *)&DAMAGE_TARGET_CARD_INSTANCE(player, card).state |= 0x1000;
         }
-        *(unsigned int *)&PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                               PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-             .state |= 0x20;
+        *(unsigned int *)&DAMAGE_TARGET_CARD_INSTANCE(player, card).state |= 0x20;
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
         PLAYER_CARD_INSTANCE(player, card).targets[1].player = chosen_graveyard;
         PLAYER_CARD_INSTANCE(player, card).targets[1].card = graveyard_data[3];
@@ -928,8 +922,7 @@ int card_animate_dead(int player, int card, event_t event)
     {
       remove_card_from_graveyard(chosen_graveyard, graveyard_data[3]);
       PLAYER_CARD_INSTANCE(player, card).eot_toughness = 0;
-      process_card_enters_play((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                               PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+      process_card_enters_play((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
       DAMAGE_TARGET_CARD_INSTANCE(player, card).counter_power = -1;
     }
     PLAYER_CARD_INSTANCE(player, card).number_of_targets = 0;
@@ -1115,34 +1108,24 @@ int card_animate_artifact(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).damage_target_card =
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
       animated_internal_card_id = create_a_card_type(
-          PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                               PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-              .internal_card_id);
+          DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id);
       if (animated_internal_card_id != -1)
       {
-        if ((global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                                    PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                                   .internal_card_id]
+        if ((global_cards_data[DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id]
                  .type &
              0x42) == 0x40)
         {
           global_cards_data[animated_internal_card_id].toughness =
               (short)(char)global_cards_data
-                  [PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                        PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                       .internal_card_id]
+                  [DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id]
                       .cc[1];
           global_cards_data[animated_internal_card_id].power =
               global_cards_data[animated_internal_card_id].toughness;
         }
         global_cards_data[animated_internal_card_id].type = 0x42;
         PLAYER_CARD_INSTANCE(player, card).dummy3 = animated_internal_card_id;
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .internal_card_id = animated_internal_card_id;
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .regen_status |= 0x1000000;
+        DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id = animated_internal_card_id;
+        DAMAGE_TARGET_CARD_INSTANCE(player, card).regen_status |= 0x1000000;
       }
     }
     else
@@ -1157,9 +1140,7 @@ int card_animate_artifact(int player, int card, event_t event)
   if ((((event == EVENT_CHANGE_TYPE) && ((g_land_can_be_played & LCBP_DURING_EVENT_CHANGE_TYPE_SECOND_PASS) == 0)) && ((PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card) && (((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller) && (g_affected_card != -1)))) && is_in_play(player, card))
   {
     g_event_result = PLAYER_CARD_INSTANCE(player, card).dummy3;
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                         PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-        .token_status |= 0x40;
+    DAMAGE_TARGET_CARD_INSTANCE(player, card).token_status |= 0x40;
   }
   return 0;
 }
@@ -1401,12 +1382,12 @@ int card_animate_wall(int player, int card, event_t event)
 
   if (event == 0x34 && PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card && PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller && g_affected_card != -1 && (PLAYER_CARD_INSTANCE(player, card).token_status & 0x80) == 0)
   {
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card).token_status |= 0x800;
+    DAMAGE_TARGET_CARD_INSTANCE(player, card).token_status |= 0x800;
   }
 
   if (event == 0x77 && g_affected_card == card && g_affected_card_controller == player && PLAYER_CARD_INSTANCE(player, card).damage_target_card != -1)
   {
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card).token_status &= ~0x800;
+    DAMAGE_TARGET_CARD_INSTANCE(player, card).token_status &= ~0x800;
   }
 
   return 0;
@@ -1428,7 +1409,7 @@ int card_control_magic(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004d3348
 int card_steal_artifact(int player, int card, event_t event)
 {
-  if (event != EVENT_CHANGE_TYPE && (PLAYER_CARD_INSTANCE(player, card).token_status & STATUS_DYING) == 0 && PLAYER_CARD_INSTANCE(player, card).damage_target_player != -1 && (global_cards_data[PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card).internal_card_id].type & TYPE_ARTIFACT) == 0)
+  if (event != EVENT_CHANGE_TYPE && (PLAYER_CARD_INSTANCE(player, card).token_status & STATUS_DYING) == 0 && PLAYER_CARD_INSTANCE(player, card).damage_target_player != -1 && (global_cards_data[DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id].type & TYPE_ARTIFACT) == 0)
   {
     kill_card(player, card, KILL_DESTROY);
   }
@@ -1494,8 +1475,7 @@ int generic_control_aura(int player, int card, event_t event, unsigned int requi
           {
             play_sound_effect(WAV_CONTROL);
           }
-          s.new_card = gain_control(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                    PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+          s.new_card = gain_control((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
           PLAYER_CARD_INSTANCE(player, card).damage_target_player = player;
           PLAYER_CARD_INSTANCE(player, card).damage_target_card = s.new_card;
         }
@@ -1513,7 +1493,7 @@ int generic_control_aura(int player, int card, event_t event, unsigned int requi
 
   if (g_trigger_condition == (trigger_t)0xd4 && g_affected_card == card && g_affected_card_controller == player &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_player != -1 &&
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card).internal_card_id != -1 &&
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id != -1 &&
       g_trigger_cause_controller == player && g_trigger_cause == card && g_current_turn == player)
   {
     if (event == (event_t)0x7d)
@@ -1527,30 +1507,23 @@ int generic_control_aura(int player, int card, event_t event, unsigned int requi
       {
         if (PLAYER_CARD_INSTANCE(player, card).damage_source_player == -1)
         {
-          if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                   PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                      .internal_card_id != -1 &&
-              ((((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                       PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                      .state &
+          if (DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id != -1 &&
+              ((((DAMAGE_TARGET_CARD_INSTANCE(player, card).state &
                   0x400000) != 0) &&
                 PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_active_player) ||
-               (((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                       PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                      .state &
+               (((DAMAGE_TARGET_CARD_INSTANCE(player, card).state &
                   0x400000) == 0) &&
                 PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_other_player)))
           {
-            gain_control((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+            gain_control((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
           }
         }
         else
         {
-          PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-              .token_status |= 0x1000000;
+          DAMAGE_SOURCE_CARD_INSTANCE(player, card).token_status |= 0x1000000;
           if (PLAYER_CARD_INSTANCE(player, card).damage_source_player != PLAYER_CARD_INSTANCE(player, card).damage_target_player)
           {
-            gain_control((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+            gain_control((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
           }
         }
       }
@@ -2475,8 +2448,7 @@ int card_power_leak(int player, int card, event_t event)
     s.dialog_result = do_dialog((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                                 player,
                                 card,
-                                (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                PLAYER_CARD_INSTANCE(player, card).damage_target_card,
+                                (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card,
                                 s.message,
                                 s.damage);
     s.source_player = g_card_on_stack_controller;
@@ -2723,15 +2695,13 @@ int card_erosion(int player, int card, event_t event)
       dialog_result = do_dialog((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
                                 player,
                                 card,
-                                (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                PLAYER_CARD_INSTANCE(player, card).damage_target_card,
+                                (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card,
                                 message,
                                 default_choice);
       switch (dialog_result)
       {
       case 0:
-        kill_card((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                  PLAYER_CARD_INSTANCE(player, card).damage_target_card,
+        kill_card((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card,
                   KILL_DESTROY);
         ++done;
         break;
@@ -3069,12 +3039,8 @@ int card_evil_presence(int player, int card, event_t event)
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
       PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
 
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-          .internal_card_id = get_hacked_color(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) - 1;
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-          .regen_status |= 0x1000000;
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id = get_hacked_color(player, card, PLAYER_CARD_INSTANCE(player, card).info_slot) - 1;
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).regen_status |= 0x1000000;
     }
     else
     {
@@ -3384,8 +3350,7 @@ int card_blight(int player, int card, event_t event)
     result = create_legacy_effect(player,
                                   card,
                                   g_duel_generated_internal_card_id_0f,
-                                  (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                  PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+                                  (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
     if (result != -1)
     {
       PLAYER_CARD_INSTANCE(player, result).kill_code = 5;
@@ -3979,19 +3944,15 @@ int card_lure(int player, int card, event_t event)
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot = 1;
     g_trigger_condition = -1;
-    if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player && (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card).state & 4) != 0 && is_in_play(g_affected_card_controller, g_affected_card) && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).blocking == -1 && g_affected_card_controller != g_current_player && can_block_with_landwalk_masks(g_affected_card_controller, g_affected_card, (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card) != 0)
+    if ((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player && (DAMAGE_TARGET_CARD_INSTANCE(player, card).state & 4) != 0 && is_in_play(g_affected_card_controller, g_affected_card) && PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).blocking == -1 && g_affected_card_controller != g_current_player && can_block_with_landwalk_masks(g_affected_card_controller, g_affected_card, (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card) != 0)
     {
-      if (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                               PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-              .blocking == -1)
+      if (DAMAGE_TARGET_CARD_INSTANCE(player, card).blocking == -1)
       {
         blocking_card = PLAYER_CARD_INSTANCE(player, card).damage_target_card;
       }
       else
       {
-        blocking_card = PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                            .blocking;
+        blocking_card = DAMAGE_TARGET_CARD_INSTANCE(player, card).blocking;
       }
 
       if (event == 0x7d)
@@ -4429,9 +4390,7 @@ int card_backfire(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
       g_affected_card != -1)
   {
-    g_ai_score += PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                       PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                      .power *
+    g_ai_score += DAMAGE_TARGET_CARD_INSTANCE(player, card).power *
                   0x18;
   }
 
@@ -4641,9 +4600,7 @@ int card_holy_armor(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .internal_card_id != -1)
+    if (DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id != -1)
     {
       PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
       PARENT_CARD_INSTANCE(player, card).info_slot += (PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff) * 0x100;
@@ -4654,8 +4611,7 @@ int card_holy_armor(int player, int card, event_t event)
         local = create_legacy_effect(g_card_on_stack_controller,
                                      g_card_on_stack,
                                      LEGACY_EFFECT_PUMP,
-                                     (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                     PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+                                     (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
         if (local != -1)
         {
           PLAYER_CARD_INSTANCE(player, local).counter_toughness =
@@ -4880,9 +4836,7 @@ int card_blessing(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .internal_card_id == -1)
+    if (DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id == -1)
     {
       g_spell_fizzled = 1;
     }
@@ -4898,8 +4852,7 @@ int card_blessing(int player, int card, event_t event)
         local = create_legacy_effect(g_card_on_stack_controller,
                                      g_card_on_stack,
                                      LEGACY_EFFECT_PUMP,
-                                     (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                     PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+                                     (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
         if (local != -1)
         {
           PLAYER_CARD_INSTANCE(player, local).counter_power =
@@ -5122,9 +5075,7 @@ int card_firebreathing(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .internal_card_id != -1)
+    if (DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id != -1)
     {
       PARENT_CARD_INSTANCE(player, card).info_slot += PLAYER_CARD_INSTANCE(player, card).eot_toughness & 0xff;
 
@@ -5138,8 +5089,7 @@ int card_firebreathing(int player, int card, event_t event)
         local = create_legacy_effect(g_card_on_stack_controller,
                                      g_card_on_stack,
                                      LEGACY_EFFECT_PUMP,
-                                     PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                     PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+                                     (int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
         if (local != -1)
         {
           PLAYER_CARD_INSTANCE(player, local).counter_power =
@@ -5727,7 +5677,7 @@ int card_paralyze(int player, int card, event_t event)
     {
       PLAYER_CARD_INSTANCE(player, card).damage_target_player = (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-      tap_card_and_dispatch_event(PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
+      tap_card_and_dispatch_event((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_target_player, PLAYER_CARD_INSTANCE(player, card).damage_target_card);
     }
     else
     {
@@ -5742,17 +5692,13 @@ int card_paralyze(int player, int card, event_t event)
   if (event == EVENT_UNTAP && PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller && g_affected_card != -1)
   {
-    PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                         PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-        .untap_status &= ~3;
+    DAMAGE_TARGET_CARD_INSTANCE(player, card).untap_status &= ~3;
     return 0;
   }
 
   if (event == EVENT_SET_UNTAP_COST && PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller && g_affected_card != -1 &&
-      (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                            PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-           .state &
+      (DAMAGE_TARGET_CARD_INSTANCE(player, card).state &
        STATE_TAPPED) != 0 &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_current_player && g_event_player == g_current_player)
   {
@@ -6220,15 +6166,11 @@ int card_instill_energy(int player, int card, event_t event)
     {
       PLAYER_CARD_INSTANCE(player, card).damage_target_player = (char)PLAYER_CARD_INSTANCE(player, card).targets[0].player;
       PLAYER_CARD_INSTANCE(player, card).damage_target_card = PLAYER_CARD_INSTANCE(player, card).targets[0].card;
-      if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-               .state &
+      if ((DAMAGE_TARGET_CARD_INSTANCE(player, card).state &
            STATE_IN_PLAY) != 0)
       {
         PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
-        PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .state &= ~STATE_SUMMONSICK_BOTH;
+        DAMAGE_TARGET_CARD_INSTANCE(player, card).state &= ~STATE_SUMMONSICK_BOTH;
       }
     }
     else
@@ -6267,13 +6209,9 @@ int card_instill_energy(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_ACTIVATION)
   {
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .internal_card_id != -1)
+    if (DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id != -1)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-          .state &= ~STATE_TAPPED;
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).state &= ~STATE_TAPPED;
     }
     else
     {
@@ -6285,9 +6223,7 @@ int card_instill_energy(int player, int card, event_t event)
   if (g_trigger_condition == TRIGGER_LEAVE_PLAY && g_affected_card == card && g_affected_card_controller == player &&
       PLAYER_CARD_INSTANCE(player, card).eot_toughness != 0 &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_player != -1 &&
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-              .internal_card_id != -1 &&
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id != -1 &&
       g_trigger_cause_controller == player && g_trigger_cause == card && g_current_turn == player)
   {
     if (event == EVENT_TRIGGER)
@@ -6296,9 +6232,7 @@ int card_instill_energy(int player, int card, event_t event)
     }
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-          .state |= 0x30000;
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).state |= 0x30000;
     }
   }
 
@@ -6311,15 +6245,11 @@ int card_instill_energy(int player, int card, event_t event)
   if (event == EVENT_CARDCONTROLLED && PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
       PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller && g_affected_card != -1)
   {
-    if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                              PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-             .state &
+    if ((DAMAGE_TARGET_CARD_INSTANCE(player, card).state &
          STATE_IN_PLAY) != 0)
     {
       PLAYER_CARD_INSTANCE(player, card).eot_toughness = 1;
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-          .state &= ~STATE_SUMMONSICK_BOTH;
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).state &= ~STATE_SUMMONSICK_BOTH;
     }
   }
 
@@ -8101,16 +8031,12 @@ int card_regeneration(int player, int card, event_t event)
   if (event == EVENT_CAN_ACTIVATE && (g_land_can_be_played & LCBP_REGENERATION) != 0 && PLAYER_CARD_INSTANCE(player, card).info_slot == 0)
   {
     can_activate = 1;
-    if ((PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                              PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-             .state &
+    if ((DAMAGE_TARGET_CARD_INSTANCE(player, card).state &
          0x800002) != STATE_IN_PLAY)
     {
       can_activate = 0;
     }
-    if (PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .kill_code != KILL_DESTROY)
+    if (DAMAGE_TARGET_CARD_INSTANCE(player, card).kill_code != KILL_DESTROY)
     {
       can_activate = 0;
     }
@@ -8748,12 +8674,8 @@ int card_phantasmal_terrain(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).damage_target_card =
           PLAYER_CARD_INSTANCE(player, card).targets[0].card;
       --PLAYER_CARD_INSTANCE(player, card).dummy3;
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-          .internal_card_id = PLAYER_CARD_INSTANCE(player, card).dummy3;
-      PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-          .regen_status |= 0x1000000;
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id = PLAYER_CARD_INSTANCE(player, card).dummy3;
+      DAMAGE_TARGET_CARD_INSTANCE(player, card).regen_status |= 0x1000000;
     }
     else
     {

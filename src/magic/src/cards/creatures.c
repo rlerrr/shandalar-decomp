@@ -920,21 +920,15 @@ int card_uncle_istvan(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_card == card &&
       PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_target_player == player)
   {
-    if (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_player,
-                             PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card)
-            .internal_card_id != -1)
+    if (DAMAGE_SOURCE_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id != -1)
     {
       source_internal_card_id =
-          PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_player,
-                               PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card)
-              .internal_card_id;
+          DAMAGE_SOURCE_CARD_INSTANCE(g_affected_card_controller, g_affected_card).internal_card_id;
     }
     else
     {
       source_internal_card_id =
-          PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_player,
-                               PLAYER_CARD_INSTANCE(g_affected_card_controller, g_affected_card).damage_source_card)
-              .original_internal_card_id;
+          DAMAGE_SOURCE_CARD_INSTANCE(g_affected_card_controller, g_affected_card).original_internal_card_id;
     }
 
     if ((global_cards_data[source_internal_card_id].type & TYPE_CREATURE) != 0)
@@ -1257,7 +1251,7 @@ int card_personal_incarnation(int player, int card, event_t event)
             damage_to_deal = PLAYER_CARD_INSTANCE(target.player, target.card).info_slot;
           }
           damage_card = damage_creature(damage_source_player, -1, damage_to_deal,
-                                        PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player, PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card);
+                                        (int)(char)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player, PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card);
           if (damage_card != -1)
           {
             PLAYER_CARD_INSTANCE(player, damage_card).display_pic_info = PLAYER_CARD_INSTANCE(target.player, target.card).display_pic_info;
@@ -2021,15 +2015,11 @@ int card_angry_mob(int player, int card, event_t event)
   {
     if (g_current_player == player)
     {
-      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness |= 2;
+      DAMAGE_SOURCE_CARD_INSTANCE(player, card).eot_toughness |= 2;
     }
     else
     {
-      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness &= ~STATE_IN_PLAY;
+      DAMAGE_SOURCE_CARD_INSTANCE(player, card).eot_toughness &= ~STATE_IN_PLAY;
     }
   }
 
@@ -2060,17 +2050,13 @@ int card_gaea_s_liege(int player, int card, event_t event)
   {
     if ((PLAYER_CARD_INSTANCE(player, card).state & STATE_ATTACKING) == 0)
     {
-      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness |= 1;
-      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness &= ~STATE_IN_PLAY;
+      DAMAGE_SOURCE_CARD_INSTANCE(player, card).eot_toughness |= 1;
+      DAMAGE_SOURCE_CARD_INSTANCE(player, card).eot_toughness &= ~STATE_IN_PLAY;
     }
     else
     {
-      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness |= 2;
-      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .eot_toughness &= ~STATE_JUST_DRAWED;
+      DAMAGE_SOURCE_CARD_INSTANCE(player, card).eot_toughness |= 2;
+      DAMAGE_SOURCE_CARD_INSTANCE(player, card).eot_toughness &= ~STATE_JUST_DRAWED;
     }
   }
   else if (event == EVENT_CAN_ACTIVATE)
@@ -4741,8 +4727,7 @@ int card_el_hajjaj(int player, int card, event_t event)
         else
         {
           target_toughness = C_get_abilities(
-              (int)(char)PLAYER_CARD_INSTANCE(damage_player, damage_card).damage_target_player,
-              PLAYER_CARD_INSTANCE(damage_player, damage_card).damage_target_card,
+              (int)(char)PLAYER_CARD_INSTANCE(damage_player, damage_card).damage_target_player, PLAYER_CARD_INSTANCE(damage_player, damage_card).damage_target_card,
               EVENT_TOUGHNESS,
               -1);
           life_gain = ClampIntToRange(PLAYER_CARD_INSTANCE(damage_player, damage_card).info_slot,

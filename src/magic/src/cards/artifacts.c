@@ -1862,13 +1862,9 @@ int card_ashnod_s_battle_gear(int player, int card, event_t event)
 
         legacy_card = PLAYER_CARD_INSTANCE(player, card).info_slot;
         if (legacy_card == -1 ||
-            ((PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_player,
-                                   PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_card)
-                  .untap_status &
+            ((DAMAGE_TARGET_CARD_INSTANCE(player, legacy_card).untap_status &
               UNTAP_STATUS_COULD_UNTAP) == 0 &&
-             (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_player,
-                                   PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_card)
-                  .state &
+             (DAMAGE_TARGET_CARD_INSTANCE(player, legacy_card).state &
               STATE_TAPPED) != 0))
         {
           g_event_result |= RESOLVE_TRIGGER_MANDATORY;
@@ -2012,13 +2008,9 @@ int card_tawnos_s_weaponry(int player, int card, event_t event)
 
         legacy_card = PLAYER_CARD_INSTANCE(player, card).damage_source_card;
         if (legacy_card == -1 ||
-            ((PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_player,
-                                   PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_card)
-                  .untap_status &
+            ((DAMAGE_TARGET_CARD_INSTANCE(player, legacy_card).untap_status &
               UNTAP_STATUS_COULD_UNTAP) == 0 &&
-             (PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_player,
-                                   PLAYER_CARD_INSTANCE(player, legacy_card).damage_target_card)
-                  .state &
+             (DAMAGE_TARGET_CARD_INSTANCE(player, legacy_card).state &
               STATE_TAPPED) != 0))
         {
           g_event_result |= RESOLVE_TRIGGER_MANDATORY;
@@ -2112,8 +2104,8 @@ int card_tawnos_s_weaponry(int player, int card, event_t event)
     if (event == EVENT_GRAVEYARD_FROM_PLAY)
     {
       if (PLAYER_CARD_INSTANCE(player, card).damage_source_card != -1 &&
-          PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card).damage_target_player == g_affected_card_controller &&
-          PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card).damage_target_card == g_affected_card)
+          DAMAGE_SOURCE_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
+          DAMAGE_SOURCE_CARD_INSTANCE(player, card).damage_target_card == g_affected_card)
       {
         PLAYER_CARD_INSTANCE(player, card).damage_source_card = -1;
         PLAYER_CARD_INSTANCE(player, card).damage_source_player =
@@ -2122,7 +2114,7 @@ int card_tawnos_s_weaponry(int player, int card, event_t event)
 
       if (card == g_affected_card && player == g_affected_card_controller && PLAYER_CARD_INSTANCE(player, card).damage_source_card != -1)
       {
-        kill_card((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card, KILL_BURY);
+        kill_card((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card, KILL_BURY);
         PLAYER_CARD_INSTANCE(player, card).damage_source_card = -1;
         PLAYER_CARD_INSTANCE(player, card).damage_source_player =
             (char)PLAYER_CARD_INSTANCE(player, card).damage_source_card;
@@ -2131,7 +2123,7 @@ int card_tawnos_s_weaponry(int player, int card, event_t event)
 
     if (PLAYER_CARD_INSTANCE(player, card).damage_source_card != -1 && (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
     {
-      kill_card((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card, KILL_BURY);
+      kill_card((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card, KILL_BURY);
       PLAYER_CARD_INSTANCE(player, card).damage_source_card = -1;
     }
 
@@ -2477,16 +2469,10 @@ int card_forcefield(int player, int card, event_t event)
                                1,
                                &target))
       {
-        if ((global_cards_data[PLAYER_CARD_INSTANCE(
-                                   (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
-                                   PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
-                                   .internal_card_id]
+        if ((global_cards_data[DAMAGE_SOURCE_CARD_INSTANCE(target.player, target.card).internal_card_id]
                  .type &
              TYPE_CREATURE) != 0 &&
-            (PLAYER_CARD_INSTANCE(
-                 (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_player,
-                 PLAYER_CARD_INSTANCE(target.player, target.card).damage_source_card)
-                 .state &
+            (DAMAGE_SOURCE_CARD_INSTANCE(target.player, target.card).state &
              0x200) == 0)
         {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], target);
@@ -3937,8 +3923,7 @@ void redirect_pending_damage_to_player(int target_player, int target_card, int d
         PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id = -1;
         damage_player(damage_target_player,
                       PLAYER_CARD_INSTANCE(current_player, current_card).info_slot,
-                      (int)PLAYER_CARD_INSTANCE(current_player, current_card).damage_source_player,
-                      PLAYER_CARD_INSTANCE(current_player, current_card).damage_source_card);
+                      (int)(char)PLAYER_CARD_INSTANCE(current_player, current_card).damage_source_player, PLAYER_CARD_INSTANCE(current_player, current_card).damage_source_card);
         PLAYER_CARD_INSTANCE(current_player, current_card).info_slot = 0;
       }
     }

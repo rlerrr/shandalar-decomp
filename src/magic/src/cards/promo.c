@@ -207,8 +207,7 @@ int card_aswan_jaguar(int player, int card, event_t event)
         real_target_available((int *)0, TARGET_SCAN_DIRECT, player, 2, 2, TARGET_ZONE_IN_PLAY,
                               TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
                               COLOR_TEST_0, COLOR_TEST_0, -1,
-                              PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                                                   PLAYER_CARD_INSTANCE(player, card).damage_source_card).info_slot,
+                              DAMAGE_SOURCE_CARD_INSTANCE(player, card).info_slot,
                               -1, -1, TARGET_SPECIAL_0x10, 0, 0) != 0)
     {
       return 1;
@@ -223,8 +222,7 @@ int card_aswan_jaguar(int player, int card, event_t event)
     if (event == EVENT_ACTIVATE &&
         (PLAYER_CARD_INSTANCE(player, card).state & (STATE_TAPPED | STATE_SUMMONSICK_NOTAP)) == 0 &&
         aswan_jaguar_target_available(player, card,
-                                      PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                                                           PLAYER_CARD_INSTANCE(player, card).damage_source_card).info_slot) != 0)
+                                      DAMAGE_SOURCE_CARD_INSTANCE(player, card).info_slot) != 0)
     {
       charge_mana(player, COLOR_GREEN, 2);
       if (g_spell_fizzled != 1)
@@ -233,8 +231,7 @@ int card_aswan_jaguar(int player, int card, event_t event)
         if (C_real_select_target(player, 2, 1 - player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE,
                                  0, get_protections_from(player, card), COLOR_TEST_0, COLOR_TEST_0,
                                  -1,
-                                 PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                                                      PLAYER_CARD_INSTANCE(player, card).damage_source_card).info_slot,
+                                 DAMAGE_SOURCE_CARD_INSTANCE(player, card).info_slot,
                                  -1, -1, TARGET_SPECIAL_0x10, 0, 0, g_text_lines[0], 1, &s.target))
         {
           SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
@@ -255,8 +252,7 @@ int card_aswan_jaguar(int player, int card, event_t event)
                                  (char *)0, player, 2, 2, TARGET_ZONE_IN_PLAY,
                                  TYPE_CREATURE, TYPE_NONE, 0, get_protections_from(player, card),
                                  COLOR_TEST_0, COLOR_TEST_0, -1,
-                                 PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                                                      PLAYER_CARD_INSTANCE(player, card).damage_source_card).info_slot,
+                                 DAMAGE_SOURCE_CARD_INSTANCE(player, card).info_slot,
                                  -1, -1, TARGET_SPECIAL_0x10, 0, 0))
       {
         if (g_duel_ai_mode_state != 1)
@@ -330,9 +326,7 @@ int card_polka(int player, int card, event_t event)
       PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
       g_affected_card != -1)
   {
-    PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                         PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-        .untap_status &= ~3;
+    DAMAGE_TARGET_CARD_INSTANCE(player, card).untap_status &= ~3;
     kill_card(player, card, KILL_BURY);
   }
 

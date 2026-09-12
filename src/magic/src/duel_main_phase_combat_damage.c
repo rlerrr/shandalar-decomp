@@ -1230,8 +1230,7 @@ void resolve_combat_damage(int player)
                             ? -(s.blocker_damage_remaining - (PLAYER_CARD_INSTANCE(player, s.card).unknown0x37 +
                                                               PLAYER_CARD_INSTANCE(player, s.card).info_slot))
                             : (PLAYER_CARD_INSTANCE(player, s.card).unknown0x37 + PLAYER_CARD_INSTANCE(player, s.card).info_slot),
-                        (int)(char)PLAYER_CARD_INSTANCE(player, s.card).damage_source_player,
-                        PLAYER_CARD_INSTANCE(player, s.card).damage_source_card);
+                        (int)(char)PLAYER_CARD_INSTANCE(player, s.card).damage_source_player, PLAYER_CARD_INSTANCE(player, s.card).damage_source_card);
           s.blocker_damage_remaining -= PLAYER_CARD_INSTANCE(player, s.card).unknown0x37 +
                                         PLAYER_CARD_INSTANCE(player, s.card).info_slot;
         }

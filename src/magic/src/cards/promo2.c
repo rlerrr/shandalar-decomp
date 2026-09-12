@@ -245,8 +245,7 @@ int card_guardian_angel(int player, int card, event_t event)
       create_legacy_effect(player,
                            card,
                            g_duel_generated_internal_card_id_24,
-                           (int)PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).damage_target_player,
-                           PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).damage_target_card);
+                           (int)(char)PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).damage_target_player, PLAYER_CARD_INSTANCE(selected_target.player, selected_target.card).damage_target_card);
     }
     else
     {

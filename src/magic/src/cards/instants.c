@@ -303,7 +303,7 @@ int card_simulacrum(int player, int card, event_t event)
             if (PLAYER_CARD_INSTANCE(s.current_player, s.current_card).internal_card_id == g_damage_card_internal_card_id && PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_target_player == player && PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_target_card == -1)
             {
               damage_creature(s.target_player, s.target_card, PLAYER_CARD_INSTANCE(s.current_player, s.current_card).info_slot,
-                              (int)PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_source_player, PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_source_card);
+                              (int)(char)PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_source_player, PLAYER_CARD_INSTANCE(s.current_player, s.current_card).damage_source_card);
               PLAYER_CARD_INSTANCE(player, card).eot_toughness += PLAYER_CARD_INSTANCE(s.current_player, s.current_card).info_slot;
               PLAYER_CARD_INSTANCE(s.current_player, s.current_card).info_slot = 0;
             }

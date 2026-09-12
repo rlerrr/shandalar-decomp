@@ -238,12 +238,8 @@ int card_two_headed_giant_of_foriys_legacy(int player, int card, int event)
 {
   if (event == 0x78 && card == g_affected_card && player == g_affected_card_controller)
   {
-    if ((int)(char)PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                                        PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-                .blocking == g_attacking_card ||
-        (int)(char)PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                                        PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-                .blocking ==
+    if ((int)(char)DAMAGE_SOURCE_CARD_INSTANCE(player, card).blocking == g_attacking_card ||
+        (int)(char)DAMAGE_SOURCE_CARD_INSTANCE(player, card).blocking ==
             (int)(char)PLAYER_CARD_INSTANCE(g_attacking_card_controller, g_attacking_card).blocking)
     {
       g_event_result = 1;
@@ -261,9 +257,7 @@ int card_two_headed_giant_of_foriys_legacy(int player, int card, int event)
     if (event == 0x7e)
     {
       g_battlefield_extra_ability_flags |= 4;
-      PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .token_status |= 0x8000000;
+      DAMAGE_SOURCE_CARD_INSTANCE(player, card).token_status |= 0x8000000;
     }
   }
 
@@ -278,9 +272,7 @@ int card_two_headed_giant_of_foriys_legacy(int player, int card, int event)
       kill_card(player, card, KILL_BURY);
       g_battlefield_extra_ability_flags &= 0xfffffffb;
 
-      PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-          .token_status &= ~STATUS_SPECIAL_BLOCKER;
+      DAMAGE_SOURCE_CARD_INSTANCE(player, card).token_status &= ~STATUS_SPECIAL_BLOCKER;
     }
   }
 

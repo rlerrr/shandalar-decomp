@@ -28,6 +28,9 @@ GLOBAL_STATE_EXTERN card_instance_t global_card_instances[2][151];
 #define DAMAGE_TARGET_CARD_INSTANCE(player_, card_) \
   PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player_, card_).damage_target_player, PLAYER_CARD_INSTANCE(player_, card_).damage_target_card)
 
+#define DAMAGE_SOURCE_CARD_INSTANCE(player_, card_) \
+  PLAYER_CARD_INSTANCE((int)(char)PLAYER_CARD_INSTANCE(player_, card_).damage_source_player, PLAYER_CARD_INSTANCE(player_, card_).damage_source_card)
+
 #define TARGET_CARD_INSTANCE(player_, card_, target_index_) \
   PLAYER_CARD_INSTANCE(PLAYER_CARD_INSTANCE(player_, card_).targets[target_index_].player, PLAYER_CARD_INSTANCE(player_, card_).targets[target_index_].card)
 

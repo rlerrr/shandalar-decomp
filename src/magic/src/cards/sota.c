@@ -259,7 +259,7 @@ int card_ashnod_s_transmogrant(int player, int card, event_t event)
       if ((TARGET_CARD_INSTANCE(player, card, 0).counters & 0xff00) < 0xff01)
       {
         TARGET_CARD_INSTANCE(player, card, 0).counters = ((TARGET_CARD_INSTANCE(player, card, 0).counters + 0x100) & 0xff00) |
-                                                                                                                                                  (TARGET_CARD_INSTANCE(player, card, 0).counters & 0xffff00ff);
+                                                         (TARGET_CARD_INSTANCE(player, card, 0).counters & 0xffff00ff);
       }
       if (g_duel_ai_mode_state != 1)
       {
@@ -1169,34 +1169,28 @@ int card_obelisk_of_undoing(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x004869b0
 int pyramids_can_destroy_enchantment_on_land(void)
 {
-  card_instance_t *attached;
-  int attached_internal_card_id;
   int can_activate;
-  int current_card;
   int current_player;
 
   can_activate = 0;
-  current_player = 0;
-  while (current_player < 2 && can_activate == 0)
+
+  for (current_player = 0; current_player < 2 && can_activate == 0; current_player++)
   {
-    current_card = 0;
-    while (current_card < g_active_cards_count[current_player] && can_activate == 0)
+    int current_card;
+    for (current_card = 0; current_card < g_active_cards_count[current_player] && can_activate == 0; current_card++)
     {
       if (is_in_play(current_player, current_card) != 0 &&
           (global_cards_data[PLAYER_CARD_INSTANCE(current_player, current_card).internal_card_id].type & TYPE_ENCHANTMENT) != 0 &&
           (int)PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_player != -1)
       {
-        attached = &PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_player, PLAYER_CARD_INSTANCE(current_player, current_card).damage_target_card);
-        attached_internal_card_id = attached->internal_card_id;
+        int attached_internal_card_id = DAMAGE_TARGET_CARD_INSTANCE(current_player, current_card).internal_card_id;
         if (attached_internal_card_id != -1 &&
             (global_cards_data[attached_internal_card_id].type & TYPE_LAND) != 0)
         {
           can_activate = 1;
         }
       }
-      ++current_card;
     }
-    ++current_player;
   }
 
   return can_activate;
@@ -1330,10 +1324,7 @@ int card_pyramids(int player, int card, event_t event)
           {
             if ((int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player == -1 ||
                 PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_card == -1 ||
-                (global_cards_data[PLAYER_CARD_INSTANCE(
-                                       (int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player,
-                                       PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_card)
-                                       .internal_card_id]
+                (global_cards_data[DAMAGE_TARGET_CARD_INSTANCE(target.player, target.card).internal_card_id]
                      .type &
                  TYPE_LAND) == 0)
             {
@@ -1402,7 +1393,7 @@ int card_pyramids(int player, int card, event_t event)
         if ((int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player != -1 &&
             PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_card != -1)
         {
-          attached_internal_card_id = PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_player, PLAYER_CARD_INSTANCE(target.player, target.card).damage_target_card).internal_card_id;
+          attached_internal_card_id = DAMAGE_TARGET_CARD_INSTANCE(target.player, target.card).internal_card_id;
         }
         if (attached_internal_card_id != -1 &&
             (global_cards_data[attached_internal_card_id].type & TYPE_LAND))
@@ -2113,13 +2104,8 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
 
           s.exiled_power =
               PLAYER_CARD_INSTANCE(
-                  (int)PLAYER_CARD_INSTANCE(
-                      (int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                      PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-                      .damage_target_player,
-                  PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                                       PLAYER_CARD_INSTANCE(player, card).damage_source_card)
-                      .damage_target_card)
+                  (int)DAMAGE_SOURCE_CARD_INSTANCE(player, card).damage_target_player,
+                  DAMAGE_SOURCE_CARD_INSTANCE(player, card).damage_target_card)
                   .power;
 
           s.current_player = 1 - player;
@@ -2222,8 +2208,7 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
     }
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      tawnos_coffin_phase_in((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_source_card);
+      tawnos_coffin_phase_in((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card);
     }
   }
 
@@ -2233,8 +2218,7 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
         g_affected_card_controller == player &&
         PLAYER_CARD_INSTANCE(player, card).info_slot != -1)
     {
-      tawnos_coffin_phase_in((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_source_card);
+      tawnos_coffin_phase_in((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card);
       PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
     }
 
@@ -2253,8 +2237,7 @@ int card_tawnos_s_coffin(int player, int card, event_t event)
       (PLAYER_CARD_INSTANCE(player, card).state & STATE_TAPPED) == 0)
   {
     PLAYER_CARD_INSTANCE(player, card).info_slot = -1;
-    tawnos_coffin_phase_in((int)PLAYER_CARD_INSTANCE(player, card).damage_source_player,
-                           PLAYER_CARD_INSTANCE(player, card).damage_source_card);
+    tawnos_coffin_phase_in((int)(char)PLAYER_CARD_INSTANCE(player, card).damage_source_player, PLAYER_CARD_INSTANCE(player, card).damage_source_card);
     PLAYER_CARD_INSTANCE(player, card).damage_source_card = -1;
     PLAYER_CARD_INSTANCE(player, card).damage_source_player =
         (char)PLAYER_CARD_INSTANCE(player, card).damage_source_card;

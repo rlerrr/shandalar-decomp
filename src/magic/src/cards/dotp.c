@@ -761,8 +761,7 @@ static int war_barge_kill_attached_creature(int player, int card, int test_playe
       PLAYER_CARD_INSTANCE(test_player, test_card).damage_target_player != -1 &&
       PLAYER_CARD_INSTANCE(test_player, test_card).damage_target_card != -1)
   {
-    kill_card((int)PLAYER_CARD_INSTANCE(test_player, test_card).damage_target_player,
-              PLAYER_CARD_INSTANCE(test_player, test_card).damage_target_card, KILL_BURY);
+    kill_card((int)(char)PLAYER_CARD_INSTANCE(test_player, test_card).damage_target_player, PLAYER_CARD_INSTANCE(test_player, test_card).damage_target_card, KILL_BURY);
     g_battlefield_extra_ability_flags |= 1;
   }
   return 0;
@@ -2348,10 +2347,7 @@ int card_savaen_elves(int player, int card, event_t event)
         {
           if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_target_player == -1 ||
               PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_target_card == -1 ||
-              (global_cards_data[PLAYER_CARD_INSTANCE(
-                                     PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_target_player,
-                                     PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_target_card)
-                                     .internal_card_id]
+              (global_cards_data[DAMAGE_TARGET_CARD_INSTANCE(s.target.player, s.target.card).internal_card_id]
                    .type &
                TYPE_LAND) == 0)
           {
@@ -4561,18 +4557,10 @@ int card_transmute_FX(int player, int card, event_t event)
 
   if (PLAYER_CARD_INSTANCE(player, card).info_slot != 0)
   {
-    old_toughness = PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                                         PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-                        .toughness;
-    PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                         PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-        .toughness =
-        PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                             PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-            .power;
-    PLAYER_CARD_INSTANCE((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
-                         PLAYER_CARD_INSTANCE(player, card).damage_target_card)
-        .power = old_toughness;
+    old_toughness = DAMAGE_TARGET_CARD_INSTANCE(player, card).toughness;
+    DAMAGE_TARGET_CARD_INSTANCE(player, card).toughness =
+        DAMAGE_TARGET_CARD_INSTANCE(player, card).power;
+    DAMAGE_TARGET_CARD_INSTANCE(player, card).power = old_toughness;
     PLAYER_CARD_INSTANCE(player, card).info_slot = 0;
   }
   return 0;
