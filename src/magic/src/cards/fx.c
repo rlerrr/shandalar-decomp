@@ -71,22 +71,26 @@ int card_beast_FX(int player, int card, event_t event)
 // FUNCTION: SHANDALAR 0x00481688
 int card_blaze_FX(int player, int card, event_t event)
 {
-  int blocker_player;
-  int copy_card;
-  int copy_internal_card_id;
-  int copied_count;
-  int current_card;
-  int done;
-  int original_blocking;
-  int target_card;
-  int target_player;
-  int test_blocking;
+  struct
+  {
+    int compared_blocking;
+    int done;
+    int target_player;
+    int candidate_blocking;
+    int blocker_player;
+    int target_card;
+    int copy_internal_card_id;
+    int current_card;
+    int copied_count;
+    int original_blocking;
+    int copy_card;
+  } s;
 
-  copied_count = 0;
-  done = 0;
-  copy_internal_card_id = -1;
-  target_player = (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player;
-  target_card = PLAYER_CARD_INSTANCE(player, card).damage_target_card;
+  s.copied_count = 0;
+  s.done = 0;
+  s.copy_internal_card_id = -1;
+  s.target_player = (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player;
+  s.target_card = PLAYER_CARD_INSTANCE(player, card).damage_target_card;
 
   if (g_trigger_condition == TRIGGER_MUST_BLOCK &&
       g_affected_card == card &&
@@ -100,96 +104,102 @@ int card_blaze_FX(int player, int card, event_t event)
 
     if (event == EVENT_RESOLVE_TRIGGER)
     {
-      if ((PLAYER_CARD_INSTANCE(target_player, target_card).state & STATE_BLOCKING) == 0)
+      if ((DAMAGE_TARGET_CARD_INSTANCE(player, card).state & STATE_BLOCKING) == 0)
       {
-        blocker_player = 1 - target_player;
-        current_card = 0;
-        while (current_card < g_active_cards_count[blocker_player] && done == 0)
+        s.blocker_player = 1 - s.target_player;
+        for (s.current_card = 0;
+             s.current_card < g_active_cards_count[s.blocker_player] && s.done == 0;
+             ++s.current_card)
         {
-          if (is_in_play(blocker_player, current_card) &&
-              (PLAYER_CARD_INSTANCE(blocker_player, current_card).state & STATE_ATTACKING) != 0 &&
-              assign_blocker_to_attacker(target_player, target_card, blocker_player, current_card) != 0)
+          if (is_in_play(s.blocker_player, s.current_card) &&
+              (PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).state & STATE_ATTACKING) != 0 &&
+              assign_blocker_to_attacker(s.target_player, s.target_card, s.blocker_player, s.current_card) != 0)
           {
-            original_blocking = (int)(char)PLAYER_CARD_INSTANCE(blocker_player, current_card).blocking;
-            if (original_blocking == -1)
+            s.candidate_blocking = (int)(char)PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).blocking;
+            if (s.candidate_blocking == -1)
             {
-              PLAYER_CARD_INSTANCE(target_player, target_card).blocking = (char)current_card;
+              DAMAGE_TARGET_CARD_INSTANCE(player, card).blocking = (char)s.current_card;
             }
             else
             {
-              PLAYER_CARD_INSTANCE(target_player, target_card).blocking =
-                  PLAYER_CARD_INSTANCE(blocker_player, current_card).blocking;
+              DAMAGE_TARGET_CARD_INSTANCE(player, card).blocking = (char)s.candidate_blocking;
             }
-            PLAYER_CARD_INSTANCE(target_player, target_card).state |= STATE_BLOCKING;
-            if (g_duel_ai_mode_state != 1 && original_blocking == -1)
+            DAMAGE_TARGET_CARD_INSTANCE(player, card).state |= STATE_BLOCKING;
+            if (g_duel_ai_mode_state != 1 && s.candidate_blocking == -1)
             {
               play_sound_effect(WAV_BLOCK2);
             }
-            ++copied_count;
-            done = 1;
+            ++s.copied_count;
+            s.done = 1;
           }
-          ++current_card;
         }
       }
 
-      if ((PLAYER_CARD_INSTANCE(target_player, target_card).state & STATE_BLOCKING) != 0)
+      if ((DAMAGE_TARGET_CARD_INSTANCE(player, card).state & STATE_BLOCKING) != 0)
       {
-        original_blocking = (int)(char)PLAYER_CARD_INSTANCE(target_player, target_card).blocking;
-        blocker_player = 1 - target_player;
-        for (current_card = 0; current_card < g_active_cards_count[blocker_player]; ++current_card)
+        s.original_blocking = (int)(char)DAMAGE_TARGET_CARD_INSTANCE(player, card).blocking;
+        s.blocker_player = 1 - s.target_player;
+        for (s.current_card = 0; s.current_card < g_active_cards_count[s.blocker_player]; ++s.current_card)
         {
-          if (is_in_play(blocker_player, current_card) &&
-              (PLAYER_CARD_INSTANCE(blocker_player, current_card).state & STATE_ATTACKING) != 0 &&
-              assign_blocker_to_attacker(target_player, target_card, blocker_player, current_card) != 0)
+          if (is_in_play(s.blocker_player, s.current_card) &&
+              (PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).state & STATE_ATTACKING) != 0 &&
+              assign_blocker_to_attacker(s.target_player, s.target_card, s.blocker_player, s.current_card) != 0)
           {
-            test_blocking = (int)(char)PLAYER_CARD_INSTANCE(blocker_player, current_card).blocking;
-            if (test_blocking == -1)
+            s.candidate_blocking = (int)(char)PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).blocking;
+            if (s.candidate_blocking == -1)
             {
-              test_blocking = current_card;
+              s.compared_blocking = s.current_card;
+            }
+            else
+            {
+              s.compared_blocking = s.candidate_blocking;
             }
 
-            if (original_blocking != test_blocking &&
-                ((int)(char)PLAYER_CARD_INSTANCE(blocker_player, current_card).blocking == -1 ||
-                 (int)(char)PLAYER_CARD_INSTANCE(blocker_player, current_card).blocking == current_card))
+            if (s.original_blocking != s.compared_blocking &&
+                (s.candidate_blocking == -1 || s.candidate_blocking == s.current_card))
             {
-              if (copy_internal_card_id == -1)
+              if (s.copy_internal_card_id == -1)
               {
-                copy_internal_card_id =
-                    create_a_card_type(PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id);
-                if (copy_internal_card_id != -1)
+                s.copy_internal_card_id =
+                    create_a_card_type(DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id);
+                if (s.copy_internal_card_id != -1)
                 {
-                  global_cards_data[copy_internal_card_id].code_pointer = card_two_headed_giant_of_foriys_legacy;
-                  global_cards_data[copy_internal_card_id].extra_ability = 0;
-                  global_cards_data[copy_internal_card_id].id = g_multiblock_display_internal_card_id;
+                  global_cards_data[s.copy_internal_card_id].code_pointer = card_two_headed_giant_of_foriys_legacy;
+                  global_cards_data[s.copy_internal_card_id].extra_ability = 0;
+                  global_cards_data[s.copy_internal_card_id].id = g_multiblock_display_internal_card_id;
                 }
               }
 
-              if (copy_internal_card_id != -1)
+              if (s.copy_internal_card_id != -1)
               {
-                copy_card = add_card_to_hand(target_player, copy_internal_card_id);
-                if (copy_card != -1)
+                s.copy_card = add_card_to_hand((int)PLAYER_CARD_INSTANCE(player, card).damage_target_player,
+                                               s.copy_internal_card_id);
+                if (s.copy_card != -1)
                 {
-                  PLAYER_CARD_INSTANCE(target_player, copy_card).state =
-                      PLAYER_CARD_INSTANCE(target_player, target_card).state & ~STATE_BLOCKING;
-                  PLAYER_CARD_INSTANCE(target_player, copy_card).regen_status =
-                      PLAYER_CARD_INSTANCE(target_player, target_card).regen_status;
-                  PLAYER_CARD_INSTANCE(target_player, copy_card).token_status =
+                  PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).state =
+                      DAMAGE_TARGET_CARD_INSTANCE(player, card).state & ~STATE_BLOCKING;
+                  PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).regen_status =
+                      DAMAGE_TARGET_CARD_INSTANCE(player, card).regen_status;
+                  PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).token_status =
                       STATUS_SPECIAL_BLOCKER | STATUS_OBLITERATED;
-                  PLAYER_CARD_INSTANCE(target_player, copy_card).damage_source_player = (char)target_player;
-                  PLAYER_CARD_INSTANCE(target_player, copy_card).damage_source_card = target_card;
-                  if ((int)(char)PLAYER_CARD_INSTANCE(blocker_player, current_card).blocking == -1)
+                  PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).damage_source_player =
+                      PLAYER_CARD_INSTANCE(player, card).damage_target_player;
+                  PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).damage_source_card =
+                      PLAYER_CARD_INSTANCE(player, card).damage_target_card;
+                  s.candidate_blocking =
+                      (int)(char)PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).blocking;
+                  if (s.candidate_blocking == -1)
                   {
-                    PLAYER_CARD_INSTANCE(target_player, copy_card).blocking = (char)current_card;
+                    PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).blocking = (char)s.current_card;
                   }
                   else
                   {
-                    PLAYER_CARD_INSTANCE(target_player, copy_card).blocking =
-                        PLAYER_CARD_INSTANCE(blocker_player, current_card).blocking;
+                    PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).blocking = (char)s.candidate_blocking;
                   }
-                  PLAYER_CARD_INSTANCE(target_player, copy_card).state |= STATE_BLOCKING;
-                  PLAYER_CARD_INSTANCE(target_player, copy_card).display_pic_info =
-                      global_cards_data[PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id].id;
-                  ++copied_count;
+                  PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).state |= STATE_BLOCKING;
+                  PLAYER_CARD_INSTANCE(s.target_player, s.copy_card).display_pic_info =
+                      global_cards_data[DAMAGE_TARGET_CARD_INSTANCE(player, card).internal_card_id].id;
+                  ++s.copied_count;
                   g_battlefield_extra_ability_flags |= 4;
                 }
               }
@@ -197,20 +207,20 @@ int card_blaze_FX(int player, int card, event_t event)
           }
         }
 
-        PLAYER_CARD_INSTANCE(target_player, target_card).blocking = (char)original_blocking;
-        PLAYER_CARD_INSTANCE(target_player, target_card).state |= STATE_BLOCKING;
+        DAMAGE_TARGET_CARD_INSTANCE(player, card).blocking = (char)s.original_blocking;
+        DAMAGE_TARGET_CARD_INSTANCE(player, card).state |= STATE_BLOCKING;
       }
 
-      if (copied_count > 1)
+      if (s.copied_count > 1)
       {
-        for (current_card = 0; current_card < g_active_cards_count[target_player]; ++current_card)
+        for (s.current_card = 0; s.current_card < g_active_cards_count[s.target_player]; ++s.current_card)
         {
-          if (PLAYER_CARD_INSTANCE(target_player, current_card).internal_card_id == copy_internal_card_id)
+          if (PLAYER_CARD_INSTANCE(s.target_player, s.current_card).internal_card_id == s.copy_internal_card_id)
           {
-            PLAYER_CARD_INSTANCE(target_player, current_card).timestamp = copied_count;
+            PLAYER_CARD_INSTANCE(s.target_player, s.current_card).info_slot = s.copied_count;
           }
         }
-        PLAYER_CARD_INSTANCE(target_player, target_card).token_status |= STATUS_SPECIAL_BLOCKER;
+        DAMAGE_TARGET_CARD_INSTANCE(player, card).token_status |= STATUS_SPECIAL_BLOCKER;
       }
 
       TENTATIVE_reassess_all_cards(0, 0xff);
@@ -226,8 +236,8 @@ int card_blaze_FX(int player, int card, event_t event)
       g_affected_card == card &&
       g_affected_card_controller == player &&
       g_current_turn == player &&
-      target_player == g_trigger_cause_controller &&
-      target_card == g_trigger_cause)
+      (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_trigger_cause_controller &&
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_trigger_cause)
   {
     if (event == EVENT_TRIGGER)
     {
@@ -235,35 +245,41 @@ int card_blaze_FX(int player, int card, event_t event)
     }
 
     if (event == EVENT_RESOLVE_TRIGGER &&
-        (int)(char)PLAYER_CARD_INSTANCE(target_player, target_card).blocking != -1)
+        (int)(char)DAMAGE_TARGET_CARD_INSTANCE(player, card).blocking != -1)
     {
-      for (current_card = 0; current_card < g_active_cards_count[target_player]; ++current_card)
+      s.blocker_player = (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player;
+      for (s.current_card = 0; s.current_card < g_active_cards_count[s.blocker_player]; ++s.current_card)
       {
-        if (is_in_play(target_player, current_card) &&
-            global_cards_data[PLAYER_CARD_INSTANCE(target_player, current_card).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
-            (int)PLAYER_CARD_INSTANCE(target_player, current_card).damage_source_player == target_player &&
-            PLAYER_CARD_INSTANCE(target_player, current_card).damage_source_card == target_card)
+        if (is_in_play(s.blocker_player, s.current_card) &&
+            global_cards_data[PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
+            (int)PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).damage_source_player ==
+                (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player &&
+            PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).damage_source_card ==
+                PLAYER_CARD_INSTANCE(player, card).damage_target_card)
         {
-          kill_card(target_player, current_card, KILL_DESTROY);
+          kill_card(s.blocker_player, s.current_card, KILL_DESTROY);
         }
       }
     }
   }
 
   if (event == EVENT_GRAVEYARD_FROM_PLAY &&
-      target_card == g_affected_card &&
-      target_player == g_affected_card_controller &&
+      PLAYER_CARD_INSTANCE(player, card).damage_target_card == g_affected_card &&
+      (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player == g_affected_card_controller &&
       g_affected_card != -1 &&
-      (int)(char)PLAYER_CARD_INSTANCE(target_player, target_card).blocking != -1)
+      (int)(char)DAMAGE_TARGET_CARD_INSTANCE(player, card).blocking != -1)
   {
-    for (current_card = 0; current_card < g_active_cards_count[target_player]; ++current_card)
+    s.blocker_player = (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player;
+    for (s.current_card = 0; s.current_card < g_active_cards_count[s.blocker_player]; ++s.current_card)
     {
-      if (is_in_play(target_player, current_card) &&
-          global_cards_data[PLAYER_CARD_INSTANCE(target_player, current_card).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
-          (int)PLAYER_CARD_INSTANCE(target_player, current_card).damage_source_player == target_player &&
-          PLAYER_CARD_INSTANCE(target_player, current_card).damage_source_card == target_card)
+      if (is_in_play(s.blocker_player, s.current_card) &&
+          global_cards_data[PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).internal_card_id].code_pointer == card_two_headed_giant_of_foriys_legacy &&
+          (int)PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).damage_source_player ==
+              (int)PLAYER_CARD_INSTANCE(player, card).damage_target_player &&
+          PLAYER_CARD_INSTANCE(s.blocker_player, s.current_card).damage_source_card ==
+              PLAYER_CARD_INSTANCE(player, card).damage_target_card)
       {
-        kill_card(target_player, current_card, KILL_DESTROY);
+        kill_card(s.blocker_player, s.current_card, KILL_DESTROY);
       }
     }
   }

@@ -25,6 +25,7 @@ static int whimsy_target_type_masks[16] =
   0x100, 0x3, 0x100, 0x100, 0, 0, 0, 0x100
 };
 
+// GLOBAL: SHANDALAR 0x00580fd8
 static int faerie_dragon_effect_pics[20] =
 {
   0x0e, 0x214, 0x247, 0x8f, 0xc4, 0x20, 0x91, 0x85, 0x61, 0x6d,
@@ -441,21 +442,17 @@ int card_faerie_dragon(int player, int card, event_t event)
     charge_mana(player, COLOR_GREEN, 2);
     if (g_spell_fizzled != 1)
     {
-      if ((g_duel_network_flags & 2) == 0)
-      {
-        PLAYER_CARD_INSTANCE(player, card).info_slot = internal_rand(0x14);
-      }
-      else
+      if ((g_duel_network_flags & 2) != 0)
       {
         PLAYER_CARD_INSTANCE(player, card).info_slot = network_random(player, 0x14);
       }
+      else
+      {
+        PLAYER_CARD_INSTANCE(player, card).info_slot = internal_rand(0x14);
+      }
 
       s.candidate_count = choose_orcish_catapult_targets(player, card, s.candidates);
-      if (s.candidate_count == 0)
-      {
-        g_spell_fizzled = 1;
-      }
-      else
+      if (s.candidate_count != 0)
       {
         if ((g_duel_network_flags & 2) == 0)
         {
@@ -465,7 +462,7 @@ int card_faerie_dragon(int player, int card, event_t event)
         {
           s.random_index = network_random(player, s.candidate_count);
         }
-        PLAYER_CARD_INSTANCE(player, card).targets[0] = s.candidates[s.random_index];
+        SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.candidates[s.random_index]);
         PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
       }
     }
@@ -782,7 +779,10 @@ int card_whimsy(int player, int card, event_t event)
           }
           else
           {
-            PLAYER_CARD_INSTANCE(player, card).targets[0] = g_target_pair_network_packet.target;
+            PLAYER_CARD_INSTANCE(player, card).targets[0].player =
+                g_target_pair_network_packet.target.player;
+            PLAYER_CARD_INSTANCE(player, card).targets[0].card =
+                g_target_pair_network_packet.target.card;
             PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           }
         }
@@ -796,7 +796,10 @@ int card_whimsy(int player, int card, event_t event)
           else
           {
             s.random_index = internal_rand(s.candidate_count);
-            PLAYER_CARD_INSTANCE(player, card).targets[0] = s.candidates[s.random_index];
+            PLAYER_CARD_INSTANCE(player, card).targets[0].player =
+                s.candidates[s.random_index].player;
+            PLAYER_CARD_INSTANCE(player, card).targets[0].card =
+                s.candidates[s.random_index].card;
             PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
           }
 
@@ -879,7 +882,7 @@ int whimsy_build_candidates(int player, int card, target_t *candidates, unsigned
   return candidate_count;
 }
 
-// FUNCTION: MAGIC 0x004aac07
+// FUNCTION: MAGIC 0x004aac0a
 // FUNCTION: SHANDALAR 0x0041c208
 int whimsy_apply_effect(int player, int card, int effect_index)
 {
@@ -971,7 +974,8 @@ int whimsy_apply_effect(int player, int card, int effect_index)
       s.top_card = PLAYER_CARD_INSTANCE(target_player, target_card).internal_card_id;
       gain_life(target_player,
                 (int)(char)global_cards_data[s.top_card].cc[0] +
-                    ClampIntToRange((int)(char)global_cards_data[s.top_card].cc[1], 0, 99));
+                    ClampIntToRange((int)(char)global_cards_data[s.top_card].cc[1], 0, 99),
+                g_card_on_stack_controller, g_card_on_stack);
       kill_card(target_player, target_card, KILL_DESTROY);
       break;
 
@@ -1005,7 +1009,7 @@ int whimsy_apply_effect(int player, int card, int effect_index)
     case 8:
       sprintf(s.dialog, "\n%s", g_text_lines[7]);
       do_dialog(player, player, card, target_player, target_card, s.dialog, 0);
-      gain_life(target_player, 3);
+      gain_life(target_player, 3, g_card_on_stack_controller, g_card_on_stack);
       break;
 
     case 9:

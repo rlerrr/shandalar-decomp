@@ -241,7 +241,7 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     GetClientRect(hwnd, &s.rect);
     for (s.button_index = 0; s.button_index < g_show_card_list_dialog_context->item_count; ++s.button_index)
     {
-      s.card_window = CreateWindowExA(0,  "ShowListCard", "List Card", 0x50000000, s.button_x, s.button_y, g_showlist_cards_per_row, g_showlist_scroll_max, hwnd, (HMENU)(s.button_index + 10),
+      s.card_window = CreateWindowExA(0, "ShowListCard", "List Card", 0x50000000, s.button_x, s.button_y, g_showlist_cards_per_row, g_showlist_scroll_max, hwnd, (HMENU)(s.button_index + 10),
                                       g_app_instance, (LPVOID)g_show_card_list_dialog_context->displayed_csvids[s.button_index]);
       if (g_show_card_list_dialog_context->show_card_counts != 0)
       {
@@ -263,10 +263,10 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
     if (s.destroy_result == 0)
     {
       delete_card_list_gdi_objects((HGDIOBJ)g_showlist_selected_index,
-                   (HGDIOBJ)g_showlist_card_height,
-                   (HGDIOBJ)g_showlist_hovered_index,
-                   (HGDIOBJ)g_showlist_card_spacing_y,
-                   (HGDIOBJ)g_showlist_scroll_position);
+                                   (HGDIOBJ)g_showlist_card_height,
+                                   (HGDIOBJ)g_showlist_hovered_index,
+                                   (HGDIOBJ)g_showlist_card_spacing_y,
+                                   (HGDIOBJ)g_showlist_scroll_position);
       EndDialog(hwnd, -1);
     }
     return 1;
@@ -280,10 +280,10 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       if (s.command_has_selection == 0)
       {
         delete_card_list_gdi_objects((HGDIOBJ)g_showlist_selected_index,
-                     (HGDIOBJ)g_showlist_card_height,
-                     (HGDIOBJ)g_showlist_hovered_index,
-                     (HGDIOBJ)g_showlist_card_spacing_y,
-                     (HGDIOBJ)g_showlist_scroll_position);
+                                     (HGDIOBJ)g_showlist_card_height,
+                                     (HGDIOBJ)g_showlist_hovered_index,
+                                     (HGDIOBJ)g_showlist_card_spacing_y,
+                                     (HGDIOBJ)g_showlist_scroll_position);
         EndDialog(hwnd, -1);
       }
     }
@@ -296,10 +296,10 @@ INT_PTR CALLBACK dlgfunc_show_deck(HWND hwnd, UINT msg, WPARAM wparam_dc, LPARAM
       else
       {
         delete_card_list_gdi_objects((HGDIOBJ)g_showlist_selected_index,
-                     (HGDIOBJ)g_showlist_card_height,
-                     (HGDIOBJ)g_showlist_hovered_index,
-                     (HGDIOBJ)g_showlist_card_spacing_y,
-                     (HGDIOBJ)g_showlist_scroll_position);
+                                     (HGDIOBJ)g_showlist_card_height,
+                                     (HGDIOBJ)g_showlist_hovered_index,
+                                     (HGDIOBJ)g_showlist_card_spacing_y,
+                                     (HGDIOBJ)g_showlist_scroll_position);
         EndDialog(hwnd, s.selection_index);
       }
     }
@@ -658,7 +658,7 @@ int show_cardlist(int *graveyard,
                   int *card_counts,
                   int *available,
                   int count,
-                  void *window_title,
+                  char *window_title,
                   unsigned int require_selection,
                   char *prompt)
 {
@@ -687,7 +687,7 @@ int show_cardlist(int *graveyard,
   s.wndclass.lpszClassName = "ShowListCard";
   RegisterClassA(&s.wndclass);
 
-  s.dialog_context.window_title = (char *)window_title;
+  s.dialog_context.window_title = window_title;
   for (s.index = 0; count > s.index && graveyard[s.index] != -1; ++s.index)
   {
     s.dialog_context.displayed_csvids[s.index] = CardIDFromType(graveyard[s.index] & 0xfff);

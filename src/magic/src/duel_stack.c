@@ -1124,8 +1124,6 @@ int can_attack(int player, int card)
 
   saved_affected_card = g_affected_card;
   saved_affected_card_controller = g_affected_card_controller;
-  saved_spell_fizzled = g_spell_fizzled;
-  saved_event_result = g_event_result;
 
   internal_card_id = PLAYER_CARD_INSTANCE(player, card).internal_card_id;
   if (((global_cards_data[internal_card_id].subtype == 0) && ((PLAYER_CARD_INSTANCE(player, card).token_status & 0x800) == 0)) ||
@@ -1133,55 +1131,48 @@ int can_attack(int player, int card)
       ((PLAYER_CARD_INSTANCE(player, card).state & 0x810010) != 0) || ((PLAYER_CARD_INSTANCE(player, card).token_status & 0x8000) != 0))
   {
     result = 0;
-    g_event_result = saved_event_result;
-    g_spell_fizzled = saved_spell_fizzled;
-    g_affected_card_controller = saved_affected_card_controller;
-    g_affected_card = saved_affected_card;
   }
   else
   {
+    saved_spell_fizzled = g_spell_fizzled;
+    saved_event_result = g_event_result;
     g_event_result = 0;
     g_affected_card_controller = player;
     g_affected_card = card;
     global_cards_data[internal_card_id].code_pointer(player, card, 0x79);
-    if (g_event_result == 0)
+    result = g_event_result;
+    g_event_result = saved_event_result;
+    g_spell_fizzled = saved_spell_fizzled;
+    g_affected_card_controller = saved_affected_card_controller;
+    g_affected_card = saved_affected_card;
+
+    if (result != 0)
     {
-      g_event_result = saved_event_result;
-      g_spell_fizzled = saved_spell_fizzled;
-      g_affected_card_controller = saved_affected_card_controller;
-      g_affected_card = saved_affected_card;
+      return 0;
+    }
 
-      if ((player == g_other_player) && ((g_duel_network_flags & 2) == 0))
-      {
-        push_affected_card_stack();
-        g_event_result = 0;
-        g_affected_card_controller = player;
-        g_affected_card = card;
-        dispatch_three_arg_callback_to_cards_in_play(check_attached_aura_can_pay_cost, -1);
-        result = g_event_result;
-        pop_affected_card_stack();
-        if (result != 0)
-        {
-          return 0;
-        }
-      }
-
-      if ((((g_player_special_effect_flags[1 - player] & 1) != 0) || ((g_battlefield_extra_ability_flags & 0x04000000) != 0)) &&
-          ((result = dispatch_event(player, card, 0x79)) != 0))
+    if ((player == g_other_player) && ((g_duel_network_flags & 2) == 0))
+    {
+      push_affected_card_stack();
+      g_event_result = 0;
+      g_affected_card_controller = player;
+      g_affected_card = card;
+      dispatch_three_arg_callback_to_cards_in_play(check_attached_aura_can_pay_cost, -1);
+      result = g_event_result;
+      pop_affected_card_stack();
+      if (result != 0)
       {
         return 0;
       }
+    }
 
-      result = 1;
-    }
-    else
+    if ((((g_player_special_effect_flags[1 - player] & 1) != 0) || ((g_battlefield_extra_ability_flags & 0x04000000) != 0)) &&
+        ((result = dispatch_event(player, card, 0x79)) != 0))
     {
-      result = 0;
-      g_event_result = saved_event_result;
-      g_spell_fizzled = saved_spell_fizzled;
-      g_affected_card_controller = saved_affected_card_controller;
-      g_affected_card = saved_affected_card;
+      return 0;
     }
+
+    result = 1;
   }
 
   return result;

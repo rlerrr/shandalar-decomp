@@ -154,24 +154,24 @@ int card_guardian_angel(int player, int card, event_t event)
   if (event == EVENT_CAN_CAST)
   {
     return ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0 && real_target_available((int *)0,
-                                                                     TARGET_SCAN_DIRECT,
-                                                                     player,
-                                                                     2,
-                                                                     2,
-                                                                     TARGET_ZONE_IN_PLAY,
-                                                                     TYPE_NONE,
-                                                                     TYPE_NONE,
-                                                                     0,
-                                                                     0,
-                                                                     COLOR_TEST_0,
-                                                                     COLOR_TEST_0,
-                                                                     g_damage_card_internal_card_id,
-                                                                     ~SUB_WALL,
-                                                                     -1,
-                                                                     -1,
-                                                                     0,
-                                                                     0,
-                                                                     0))
+                                                                                          TARGET_SCAN_DIRECT,
+                                                                                          player,
+                                                                                          2,
+                                                                                          2,
+                                                                                          TARGET_ZONE_IN_PLAY,
+                                                                                          TYPE_NONE,
+                                                                                          TYPE_NONE,
+                                                                                          0,
+                                                                                          0,
+                                                                                          COLOR_TEST_0,
+                                                                                          COLOR_TEST_0,
+                                                                                          g_damage_card_internal_card_id,
+                                                                                          ~SUB_WALL,
+                                                                                          -1,
+                                                                                          -1,
+                                                                                          0,
+                                                                                          0,
+                                                                                          0))
                ? 99
                : 0;
   }
@@ -416,21 +416,32 @@ int card_reverse_polarity(int player, int card, event_t event)
   struct
   {
     target_t target;
-    int damage_sources[300];
+    int best_damage;
+    int selection_index;
     int damage_amounts[150];
-    int internal_card_ids[150];
     int count;
     int controller;
-    int current_card;
     int selected;
-    int best_damage;
+    int damage_sources[300];
+    int internal_card_ids[150];
+    int current_card;
   } s;
-  int result;
 
   if (event == EVENT_CAN_CAST)
   {
     load_recorded_action_target(0);
-    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
+    {
+      if (has_effect_source_type(player, -1, TYPE_ARTIFACT))
+      {
+        return 99;
+      }
+      else
+      {
+        return 0;
+      }
+    }
+    else
     {
       if (player == g_other_player && (g_duel_network_flags & 2) == 0 && g_damage_accumulators[1][150][player].amount == 0)
       {
@@ -438,9 +449,6 @@ int card_reverse_polarity(int player, int card, event_t event)
       }
       return 1;
     }
-
-    result = has_effect_source_type(player, -1, TYPE_ARTIFACT);
-    return (result == 0) ? 0 : 99;
   }
 
   if (event == EVENT_CAST_SPELL && g_affected_card == card && g_affected_card_controller == player &&
@@ -452,7 +460,7 @@ int card_reverse_polarity(int player, int card, event_t event)
                              -1, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0,
                              g_text_lines[0], 1, &s.target))
     {
-      PLAYER_CARD_INSTANCE(player, card).targets[0] = s.target;
+      SET_TARGET(PLAYER_CARD_INSTANCE(player, card).targets[0], s.target);
       PLAYER_CARD_INSTANCE(player, card).number_of_targets = 1;
     }
     else
@@ -463,16 +471,42 @@ int card_reverse_polarity(int player, int card, event_t event)
 
   if (event == EVENT_RESOLVE_SPELL)
   {
-    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) == 0)
+    if ((g_land_can_be_played & LCBP_DAMAGE_PREVENTION) != 0)
     {
-      s.count = 0;
-      s.best_damage = 0;
+      SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
+      if (C_real_validate_target(s.target.player, s.target.card, (char *)0, player, 2, 2,
+                                 TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0,
+                                 COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id,
+                                 -1, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
+      {
+        if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
+        {
+          gain_life(player,
+                    g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
+                                         [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player]
+                                             .amount *
+                            2 +
+                        PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot,
+                    player,
+                    card);
+          PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
+        }
+      }
+      else
+      {
+        g_spell_fizzled = 1;
+      }
+      PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
+    }
+    else
+    {
+      s.best_damage = s.count = 0;
       for (s.controller = 0; s.controller < 2; ++s.controller)
       {
         for (s.current_card = 0; s.current_card < 150; ++s.current_card)
         {
           if (g_damage_accumulators[s.controller][s.current_card][player].amount > 0 &&
-              (global_cards_data[PLAYER_CARD_INSTANCE(s.controller, s.current_card).internal_card_id].type & TYPE_ARTIFACT) != 0)
+              (g_damage_accumulators[s.controller][s.current_card][player].source_type & TYPE_ARTIFACT) != 0)
           {
             s.damage_sources[s.count * 2] = s.controller;
             s.damage_sources[s.count * 2 + 1] = s.current_card;
@@ -495,11 +529,11 @@ int card_reverse_polarity(int player, int card, event_t event)
         if ((player == g_other_player && (g_duel_network_flags & 2) == 0) || g_duel_ai_mode_state == 1)
         {
           s.best_damage = 0;
-          for (s.current_card = 0; s.current_card < s.count; ++s.current_card)
+          for (s.selection_index = 0; s.selection_index < s.count; ++s.selection_index)
           {
-            if (s.best_damage < s.damage_amounts[s.current_card])
+            if (s.best_damage < s.damage_amounts[s.selection_index])
             {
-              s.best_damage = s.current_card;
+              s.best_damage = s.selection_index;
             }
           }
           s.selected = s.best_damage;
@@ -508,47 +542,24 @@ int card_reverse_polarity(int player, int card, event_t event)
         {
           load_text("promptsX1.txt", "REVERSE_POLARITY");
           s.selected = select_damage_card_from_list(player, s.internal_card_ids, s.damage_amounts, s.count,
-                                                    0x8aaa4c, 1, g_text_lines[1]);
+                                                    g_text_lines[1], 1, "");
         }
 
         gain_life(player,
-                  g_damage_accumulators[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player].amount * 2);
+                  g_damage_accumulators[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player].amount * 2,
+                  player,
+                  card);
         g_damage_accumulators[s.damage_sources[s.selected * 2]][s.damage_sources[s.selected * 2 + 1]][player].amount = 0;
       }
 
-      if (g_life[1 - player] < 1)
-      {
-        g_ai_modifier += 1000;
-      }
-      else
+      if (g_life[1 - player] > 0)
       {
         g_ai_modifier += (s.best_damage * 100) / g_life[1 - player] - 100;
       }
-    }
-    else
-    {
-      SET_TARGET(s.target, PLAYER_CARD_INSTANCE(player, card).targets[0]);
-      if (C_real_validate_target(s.target.player, s.target.card, (char *)0, player, 2, 2,
-                                 TARGET_ZONE_IN_PLAY, TYPE_NONE, TYPE_NONE, 0, 0,
-                                 COLOR_TEST_0, COLOR_TEST_0, g_damage_card_internal_card_id,
-                                 -1, -1, -1, TARGET_SPECIAL_DAMAGE_PLAYER, 0, 0))
-      {
-        if (PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot != 0)
-        {
-          gain_life(player,
-                    g_damage_accumulators[(char)PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_player]
-                                         [PLAYER_CARD_INSTANCE(s.target.player, s.target.card).damage_source_card][player]
-                                             .amount *
-                            2 +
-                        PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot);
-          PLAYER_CARD_INSTANCE(s.target.player, s.target.card).info_slot = 0;
-        }
-      }
       else
       {
-        g_spell_fizzled = 1;
+        g_ai_modifier += 1000;
       }
-      PARENT_CARD_INSTANCE(player, card).number_of_targets = 0;
     }
 
     kill_card(player, card, KILL_BURY);

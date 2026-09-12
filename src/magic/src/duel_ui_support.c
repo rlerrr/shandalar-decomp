@@ -1397,7 +1397,7 @@ void set_duel_prompt_text(char *text)
 // FUNCTION: MAGIC 0x004a61fe
 int show_cardlist_if_human(int *cards,
                            int count,
-                           void *window_title,
+                           char *window_title,
                            unsigned int require_selection,
                            char *prompt)
 {
@@ -1411,14 +1411,14 @@ int show_cardlist_if_human(int *cards,
 
 // FUNCTION: MAGIC 0x004a6245
 // FUNCTION: SHANDALAR 0x005583c5
-INT_PTR show_damage_assignment_cardlist(int *internal_card_ids, int *damage_amounts, int count, int title, int allow_cancel, char *prompt)
+INT_PTR show_damage_assignment_cardlist(int *internal_card_ids, int *damage_amounts, char *count, int title, int allow_cancel, char *prompt)
 {
   if (g_duel_ai_mode_state == 1)
   {
     return 1;
   }
 
-  return show_cardlist(internal_card_ids, damage_amounts, 0, count, (void *)title, (unsigned int)allow_cancel, prompt);
+  return show_cardlist(internal_card_ids, damage_amounts, 0, count, title, (unsigned int)allow_cancel, prompt);
 }
 
 // FUNCTION: MAGIC 0x004a628e

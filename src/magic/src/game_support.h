@@ -39,7 +39,7 @@ typedef int(__cdecl *in_play_card_callback_t)(int source_player,
 
 /* Helpers that are inlined in the original executable (no function calls). */
 #define is_tapped(player_, card_) ((PLAYER_CARD_INSTANCE((player_), (card_)).state & STATE_TAPPED) != 0)
-#define is_animated_and_sick(player_, card_) \
+#define is_animated_and_sick(player_, card_)                                          \
   (((PLAYER_CARD_INSTANCE((player_), (card_)).state & STATE_SUMMONSICK_BOTH) != 0) && \
    ((global_cards_data[PLAYER_CARD_INSTANCE((player_), (card_)).internal_card_id].type & TYPE_CREATURE) != 0))
 
@@ -69,16 +69,16 @@ int charge_mana_w_global_cost_mod(int player, int card, int color, int amount);
 int FUN_0042d790(int player, int card, event_t event, int color);
 int handle_button_palette_message(int window, unsigned int message, int other_window, int data);
 int helper_destroy_basiclandtype(int source_player,
-                                        int source_card,
-                                        int test_player,
-                                        int test_card,
-                                        int internal_card_id);
+                                 int source_card,
+                                 int test_player,
+                                 int test_card,
+                                 int internal_card_id);
 int destroy_other_auras_on_same_permanent(int player, int card, int internal_card_id);
 int divide_creatures_into_two_piles(int who_is_being_divided, int player, int card);
 int sacrifice_permanents_for_lich_damage(int player, int amount, int unused_player);
 int can_attack(int player, int card);
 int push_card_onto_stack(int player, int card, int event, int extra, int prompt);
-void redirect_pending_damage_to_player(int target_player, int target_card, int damage_target_player);
+void redirect_pending_damage_to_player(int target_player, int target_card, int damage_target_player, int unk_unused);
 int has_vigilance(int player, int card);
 char *get_hunting_subtype_name(int value);
 int CardIDFromType(unsigned int type);
@@ -145,11 +145,11 @@ unsigned int get_required_mana_color_mask(int *mana);
 int format_mana_payment_prompt(char *prompt, int *mana_cost, int x_paid, int max_x);
 void auto_pay_colored_mana(int player, int *mana_paid_by_color, int *total_mana_paid, int max_colorless);
 void auto_pay_variable_mana(int player,
-                  int *mana_paid_by_color,
-                  int *total_mana_paid,
-                  int max_colorless,
-                  int *special_mana,
-                  int max_x);
+                            int *mana_paid_by_color,
+                            int *total_mana_paid,
+                            int max_colorless,
+                            int *special_mana,
+                            int max_x);
 void auto_pay_generic_mana(int player,
                            int *mana_paid_by_color,
                            int *total_mana_paid,
@@ -159,10 +159,10 @@ void auto_pay_generic_mana(int player,
 int can_activate_mana_source(int player, int card, int activation_flags);
 int activate_mana_source_for_payment(int player, int card);
 int activate_mana_sources_for_payment(int player,
-                 int *mana_paid_by_color,
-                 int *total_mana_paid,
-                 int activation_flags,
-                 int include_special_mana);
+                                      int *mana_paid_by_color,
+                                      int *total_mana_paid,
+                                      int activation_flags,
+                                      int include_special_mana);
 int record_paid_mana(int color, int amount);
 int unproduce_mana(int player, int color, int amount);
 int get_mana_payment_amount(int *mana_cost,
@@ -181,40 +181,40 @@ void push_affected_card_stack(void);
 void pop_affected_card_stack(void);
 int card_death_ward(int player, int card, event_t event);
 void spend_mana_for_cost(int *mana_cost,
-                  int cost_color,
-                  int amount,
-                  int *special_mana,
-                  int max_x,
-                  int player,
-                  int mana_color,
-                  int *mana_paid_by_color,
-                  int *total_mana_paid);
+                         int cost_color,
+                         int amount,
+                         int *special_mana,
+                         int max_x,
+                         int player,
+                         int mana_color,
+                         int *mana_paid_by_color,
+                         int *total_mana_paid);
 int refund_paid_mana(int *mana_paid_by_color);
 int find_land_animation_legacy(int a1, int a2, int player, int card, int internal_card_id);
 int destroy_land_animation_legacies(int parent_player, int parent_card, int player, int card, int internal_card_id);
 int show_cardlist_if_human(int *graveyard,
-                 int count,
-                 void *window_title,
-                 unsigned int require_selection,
-                 char *prompt);
+                           int count,
+                           char *window_title,
+                           unsigned int require_selection,
+                           char *prompt);
 int show_cardlist(int *graveyard,
                   int *card_counts,
                   int *available,
                   int count,
-                  void *window_title,
+                  char *window_title,
                   unsigned int require_selection,
                   char *prompt);
 void create_card_list_gdi_objects(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color);
 void delete_card_list_gdi_objects(HGDIOBJ brush1, HGDIOBJ pen1, HGDIOBJ pen2, HGDIOBJ pen3, HGDIOBJ brush2);
 int select_from_graveyard_with_dialog(int player,
-                 int *graveyard,
-                 void *available,
-                 int count,
-                 int prompt,
-                 int a6,
-                 int selected,
-                 int a8,
-                 int a9);
+                                      int *graveyard,
+                                      void *available,
+                                      int count,
+                                      int prompt,
+                                      int a6,
+                                      int selected,
+                                      int a8,
+                                      int a9);
 int dispatch_event_to_single_card(int player,
                                   int card,
                                   event_t event,
@@ -372,12 +372,12 @@ int TENTATIVE_set_timestamps(int player, int card);
 int sacrifice_a_land(int player);
 int choose_creature_to_sacrifice(int player);
 int select_card_for_action(int player,
-                 int arg_2,
-                 int player_to_check,
-                 unsigned int required_type,
-                 unsigned int required_color,
-                 char *prompt,
-                 int dialog_mode);
+                           int arg_2,
+                           int player_to_check,
+                           unsigned int required_type,
+                           unsigned int required_color,
+                           char *prompt,
+                           int dialog_mode);
 int select_land_for_cyclopean_tomb_ai(int player, int card, int target_player);
 int resolve_control_aura_conflict(int player, int card);
 int rewire_control_aura_source(int player, int card, int internal_card_id);
@@ -385,19 +385,19 @@ int generic_control_aura(int player, int card, event_t event, unsigned int requi
 int choose_a_number(int player, char *prompt, int maxnum);
 void real_put_on_top_of_deck(int player, int internal_card_id);
 int select_damage_card_from_list(int player,
-                 int *internal_card_ids,
-                 int *damage_amounts,
-                 int count,
-                 int title,
-                 int allow_cancel,
-                 char *prompt);
+                                 int *internal_card_ids,
+                                 int *damage_amounts,
+                                 int count,
+                                 char *title,
+                                 int allow_cancel,
+                                 char *prompt);
 int select_card_from_graveyard(int player,
-                 int *graveyard,
-                 int *allowed_cards,
-                 int count,
-                 const char *prompt,
-                 int allow_cancel,
-                 char *title);
+                               int *graveyard,
+                               int *allowed_cards,
+                               int count,
+                               const char *prompt,
+                               int allow_cancel,
+                               char *title);
 int choose_best_card_from_library(int player, unsigned int type_mask);
 int select_best_land_target_by_score(int preferred_player, int only_player, int *target_data);
 int drain_power_draw_mana_from_land(int player, int card, int internal_card_id);
@@ -471,7 +471,7 @@ int CALLBACK dlgproc_prompt_for_life_total(HWND hwnd, UINT msg, WPARAM wparam, L
 void show_mana_burn_dialog(int player, int amount);
 int CALLBACK dlgproc_mana_burn(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 int update_duel_selection_display_if_human(int player, int phase);
-int show_damage_assignment_cardlist(int *internal_card_ids, int *damage_amounts, int count, int title, int allow_cancel, char *prompt);
+int show_damage_assignment_cardlist(int *internal_card_ids, int *damage_amounts, int count, char *title, int allow_cancel, char *prompt);
 int show_selectable_cardlist(int *graveyard, int *available, int count, void *window_title,
                              unsigned int require_selection, char *prompt);
 int get_duel_thread_time_ms(void);

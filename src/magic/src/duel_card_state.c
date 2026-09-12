@@ -1093,15 +1093,8 @@ void initialize_card_instance(int player, int internal_card_id, int card)
   for (i = 0; i < 7; ++i)
   {
     PLAYER_CARD_INSTANCE(player, card).mana_to_untap[i] = 0;
+    PLAYER_CARD_INSTANCE(player, card).upkeep_cost[i] = 0;
   }
-
-  PLAYER_CARD_INSTANCE(player, card).upkeep_colorless = 0;
-  PLAYER_CARD_INSTANCE(player, card).upkeep_black = 0;
-  PLAYER_CARD_INSTANCE(player, card).upkeep_blue = 0;
-  PLAYER_CARD_INSTANCE(player, card).upkeep_green = 0;
-  PLAYER_CARD_INSTANCE(player, card).upkeep_red = 0;
-  PLAYER_CARD_INSTANCE(player, card).upkeep_white = 0;
-  PLAYER_CARD_INSTANCE(player, card).upkeep_artmana = 0;
 
   for (i = 0; i < 6; ++i)
   {
@@ -1109,14 +1102,12 @@ void initialize_card_instance(int player, int internal_card_id, int card)
     PLAYER_CARD_INSTANCE(player, card).hack_mode[i] = 0;
   }
 
-  for (i = 0; i < 19; ++i)
+  /* The original treats the contiguous parent pair as target slot 19. */
+  for (i = 0; i < 20; ++i)
   {
     PLAYER_CARD_INSTANCE(player, card).targets[i].player = (char)-1;
     PLAYER_CARD_INSTANCE(player, card).targets[i].card = -1;
   }
-
-  PLAYER_CARD_INSTANCE(player, card).parent_controller = -1;
-  PLAYER_CARD_INSTANCE(player, card).parent_card = -1;
 
   PLAYER_CARD_INSTANCE(player, card).counters = 0;
 

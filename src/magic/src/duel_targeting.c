@@ -361,7 +361,7 @@ int select_damage_card_from_list(int player,
                                  int *internal_card_ids,
                                  int *damage_amounts,
                                  int count,
-                                 int title,
+                                 char *title,
                                  int allow_cancel,
                                  char *prompt)
 {
@@ -377,7 +377,7 @@ int select_damage_card_from_list(int player,
 
   if (player == g_active_player && g_duel_ai_mode_state != 1)
   {
-    selected = (int)show_damage_assignment_cardlist(internal_card_ids, damage_amounts, count, title, allow_cancel, prompt);
+    selected = show_damage_assignment_cardlist(internal_card_ids, damage_amounts, count, title, allow_cancel, prompt);
     if ((g_duel_network_flags & 2) != 0)
     {
       g_network_result_packet.result = selected;
@@ -649,7 +649,7 @@ int real_target_available(int *num_valid_targets,
     {
       for (s.current_card = 0;
            s.current_card < (g_active_cards_count[1] > g_active_cards_count[0] ? g_active_cards_count[1]
-                                                                                : g_active_cards_count[0]) &&
+                                                                               : g_active_cards_count[0]) &&
            !s.done;
            ++s.current_card)
       {
@@ -1787,8 +1787,8 @@ int choose_creature_to_sacrifice(int player)
   if ((player == g_active_player || (g_duel_network_flags & 2) != 0) && g_duel_ai_mode_state != 1)
   {
     if (C_real_select_target(player, player, player, TARGET_ZONE_IN_PLAY, TYPE_CREATURE, TYPE_NONE, 0, 0,
-                              COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
-                              g_text_lines[0], 0, &s.target))
+                             COLOR_TEST_0, COLOR_TEST_0, -1, ~SUB_WALL, -1, -1, 0, 0, 0,
+                             g_text_lines[0], 0, &s.target))
     {
       s.best_card = s.target.card;
     }
