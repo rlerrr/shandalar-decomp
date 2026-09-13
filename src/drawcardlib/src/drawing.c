@@ -145,7 +145,7 @@ BOOL TileBitmapIntoRect(HDC hdc, RECT *r, HBITMAP bmp)
   s.saved = SaveDC(hdc);
   IntersectClipRect(hdc, r->left, r->top, r->right, r->bottom);
 
-  GetObjectA(bmp, 0x18, &s.bm);
+  GetObjectA(bmp, sizeof(s.bm), &s.bm);
 
   for (s.x = r->left; s.x < r->right; s.x += s.bm.bmWidth)
   {

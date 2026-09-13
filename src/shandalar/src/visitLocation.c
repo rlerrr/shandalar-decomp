@@ -1154,7 +1154,7 @@ void RunTownBuyCardsScreen(void)
   for (s.loop_i = 0; s.loop_i < 3; s.loop_i = s.loop_i + 1)
   {
     SetFontStyleSize(7, (s.loop_i == 2) ? 9 : 11);
-    DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.colors[s.loop_i], s.loop_i * 0x5a + 0x2e, 0x10, "%s", (char *)g_done_text_table_entry);
+    DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.colors[s.loop_i], s.loop_i * 0x5a + 0x2e, 0x10, "%s", g_done_text_table_entry);
     g_buy_cards_done_button_sprites[s.loop_i] = EncodeSpriteFromPage(1, s.loop_i * 0x5a + 1, 1, 0x59, 0x23);
   }
   FinalizeSpriteEncodeSession();
@@ -1925,10 +1925,10 @@ loop:
   /* Fill sprite pointers (the render callback expects these). */
   for (s.slot_i = 0; s.slot_i < 4; s.slot_i = s.slot_i + 1)
   {
-    g_town_main_menu_controls[s.slot_i].mode_data[0] = (int)g_main_menu_button_sprites_normal[s.slot_i];
-    g_town_main_menu_controls[s.slot_i].mode_data[1] = (int)g_main_menu_button_sprites_highlight[s.slot_i];
-    g_town_main_menu_controls[s.slot_i].mode_data[2] = (int)g_main_menu_button_sprites_highlight[s.slot_i];
-    g_town_main_menu_controls[s.slot_i].mode_data[3] = (int)g_main_menu_button_sprites_normal[s.slot_i];
+    g_town_main_menu_controls[s.slot_i].mode_data[0] = g_main_menu_button_sprites_normal[s.slot_i];
+    g_town_main_menu_controls[s.slot_i].mode_data[1] = g_main_menu_button_sprites_highlight[s.slot_i];
+    g_town_main_menu_controls[s.slot_i].mode_data[2] = g_main_menu_button_sprites_highlight[s.slot_i];
+    g_town_main_menu_controls[s.slot_i].mode_data[3] = g_main_menu_button_sprites_normal[s.slot_i];
   }
 
   if (g_town_icon_menu_controls[0].x == g_town_icon_menu_controls[0].base_x)
@@ -3531,7 +3531,7 @@ unsigned int RunCardBrowser(char *title, unsigned int color_mask, unsigned int t
     {
       SetFontStyleSize(7, (s.card_index == 2) ? 9 : 11);
       DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.button_colors[s.card_index], s.card_index * 0x62 + 0x32, 0xd, "%s",
-                                        (char *)g_done_text_table_entry);
+                                        g_done_text_table_entry);
       g_card_browser_done_button_sprites[s.card_index] = EncodeSpriteFromPage(1, s.card_index * 0x62 + 1, 1, 0x61, 0x1b);
     }
 

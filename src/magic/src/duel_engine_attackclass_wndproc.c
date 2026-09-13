@@ -62,7 +62,7 @@ extern char global_duelart_path[];
 extern char global_ui_strings_filename[];
 extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
-extern int g_duel_opponent_battlefield_window;
+extern HWND g_duel_opponent_battlefield_window;
 extern int g_duel_selected_card_window;
 extern int g_duel_window_userdata_card_offset;
 extern int g_duel_window_userdata_player_offset;

@@ -120,7 +120,7 @@ static int g_stats_creature_page_index;
 // GLOBAL: SHANDALAR 0x00650648
 static int g_stats_menu_selection;
 // GLOBAL: SHANDALAR 0x0065064c
-static int *g_stats_text_table;
+static char **g_stats_text_table;
 // GLOBAL: SHANDALAR 0x006506c8
 static int g_stats_text_loaded;
 
@@ -242,7 +242,7 @@ int RenderBasicImageMenuControl(AdvMenuControl *control, int mode)
     return 0;
   }
   DrawEncodedImageResampled(g_menu_control_draw_target_page, control->x, control->y, control->width, control->height,
-                            (EncodedImage *)control->mode_data[mode]);
+                            control->mode_data[mode]);
   if ((mode == 2) && (control->on_activate != 0))
   {
     control->on_activate(control);
@@ -304,8 +304,8 @@ int RenderStatsTabButtonControl(AdvMenuControl *control, int mode)
   {
     return 0;
   }
-  s.encoded_image = *(EncodedImage **)((char *)&g_stats_menu_button_sprites + ((control->selection_value - 1) << 4) + mode * 4);
-  s.highlight_image = *(EncodedImage **)((char *)&g_stats_menu_button_sprites + ((control->selection_value - 1) << 4) + 4);
+  s.encoded_image = ((EncodedImage **)&g_stats_menu_button_sprites)[(control->selection_value - 1) * 4 + mode];
+  s.highlight_image = g_stats_menu_button_sprites.highlight[control->selection_value - 1];
   s.x = control->x;
   s.y = control->y;
   s.width = control->width;
@@ -385,8 +385,8 @@ int RenderStatsWorldMagicControl(AdvMenuControl *control, int mode)
     return 0;
   }
 
-  s.sprite = (EncodedImage *)control->mode_data[mode];
-  s.highlight_sprite = (EncodedImage *)control->mode_data[1];
+  s.sprite = control->mode_data[mode];
+  s.highlight_sprite = control->mode_data[1];
   s.x = control->x;
   s.y = control->y;
   s.width = control->width;
@@ -606,8 +606,8 @@ static __inline void InitializeStatsWorldMagicControls(void)
     g_stats_menu_controls[i + 10].base_height = g_stats_menu_controls[i + 10].height;
     g_stats_menu_controls[i + 10].width = g_stats_menu_controls[i + 10].base_height;
     g_stats_menu_controls[i + 10].base_width = g_stats_menu_controls[i + 10].width;
-    g_stats_menu_controls[i + 10].mode_data[0] = (int)g_world_magic_choice_button_sprite_bank.named.normal[i];
-    g_stats_menu_controls[i + 10].mode_data[2] = (int)g_world_magic_choice_button_sprite_bank.named.highlight[i];
+    g_stats_menu_controls[i + 10].mode_data[0] = g_world_magic_choice_button_sprite_bank.named.normal[i];
+    g_stats_menu_controls[i + 10].mode_data[2] = g_world_magic_choice_button_sprite_bank.named.highlight[i];
     g_stats_menu_controls[i + 10].mode_data[1] = g_stats_menu_controls[i + 10].mode_data[2];
   }
 }
@@ -1564,15 +1564,15 @@ int RunAdventureStatsMenu(void)
   {
     SetFontStyleSize(6, 9 + (((unsigned int)(world_magic_slot_index - 2) < 1) ? -1 : 0));
     DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.colors[world_magic_slot_index], world_magic_slot_index * 0x55 + 0x2b, 0xc,
-                                      "%s", (char *)g_stats_text_table[0]);
+                                      "%s", g_stats_text_table[0]);
     g_stats_menu_button_sprites.normal[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x55 + 1, 1, 0x54, 0x18);
     DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.colors[world_magic_slot_index], world_magic_slot_index * 0x4a + 0x26, 0x25,
-                                      "%s", (char *)g_stats_text_table[1]);
+                                      "%s", g_stats_text_table[1]);
     g_stats_menu_button_sprites.highlight[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x4a + 1, 0x1a, 0x49, 0x18);
     DrawFormattedTextNoShadowCentered(g_page1_window_bounds, s.colors[world_magic_slot_index], world_magic_slot_index * 0x32 + 0x1a, 0x3e,
-                                      "%s", (char *)g_stats_text_table[2]);
+                                      "%s", g_stats_text_table[2]);
     g_stats_menu_button_sprites.pressed[world_magic_slot_index] =
         EncodeSpriteFromPage(1, world_magic_slot_index * 0x32 + 1, 0x33, 0x31, 0x18);
   }

@@ -42,7 +42,7 @@ void PlaySoundWithPitchAndPan(int sound_id, int volume, int pitch_percent, int p
 {
   Sound snd;
 
-  memset(&snd, 0, 0x20);
+  memset(&snd, 0, sizeof(snd));
   snd.volume = volume << 2;
   snd.sampleRate = (pitch_percent * 0x5622) / 100;
   snd.pan = pan_percent << 2;
@@ -56,7 +56,7 @@ void PlaySoundWithPan(int sound_id, int volume, int pan)
 {
   Sound snd;
 
-  memset(&snd, 0, 0x20);
+  memset(&snd, 0, sizeof(snd));
   snd.volume = volume << 2;
   snd.sampleRate = 0x5622;
   snd.pan = pan << 2;
@@ -68,7 +68,7 @@ void PlayLoopingSoundWithPan(int sound_id, int volume, int pan_percent)
 {
   Sound snd;
 
-  memset(&snd, 0, 0x20);
+  memset(&snd, 0, sizeof(snd));
   snd.volume = volume << 2;
   snd.sampleRate = 0x5622;
   snd.pan = pan_percent << 2;
@@ -81,7 +81,7 @@ void LoadLoopingSound(char *sound_path, int channel)
 {
   Sound snd;
 
-  memset(&snd, 0, 0x20);
+  memset(&snd, 0, sizeof(snd));
   snd.flags = (int)snd.flags | 4;
   snd.volume = 400;
   snd.sampleRate = 0;
@@ -700,4 +700,3 @@ int FileExists(const char *filename)
   fclose(file);
   return 1;
 }
-

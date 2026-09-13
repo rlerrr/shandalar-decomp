@@ -186,7 +186,7 @@ size_t Catalog_ReadEntry(int catalog_handle, const char *name, void **buffer)
   entry = Catalog_FindEntryCached(catalog, name);
   if (entry == (CatalogEntry *)0x0)
   {
-    return 0xffffffff;
+    return (size_t)-1;
   }
 
   if (*buffer == (void *)0x0)

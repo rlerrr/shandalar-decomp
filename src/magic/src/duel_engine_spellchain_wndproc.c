@@ -65,7 +65,7 @@ int g_spell_chain_scrollbar_direction = 3;
 
 // GLOBAL: MAGIC 0x00637e58
 // GLOBAL: SHANDALAR 0x005b7ba8
-int g_spell_minimized_hwnd;
+HWND g_spell_minimized_hwnd;
 
 // GLOBAL: MAGIC 0x00637e60
 // GLOBAL: SHANDALAR 0x005b7bb0

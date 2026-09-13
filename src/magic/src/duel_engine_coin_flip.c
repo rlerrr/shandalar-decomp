@@ -28,7 +28,7 @@ typedef ptrdiff_t INT_PTR;
 
 extern HINSTANCE g_app_instance;
 extern int g_manalink_is_host;
-extern int g_show_card_list_last_preview_hwnd;
+extern HWND g_show_card_list_last_preview_hwnd;
 extern HPALETTE global_cart_art_hpalette;
 extern card_ptr_t global_raw_cards_storage[2000];
 extern HANDLE global_mutex_GameInit;

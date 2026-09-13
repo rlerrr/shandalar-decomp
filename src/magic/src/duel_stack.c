@@ -2750,8 +2750,8 @@ int copy_mana_pool_to_display(void)
   if (g_duel_ai_mode_state != 1)
   {
     EnterCriticalSection(&g_duel_render_lock);
-    memcpy(g_duel_cached_raw_mana_player_0, g_raw_mana_available[0], 0x1c);
-    memcpy(g_duel_cached_raw_mana_player_1, g_raw_mana_available[1], 0x1c);
+    memcpy(g_duel_cached_raw_mana_player_0, g_raw_mana_available[0], sizeof(g_duel_cached_raw_mana_player_0));
+    memcpy(g_duel_cached_raw_mana_player_1, g_raw_mana_available[1], sizeof(g_duel_cached_raw_mana_player_1));
     LeaveCriticalSection(&g_duel_render_lock);
     SendMessageA(g_duel_active_popup_window, 0x432, 0, 0);
     SendMessageA(g_duel_last_active_window, 0x432, 0, 0);

@@ -5,6 +5,7 @@
 #include <windows.h>
 
 typedef struct AdvMenuControl AdvMenuControl;
+typedef struct EncodedImage EncodedImage;
 
 typedef int(__cdecl *AdvMenuRenderCallback)(AdvMenuControl *control, int mode);
 typedef int(__cdecl *AdvMenuActivateCallback)(AdvMenuControl *control);
@@ -31,7 +32,7 @@ struct AdvMenuControl
   char *activate_hotkeys;
   int direct_hotkey;
   int state;
-  int mode_data[4];
+  EncodedImage *mode_data[4];
 };
 
 typedef struct AdvMenuRect
@@ -44,7 +45,7 @@ typedef struct AdvMenuRect
 
 typedef struct OpeningMenuSpriteWorkEntry
 {
-  struct EncodedImage *sprites[0x2d];
+  EncodedImage *sprites[0x2d];
 } OpeningMenuSpriteWorkEntry;
 
 typedef char AdvMenuControl_size_must_be_0x54[(sizeof(AdvMenuControl) == 0x54) ? 1 : -1];

@@ -424,7 +424,7 @@ void DrawAdventureCardSized(int card_index, int x, int y, int width, int height,
 // GLOBAL: SHANDALAR 0x00603a3c
 int g_dungeon_clues_list_strings_loaded;
 // GLOBAL: SHANDALAR 0x00603a40
-int *g_dungeon_clues_list_strings;
+char **g_dungeon_clues_list_strings;
 
 // GLOBAL: SHANDALAR 0x00746e20
 DungeonCluesListSpriteStorage g_dungeon_clues_list_sprite_storage;
@@ -508,7 +508,7 @@ char g_dungeon_clues_list_done_alt_keys[] = " Dd\r\x1b";
  */
 
 // GLOBAL: SHANDALAR 0x00603a44
-int *g_dungeon_clue_detail_strings;
+char **g_dungeon_clue_detail_strings;
 // GLOBAL: SHANDALAR 0x00603a4c
 int g_dungeon_clue_detail_strings_loaded;
 
@@ -653,7 +653,7 @@ void ShowDungeonCluesScreen(int unused)
   {
     SetFontStyleSize(7, (unsigned int)(10 + (((unsigned int)(s.i - 2) < 1) ? -1 : 0)));
     DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.title_color_by_state[s.i], s.i * 0x3c + 0x2e, 0xd, "%s",
-                                      (char *)g_dungeon_clues_list_strings[1]);
+                                      g_dungeon_clues_list_strings[1]);
     g_dungeon_clues_list_done_label_sprites[s.i] = EncodeSpriteFromPage(1, s.i * 0x3c + 0x10, 1, 0x3b, 0x1a);
   }
 
@@ -685,9 +685,9 @@ void ShowDungeonCluesScreen(int unused)
   s.old_font_size = GetFontStyleSize(6);
   g_page1_window_bounds->font_slot = 6;
   SetFontStyleSize(6, (unsigned int)ScaleUiCoordinate(0x18));
-  s.title_text_width = MeasureMultilineTextWidth(g_page1_window_bounds, (char *)g_dungeon_clues_list_strings[0]);
+  s.title_text_width = MeasureMultilineTextWidth(g_page1_window_bounds, g_dungeon_clues_list_strings[0]);
   DrawFormattedTextShadowedCentered(g_page1_window_bounds, 0x42, ScaleUiCoordinate(0x1f7) / 2, ScaleUiCoordinate(0x26), "%s",
-                                    (char *)g_dungeon_clues_list_strings[0]);
+                                    g_dungeon_clues_list_strings[0]);
   SetFontStyleSize(6, s.old_font_size);
 
   BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
@@ -744,9 +744,9 @@ redraw_background:
     s.temp_14f4 = GetFontStyleSize(6);
     g_page1_window_bounds->font_slot = 6;
     SetFontStyleSize(6, (unsigned int)ScaleUiCoordinate(0x18));
-    s.temp_14f8 = MeasureMultilineTextWidth(g_page1_window_bounds, (char *)g_dungeon_clues_list_strings[0]);
+    s.temp_14f8 = MeasureMultilineTextWidth(g_page1_window_bounds, g_dungeon_clues_list_strings[0]);
     DrawFormattedTextShadowedCentered(g_page1_window_bounds, 0x42, ScaleUiCoordinate(0x1f7) / 2, ScaleUiCoordinate(0x26), "%s",
-                                      (char *)g_dungeon_clues_list_strings[0]);
+                                      g_dungeon_clues_list_strings[0]);
     SetFontStyleSize(6, s.temp_14f4);
 
     BlitGraphicsRect(g_page1_window_bounds, 0, 0, global_screen_width, global_screen_height, g_page0_window_bounds, 0, 0);
@@ -1023,7 +1023,7 @@ void ShowDungeonClueDetailScreen(int dungeon_index)
   for (s.i = 0; s.i < 3; s.i++)
   {
     SetFontStyleSize(7, (s.i == 2) ? 12 : 14);
-    DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.title_colors[s.i], s.i * 0x5a + 0x2e, 0xf, "%s", (char *)g_dungeon_clue_detail_strings[1]);
+    DrawFormattedTextShadowedCentered(g_page1_window_bounds, s.title_colors[s.i], s.i * 0x5a + 0x2e, 0xf, "%s", g_dungeon_clue_detail_strings[1]);
     g_dungeon_clue_detail_done_button_sprites[s.i] = EncodeSpriteFromPage(1, s.i * 0x5a + 1, 1, 0x59, 0x23);
     g_dungeon_clue_detail_button_icon_sprites[s.i] = EncodeSpriteFromPage(1, s.i * 0x15 + 1, 0x25, 0x14, 0x24);
   }

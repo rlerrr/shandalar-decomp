@@ -8,11 +8,11 @@
 
 int GetNextManaSymbol(char **text);
 
-extern int g_spell_minimized_hwnd;
+extern HWND g_spell_minimized_hwnd;
 
 // GLOBAL: MAGIC 0x007a7d74
 // GLOBAL: SHANDALAR 0x007beb00
-int g_duel_tooltip_window;
+HWND g_duel_tooltip_window;
 
 // GLOBAL: MAGIC 0x007aa928
 // GLOBAL: SHANDALAR 0x007beb20
@@ -24,11 +24,11 @@ int g_response_prompt_enabled;
 
 // GLOBAL: MAGIC 0x008a8d78
 // GLOBAL: SHANDALAR 0x008bcf78
-int g_duel_player_battlefield_window;
+HWND g_duel_player_battlefield_window;
 
 // GLOBAL: MAGIC 0x008a8dec
 // GLOBAL: SHANDALAR 0x008bcfec
-int g_duel_opponent_battlefield_window;
+HWND g_duel_opponent_battlefield_window;
 
 // GLOBAL: MAGIC 0x0093d840
 // GLOBAL: SHANDALAR 0x00951960

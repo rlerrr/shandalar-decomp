@@ -31,9 +31,9 @@ extern int global_screen_height;
 #endif
 
 extern int g_duel_modal_action_active;
-extern int g_duel_tooltip_window;
-extern int g_duel_opponent_battlefield_window;
-extern int g_duel_player_battlefield_window;
+extern HWND g_duel_tooltip_window;
+extern HWND g_duel_opponent_battlefield_window;
+extern HWND g_duel_player_battlefield_window;
 extern HMENU g_library_popup_menu;
 extern HMENU g_library_submenu;
 extern char g_library_menu_count_text[];

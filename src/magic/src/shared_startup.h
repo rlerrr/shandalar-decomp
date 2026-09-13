@@ -23,7 +23,7 @@ extern int g_shared_startup_lock_initialized;
 extern CRITICAL_SECTION g_shared_startup_lock;
 extern int g_shared_startup_completed;
 extern CRITICAL_SECTION g_card_render_lock;
-extern int g_shared_startup_allocation;
+extern void *g_shared_startup_allocation;
 
 void set_global_base_directory(char *path);
 int setup_paths_and_load_text_etc(char *message_buffer);

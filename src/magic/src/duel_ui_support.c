@@ -805,7 +805,7 @@ void restack_duel_child_windows(void)
     HWND windows[8]; // ebp-0x20
   } s;
 
-  extern int g_duel_tooltip_window;
+  extern HWND g_duel_tooltip_window;
 
   s.windows[7] = (HWND)g_duel_tooltip_window;
   s.windows[6] = g_duel_prompt_context_hwnd;

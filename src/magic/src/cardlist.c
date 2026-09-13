@@ -49,10 +49,10 @@ int g_showlist_card_width;
 int g_showlist_card_spacing_x;
 // GLOBAL: MAGIC 0x00638b68
 // GLOBAL: SHANDALAR 0x006502b0
-int g_showlist_card_height;
+HPEN g_showlist_card_height;
 // GLOBAL: MAGIC 0x00638b70
 // GLOBAL: SHANDALAR 0x006502b8
-int g_showlist_card_spacing_y;
+HPEN g_showlist_card_spacing_y;
 // GLOBAL: MAGIC 0x00638b80
 int g_showlist_cards_per_row;
 // GLOBAL: MAGIC 0x00638ba4
@@ -60,19 +60,19 @@ int g_showlist_cards_per_row;
 show_card_list_dialog_context_t *g_show_card_list_dialog_context;
 // GLOBAL: MAGIC 0x00638bf4
 // GLOBAL: SHANDALAR 0x0065033c
-int g_showlist_scroll_position;
+HBRUSH g_showlist_scroll_position;
 // GLOBAL: MAGIC 0x00638c08
 // GLOBAL: SHANDALAR 0x00650350
-int g_show_card_list_last_preview_hwnd;
+HWND g_show_card_list_last_preview_hwnd;
 // GLOBAL: MAGIC 0x00638c40
 // GLOBAL: SHANDALAR 0x00650388
-int g_showlist_selected_index;
+HBRUSH g_showlist_selected_index;
 // GLOBAL: MAGIC 0x00638c44
 // GLOBAL: SHANDALAR 0x0065038c
-int g_showlist_hovered_index;
+HPEN g_showlist_hovered_index;
 // GLOBAL: MAGIC 0x00638c6c
 // GLOBAL: SHANDALAR 0x006503b4
-int g_showlist_visible_row_count;
+COLORREF g_showlist_visible_row_count;
 // GLOBAL: MAGIC 0x00638c84
 // GLOBAL: SHANDALAR 0x006503cc
 int g_showlist_scroll_max;
@@ -83,7 +83,7 @@ extern CRITICAL_SECTION g_card_render_lock;
 extern HDC g_shared_offscreen_dc;
 extern HINSTANCE g_app_instance;
 
-void draw_card_list_count(int dc, int *rect, int value);
+void draw_card_list_count(HDC dc, RECT *rect, int value);
 
 // TODO: cleanup this bucket of shit
 #define SHOWLIST_CARD_BACK_CSVID g_card_back_display_internal_card_id
@@ -91,29 +91,30 @@ void draw_card_list_count(int dc, int *rect, int value);
 
 // FUNCTION: MAGIC 0x0049fd0c
 // FUNCTION: SHANDALAR 0x0053b6af
-void create_card_list_gdi_objects(int *brush1, int *pen1, int *pen2, int *pen3, int *brush2, int *text_color)
+void create_card_list_gdi_objects(HBRUSH *brush1, HPEN *pen1, HPEN *pen2, HPEN *pen3,
+                                  HBRUSH *brush2, COLORREF *text_color)
 {
-  *brush1 = (int)CreateSolidBrush(0x10000c7);
-  *pen1 = (int)CreatePen(0, 0, 0x1000086);
-  *pen2 = (int)CreatePen(0, 0, 0x100001d);
-  *pen3 = (int)CreatePen(0, 0, 0x10000c9);
-  *brush2 = (int)CreateSolidBrush(0x100000f);
+  *brush1 = CreateSolidBrush(0x10000c7);
+  *pen1 = CreatePen(0, 0, 0x1000086);
+  *pen2 = CreatePen(0, 0, 0x100001d);
+  *pen3 = CreatePen(0, 0, 0x10000c9);
+  *brush2 = CreateSolidBrush(0x100000f);
   *text_color = 0x1000090;
 
   if (*brush1 == 0)
-    *brush1 = (int)GetStockObject(2);
+    *brush1 = (HBRUSH)GetStockObject(2);
 
   if (*pen1 == 0)
-    *pen1 = (int)GetStockObject(6);
+    *pen1 = (HPEN)GetStockObject(6);
 
   if (*pen2 == 0)
-    *pen2 = (int)GetStockObject(6);
+    *pen2 = (HPEN)GetStockObject(6);
 
   if (*pen3 == 0)
-    *pen3 = (int)GetStockObject(7);
+    *pen3 = (HPEN)GetStockObject(7);
 
   if (*brush2 == 0)
-    *brush2 = (int)GetStockObject(2);
+    *brush2 = (HBRUSH)GetStockObject(2);
 }
 
 // FUNCTION: MAGIC 0x0049fdf9
@@ -592,10 +593,10 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
     if ((message == WM_MOUSEMOVE && SHOWLIST_MOUSE_MODE != 2) || (message == WM_RBUTTONDOWN && SHOWLIST_MOUSE_MODE == 2))
     {
       s.csvid = GetWindowLongA(card_window, g_showlist_card_csvid_window_long_offset);
-      if (g_show_card_list_last_preview_hwnd != (int)card_window)
+      if (g_show_card_list_last_preview_hwnd != card_window)
       {
         SendMessageA(g_duel_card_preview_window_hwnd, 0x401, s.csvid, 0);
-        g_show_card_list_last_preview_hwnd = (int)card_window;
+        g_show_card_list_last_preview_hwnd = card_window;
       }
     }
     return 0;
@@ -619,7 +620,7 @@ LRESULT CALLBACK wndproc_ShowListCard(HWND card_window, UINT message, WPARAM wpa
 
     if (s.show_count_flag != 0)
     {
-      draw_card_list_count((int)g_shared_offscreen_dc, (int *)&s.client_rect, s.count);
+      draw_card_list_count(g_shared_offscreen_dc, &s.client_rect, s.count);
     }
 
     s.paint_dc = BeginPaint(card_window, &s.ps);
@@ -742,7 +743,7 @@ int show_cardlist(int *graveyard,
 
 // FUNCTION: MAGIC 0x0055b9f0
 // FUNCTION: SHANDALAR 0x00571d0e
-void draw_card_list_count(int dc, int *rect, int value)
+void draw_card_list_count(HDC dc, RECT *rect, int value)
 {
   struct
   {
@@ -755,21 +756,21 @@ void draw_card_list_count(int dc, int *rect, int value)
   if (dc == 0 || rect == NULL)
     return;
 
-  s.saved_dc = SaveDC((HDC)dc);
-  SetMapMode((HDC)dc, 8);
-  SetWindowExtEx((HDC)dc, 100, 0x8c, NULL);
-  SetViewportExtEx((HDC)dc, rect[2] - rect[0], rect[3] - rect[1], NULL);
-  SetWindowOrgEx((HDC)dc, 0, 0, NULL);
-  SetViewportOrgEx((HDC)dc, rect[0], rect[1], NULL);
+  s.saved_dc = SaveDC(dc);
+  SetMapMode(dc, 8);
+  SetWindowExtEx(dc, 100, 0x8c, NULL);
+  SetViewportExtEx(dc, rect->right - rect->left, rect->bottom - rect->top, NULL);
+  SetWindowOrgEx(dc, 0, 0, NULL);
+  SetViewportOrgEx(dc, rect->left, rect->top, NULL);
   sprintf(s.text, "%d", value);
-  SelectObject((HDC)dc, (HGDIOBJ)global_smallcard_pt_font);
-  SetTextAlign((HDC)dc, 10);
-  SetBkMode((HDC)dc, 1);
+  SelectObject(dc, (HGDIOBJ)global_smallcard_pt_font);
+  SetTextAlign(dc, 10);
+  SetBkMode(dc, 1);
   s.text_x = 100;
   s.text_y = 0x8c;
-  SetTextColor((HDC)dc, global_palette_col_c9);
-  TextOutA((HDC)dc, s.text_x - 1, s.text_y - 1, s.text, strlen(s.text));
-  SetTextColor((HDC)dc, global_palette_col_9e_b);
-  TextOutA((HDC)dc, s.text_x - 3, s.text_y - 3, s.text, strlen(s.text));
-  RestoreDC((HDC)dc, s.saved_dc);
+  SetTextColor(dc, global_palette_col_c9);
+  TextOutA(dc, s.text_x - 1, s.text_y - 1, s.text, strlen(s.text));
+  SetTextColor(dc, global_palette_col_9e_b);
+  TextOutA(dc, s.text_x - 3, s.text_y - 3, s.text, strlen(s.text));
+  RestoreDC(dc, s.saved_dc);
 }

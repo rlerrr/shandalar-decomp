@@ -108,7 +108,7 @@ HBITMAP global_CARDBK_DarklandsLand;
 HFONT g_smallCardTitleFont;
 
 // GLOBAL: DRAWCARDLIB 0x1003a01c
-undefined4 g_cardBorderPen;
+HPEN g_cardBorderPen;
 
 // GLOBAL: DRAWCARDLIB 0x1003a020
 HBITMAP global_CARDBK_Special;
@@ -123,13 +123,13 @@ HBITMAP global_CARDBK_ArabianNightsLand;
 COLORREF g_alternateCardFrameColor;
 
 // GLOBAL: DRAWCARDLIB 0x1003a030
-undefined4 g_defaultCardFrameBrush;
+HBRUSH g_defaultCardFrameBrush;
 
 // GLOBAL: DRAWCARDLIB 0x1003a034
 HBITMAP global_CARDBK_Blue;
 
 // GLOBAL: DRAWCARDLIB 0x1003a038
-undefined4 g_alternateCardFrameBrush;
+HBRUSH g_alternateCardFrameBrush;
 
 // GLOBAL: DRAWCARDLIB 0x1003a03c
 HBITMAP global_CARDBK_Red;
@@ -221,9 +221,9 @@ undefined4 prepare_fonts_and_imgs(void)
   g_rulesTextColor = GetPaletteColor(0xc9);
   g_smallCardTitleBackgroundColor = GetPaletteColor(0xc4);
   g_cardBorderColor = GetPaletteColor(0xc4);
-  g_cardBorderPen = (undefined4)CreatePen(0, 0, g_cardBorderColor);
-  g_defaultCardFrameBrush = (undefined4)CreateSolidBrush(g_defaultCardFrameColor);
-  g_alternateCardFrameBrush = (undefined4)CreateSolidBrush(g_alternateCardFrameColor);
+  g_cardBorderPen = CreatePen(0, 0, g_cardBorderColor);
+  g_defaultCardFrameBrush = CreateSolidBrush(g_defaultCardFrameColor);
+  g_alternateCardFrameBrush = CreateSolidBrush(g_alternateCardFrameColor);
   global_CARDBK_Artifact = 0;
   global_CARDBK_Gold = global_CARDBK_Artifact;
   global_CARDBK_Red = global_CARDBK_Gold;
@@ -455,21 +455,21 @@ void DestroyAllResources(void)
     DeleteObject(g_smallCardTitleFont);
   }
   g_smallCardTitleFont = (HGDIOBJ)0x0;
-  if ((HGDIOBJ)g_cardBorderPen != (HGDIOBJ)0x0)
+  if (g_cardBorderPen != (HPEN)0x0)
   {
-    DeleteObject((HGDIOBJ)g_cardBorderPen);
+    DeleteObject(g_cardBorderPen);
   }
-  g_cardBorderPen = (undefined4)(HGDIOBJ)0x0;
-  if ((HGDIOBJ)g_defaultCardFrameBrush != (HGDIOBJ)0x0)
+  g_cardBorderPen = (HPEN)0x0;
+  if (g_defaultCardFrameBrush != (HBRUSH)0x0)
   {
-    DeleteObject((HGDIOBJ)g_defaultCardFrameBrush);
+    DeleteObject(g_defaultCardFrameBrush);
   }
-  g_defaultCardFrameBrush = (undefined4)(HGDIOBJ)0x0;
-  if ((HGDIOBJ)g_alternateCardFrameBrush != (HGDIOBJ)0x0)
+  g_defaultCardFrameBrush = (HBRUSH)0x0;
+  if (g_alternateCardFrameBrush != (HBRUSH)0x0)
   {
-    DeleteObject((HGDIOBJ)g_alternateCardFrameBrush);
+    DeleteObject(g_alternateCardFrameBrush);
   }
-  g_alternateCardFrameBrush = (undefined4)(HGDIOBJ)0x0;
+  g_alternateCardFrameBrush = (HBRUSH)0x0;
 }
 
 // FUNCTION: DRAWCARDLIB 0x1000558b
@@ -765,7 +765,7 @@ undefined4 DrawFullCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version
       s.rulesBackgroundRect.top = s.rulesTextRect.top - s.rulesBackgroundTopInset;
       if (s.backgroundBitmap != 0)
       {
-        GetObjectA(s.backgroundBitmap, 0x18, &s.backgroundBitmapInfo);
+        GetObjectA(s.backgroundBitmap, sizeof(s.backgroundBitmapInfo), &s.backgroundBitmapInfo);
         s.backgroundCropLeftPermille = 0x49;
         s.backgroundCropTopPermille = 0x25d;
         s.backgroundCropWidthPermille = 0x359;
@@ -1042,7 +1042,7 @@ void DrawCardSet(HDC dc, RECT *rect, uint expansion)
   {
     if (((expansion & 0x2e) != 0) || ((expansion & 0x100) != 0))
     {
-      GetObjectA(global_CardSets, 0x18, &s.bm);
+      GetObjectA(global_CardSets, sizeof(s.bm), &s.bm);
       s.cellW = s.bm.bmWidth / 10;
       s.cellH = s.bm.bmHeight;
       if ((expansion & 0x20) != 0)
@@ -1267,7 +1267,7 @@ void DrawManaSymbol(HDC dc, char symbol, int left, int top, int width, int heigh
   {
     return;
   }
-  GetObjectA(global_ManaSymbols, 0x18, &s.bm);
+  GetObjectA(global_ManaSymbols, sizeof(s.bm), &s.bm);
   s.wSrc = s.bm.bmHeight;
   s.hSrc = s.wSrc;
   s.maskX = s.bm.bmWidth - s.wSrc;
@@ -1552,7 +1552,7 @@ void DrawSmallCard(HDC dc, RECT *rect, card_ptr_t *card, undefined4 version, int
   DrawCardBackground(dc, rect, card);
   DrawSmallCardTitle(dc, rect, card->name, 0, 1);
   SelectObject(dc, GetStockObject(5));
-  SelectObject(dc, (HGDIOBJ)g_cardBorderPen);
+  SelectObject(dc, g_cardBorderPen);
   Rectangle(dc, 0, 0, 200, 0x118);
   SetMapMode(dc, 1);
   s.cardWidth = rect->right - rect->left;
@@ -1600,7 +1600,7 @@ void DrawCardBackground(HDC dc, RECT *rect, card_ptr_t *card)
   LoadCardBackground(s.backgroundPointer);
   if (*s.backgroundPointer != 0)
   {
-    GetObjectA(*s.backgroundPointer, 0x18, &s.bm);
+    GetObjectA(*s.backgroundPointer, sizeof(s.bm), &s.bm);
     SetRect(&s.dstRect, 0, 0, 200, 0x118);
     DrawBitmapSubrectToRect(dc, &s.dstRect, *s.backgroundPointer, 0, 0, s.bm.bmWidth,
                             (s.bm.bmHeight * 0x3b) / 100);
@@ -1697,7 +1697,7 @@ void DeleteAndCloseObject(HANDLE handle)
   }
   if (handle != (HANDLE)0x0)
   {
-    GetObjectA(handle, 0x54, &s.dibSection);
+    GetObjectA(handle, sizeof(s.dibSection), &s.dibSection);
     s.sectionHandle = s.dibSection.dshSection;
     s.bitsPointer = (char *)s.dibSection.dsBm.bmBits;
     s.bitsPointer += s.dibSection.dsOffset;

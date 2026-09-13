@@ -876,11 +876,10 @@ unsigned int save_or_load_ver2(void)
   {
     for (s.card_index = g_card_count; g_card_count + 0x10 > s.card_index; ++s.card_index)
     {
-      if (*(int *)((char *)global_cards_data + s.card_index * 0x48 + 0x24) != -1)
+      if (global_cards_data[s.card_index].id != -1)
       {
-        s.card_type = CardTypeFromID(*(int *)((char *)global_cards_data + s.card_index * 0x48 + 0x24));
-        *(int *)((char *)global_cards_data + s.card_index * 0x48 + 0x34) =
-            *(int *)((char *)global_cards_data + s.card_type * 0x48 + 0x34);
+        s.card_type = CardTypeFromID(global_cards_data[s.card_index].id);
+        global_cards_data[s.card_index].code_pointer = global_cards_data[s.card_type].code_pointer;
       }
     }
   }

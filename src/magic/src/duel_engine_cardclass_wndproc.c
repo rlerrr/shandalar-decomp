@@ -114,7 +114,7 @@ extern card_ptr_t global_raw_cards_storage[2000];
 extern BITMAPINFO g_duel_backbuffer_bmi;
 extern int g_duel_modal_action_active;
 extern target_selection_request_t g_duel_action_request_copy;
-extern int g_duel_tooltip_window;
+extern HWND g_duel_tooltip_window;
 
 // GLOBAL: MAGIC 0x0055e0fc
 // GLOBAL: SHANDALAR 0x0057f19c

@@ -72,7 +72,8 @@ int copy_cached_library_cards_and_get_count(void *cards, int player)
   {
     result = g_duel_cached_library_count_player_1;
   }
-  memcpy(cards, (player == 0) ? g_duel_cached_library_player_0 : g_duel_cached_library_player_1, 2000);
+  memcpy(cards, (player == 0) ? g_duel_cached_library_player_0 : g_duel_cached_library_player_1,
+         sizeof(g_duel_cached_library_player_0));
   LeaveCriticalSection(&g_duel_render_lock);
 
   return result;

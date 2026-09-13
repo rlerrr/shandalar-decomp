@@ -13,7 +13,7 @@ extern "C" {
 	__declspec(dllimport) int IsSmallArtRightSize(card_id_t id, int version, int width, int height);
 	__declspec(dllimport) void DestroyAllBigArts(void);
 	__declspec(dllimport) void DestroyAllSmallArts(void);
-	__declspec(dllimport) int IsBigArtIn(card_id_t id, int version);
+	__declspec(dllimport) void *IsBigArtIn(card_id_t id, int version);
 	__declspec(dllimport) int IsSmallArtIn(card_id_t id, int version);
 	__declspec(dllimport) int ReloadBigArtIfWrongSize(card_id_t id, int version, int width, int height);
 	__declspec(dllimport) int ReloadSmallArtIfWrongSize(card_id_t id, int version, int width, int height);

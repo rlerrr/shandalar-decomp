@@ -203,7 +203,7 @@ void get_scrollbar_thumb_rect(HWND hwnd, LPRECT rect)
     GetClientRect(hwnd, &s.client_rect);
     if (s.thumb_bitmap != (HANDLE)0 && s.frame_count != 0)
     {
-      GetObjectA(s.thumb_bitmap, 0x18, &s.bitmap);
+      GetObjectA(s.thumb_bitmap, sizeof(s.bitmap), &s.bitmap);
       s.height = s.client_rect.bottom;
       s.width = ((s.bitmap.bmWidth / 2) * s.client_rect.bottom) / (s.bitmap.bmHeight / s.frame_count);
       SetRect(rect, s.position - s.width / 2, 0,
@@ -593,7 +593,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ScrollbarClass(HWND hwnd, UINT msg, WPARAM wp
       if (s.track_bitmap != (HANDLE)0)
       {
         CopyRect(&s.bitmap_rect, &s.client_rect);
-        GetObjectA(s.track_bitmap, 0x18, &s.bitmap);
+        GetObjectA(s.track_bitmap, sizeof(s.bitmap), &s.bitmap);
         s.bitmap_rect.left = 0 - (s.scroll_position % s.bitmap.bmWidth);
         s.client_height = s.client_rect.bottom;
         if (s.track_bitmap_layout != 0)
@@ -645,7 +645,7 @@ LRESULT CALLBACK wndproc_MAGICGAME_ScrollbarClass(HWND hwnd, UINT msg, WPARAM wp
         }
         if (s.thumb_bitmap != (HANDLE)0 && s.thumb_frame_count != 0)
         {
-          GetObjectA(s.thumb_bitmap, 0x18, &s.thumb_bitmap_info);
+          GetObjectA(s.thumb_bitmap, sizeof(s.thumb_bitmap_info), &s.thumb_bitmap_info);
           s.thumb_source_width = s.thumb_bitmap_info.bmWidth / 2;
           s.thumb_source_height = s.thumb_bitmap_info.bmHeight / s.thumb_frame_count;
           s.thumb_source_x = 0;

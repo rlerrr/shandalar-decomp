@@ -1529,7 +1529,8 @@ int create_a_card_type(int internal_card_id)
   {
     if (*(int *)&global_cards_data[new_internal_card_id].id == -1)
     {
-      memcpy(&global_cards_data[new_internal_card_id], &global_cards_data[internal_card_id], 0x48);
+      memcpy(&global_cards_data[new_internal_card_id], &global_cards_data[internal_card_id],
+             sizeof(global_cards_data[new_internal_card_id]));
       return new_internal_card_id;
     }
   }

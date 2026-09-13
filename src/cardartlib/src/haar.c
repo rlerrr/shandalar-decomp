@@ -733,7 +733,7 @@ WvlEntry *Catalog_LoadWvlEntry(int catalog_id, char *wvl_path, int decode_haar)
 
   if (s.entry != (WvlEntry *)0x0)
   {
-    memset(s.entry, 0, 0x1b0);
+    memset(s.entry, 0, sizeof(*s.entry));
     strcpy(s.entry->wvl_path, wvl_path);
     s.entry->data_ptr = (byte *)&g_catalogReadScratch;
     s.entry_size = Catalog_ReadEntry(g_activeWvlCatalogHandle, s.dir, (void **)&s.entry->data_ptr);

@@ -202,33 +202,33 @@ char *FindIniHeaderEntry(FILE *file, char *headers_section_name, char *entry_nam
 }
 
 // FUNCTION: SHANDALAR 0x004c80d8
-int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch)
+char **LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch)
 {
   struct
   {
     int entry_count_remaining;
     int entry_count;
-    int *entry_table;
+    char **entry_table;
     char *decoded_write_ptr;
     char decoded_line[0x200];
     char *entry_line;
-    int *table_entry_ptr;
+    char **table_entry_ptr;
   } s;
 
   s.entry_line = FindIniHeaderEntry(ini_file, "[headers]", section_name);
   if (s.entry_line == (char *)0)
   {
-    return (int *)0;
+    return (char **)0;
   }
 
   s.entry_line = strchr(s.entry_line, ':');
   s.entry_count = atoi(s.entry_line + 1);
   if (SeekIniLine(ini_file, BuildIniSectionHeader(section_name, scratch, 0)) == 0)
   {
-    return (int *)0;
+    return (char **)0;
   }
 
-  s.entry_table = (int *)malloc((size_t)s.entry_count << 2);
+  s.entry_table = (char **)malloc((size_t)s.entry_count << 2);
   s.table_entry_ptr = s.entry_table;
   memset(s.entry_table, 0, (size_t)s.entry_count << 2);
   strcpy(s.decoded_line, BuildIniSectionHeader(section_name, scratch, 0));
@@ -274,8 +274,8 @@ int *LoadIniEscapedStringTable(FILE *ini_file, char *section_name, char *scratch
     }
 
     *s.decoded_write_ptr = '\0';
-    *s.table_entry_ptr = (int)malloc(strlen(s.decoded_line) + 2);
-    strcpy((char *)*s.table_entry_ptr, s.decoded_line);
+    *s.table_entry_ptr = (char *)malloc(strlen(s.decoded_line) + 2);
+    strcpy(*s.table_entry_ptr, s.decoded_line);
     s.table_entry_ptr = s.table_entry_ptr + 1;
   }
 

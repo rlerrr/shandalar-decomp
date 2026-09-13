@@ -7,16 +7,24 @@ extern HPALETTE global_cart_art_hpalette;
 // GLOBAL: SHANDALAR 0x0078df7c
 static WNDPROC global_wndproc_std_ButtonClass;
 
+typedef struct PaletteMessageArgs
+{
+  HWND hwnd;
+  UINT msg;
+  HWND wparam;
+  LPARAM lparam;
+} PaletteMessageArgs;
+
 // FUNCTION: DECKDLL 0x10025d1b
 // FUNCTION: MAGIC 0x00496489
 // FUNCTION: SHANDALAR 0x00466f1c
 static BOOL CALLBACK enum_child_palette_message_proc(HWND child_hwnd, LPARAM lparam)
 {
-  int *args;
+  PaletteMessageArgs *args;
 
-  args = (int *)lparam;
-  if (GetParent(child_hwnd) == (HWND)*args)
-    SendMessageA(child_hwnd, args[1], args[2], args[3]);
+  args = (PaletteMessageArgs *)lparam;
+  if (GetParent(child_hwnd) == args->hwnd)
+    SendMessageA(child_hwnd, args->msg, (WPARAM)args->wparam, args->lparam);
   return TRUE;
 }
 
@@ -30,10 +38,7 @@ int handle_button_palette_message(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM 
     HDC hdc2; // ebp - 0x38
     struct
     {
-      HWND hwnd;     // ebp - 0x34
-      UINT msg;      // ebp - 0x30
-      HWND wparam;   // ebp - 0x2c
-      LPARAM lparam; // ebp - 0x28
+      PaletteMessageArgs value; // ebp - 0x34
       int pad1;
       int pad2;
       int pad3;
@@ -75,11 +80,11 @@ int handle_button_palette_message(HWND hwnd, UINT msg, HWND wparam_hwnd, LPARAM 
     }
     if (msg == WM_PALETTECHANGED)
     {
-      s.args.hwnd = hwnd;
-      s.args.msg = msg;
-      s.args.wparam = wparam_hwnd;
-      s.args.lparam = lparam;
-      EnumChildWindows(hwnd, enum_child_palette_message_proc, (LPARAM)&s.args);
+      s.args.value.hwnd = hwnd;
+      s.args.value.msg = msg;
+      s.args.value.wparam = wparam_hwnd;
+      s.args.value.lparam = lparam;
+      EnumChildWindows(hwnd, enum_child_palette_message_proc, (LPARAM)&s.args.value);
     }
     return 0;
 

@@ -363,8 +363,8 @@ int polka_apply_effect(int player, int card, int amount)
 
     tap_card_and_dispatch_event(s.candidates[s.random_index].player, s.candidates[s.random_index].card);
 
-    s.raw_code = *(int *)global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(s.candidates[s.random_index].player,
-                                                                                        s.candidates[s.random_index].card).internal_card_id].id].subtype;
+    s.raw_code = global_raw_cards_storage[global_cards_data[PLAYER_CARD_INSTANCE(s.candidates[s.random_index].player,
+                                                                                s.candidates[s.random_index].card).internal_card_id].id].subtype;
     if (s.raw_code == 0x57 || s.raw_code == 0x56)
     {
       create_legacy_effect(player, card, g_duel_generated_internal_card_id_0b,

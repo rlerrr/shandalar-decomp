@@ -1379,7 +1379,7 @@ init_deckbuilder(HINSTANCE dll, int unused)
     return 0;
   }
 #else
-  GetModuleFileNameA(0, global_base_directory, 0x105);
+  GetModuleFileNameA(0, global_base_directory, sizeof(global_base_directory));
   s.pcVar3 = strrchr(global_base_directory, '\\');
   *s.pcVar3 = 0;
 #endif
@@ -2680,7 +2680,7 @@ wndproc_TitleClass(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   switch (msg)
   {
   case WM_CREATE:
-    memcpy(&title_font_logfont, &titleClass_fontTemplate, 0x3c);
+    memcpy(&title_font_logfont, &titleClass_fontTemplate, sizeof(title_font_logfont));
     strcpy(title_font_logfont.lfFaceName, "Cheltenham ITC Bold BT");
     title_font_logfont.lfHeight = 0x32;
     title_font_large = CreateFontIndirect(&title_font_logfont);
@@ -3672,7 +3672,7 @@ TENTATIVE_scroll(HWND hwnd_listbox, HWND hwnd_horzlist)
   s.data = SendMessageA(hwnd_listbox, 0x199, s.sel, 0);
   s.count = SendMessageA(hwnd_listbox, 0x18b, 0, 0);
 
-  memset(s.present, 0, 8000);
+  memset(s.present, 0, sizeof(s.present));
   for (s.i = 0; (int)s.i < s.count; s.i = s.i + 1)
   {
     s.tmp = SendMessageA(hwnd_listbox, 0x199, s.i, 0);
@@ -4373,7 +4373,7 @@ LRESULT CALLBACK wndproc_HorzListClass(HWND hwnd, UINT msg, WPARAM wparam, LPARA
   {
     GetClientRect(hwnd, &s.create_r);
 
-    s.horz_list_addr = (int *)malloc(4);
+    s.horz_list_addr = (int *)malloc(sizeof(*s.horz_list_addr));
 
     s.wLast = 0;
     s.wNewSel[0] = (WORD)-1;
@@ -5307,7 +5307,7 @@ load_deck(char *filename)
   s.f = fopen(filename, "rt");
   if (s.f != 0)
   {
-    memset(&global_edited_deck, 0, 0x1464);
+    memset(&global_edited_deck, 0, sizeof(global_edited_deck));
 
     if (global_db_flags_1 & DBFLAGS_GAUNTLET)
     {

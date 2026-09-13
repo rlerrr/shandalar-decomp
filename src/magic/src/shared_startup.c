@@ -150,7 +150,7 @@ CRITICAL_SECTION g_card_render_lock;
 
 // GLOBAL: SHANDALAR 0x005a8b30
 // GLOBAL: MAGIC 0x00637a94
-int g_shared_startup_allocation;
+void *g_shared_startup_allocation;
 
 static __inline void append_startup_error(char *message_buffer, const char *path, int line_index)
 {

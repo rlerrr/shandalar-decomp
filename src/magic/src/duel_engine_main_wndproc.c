@@ -36,7 +36,7 @@ extern int g_life[2];
 extern HINSTANCE g_app_instance;
 extern HWND g_duel_opponent_battlefield_window;
 extern HWND g_duel_player_battlefield_window;
-extern int g_duel_tooltip_window;
+extern HWND g_duel_tooltip_window;
 extern int g_showlist_smallcard_width;
 extern int g_showlist_smallcard_height;
 extern int global_available_slots;

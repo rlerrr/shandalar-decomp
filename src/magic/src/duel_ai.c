@@ -42,7 +42,7 @@ int ConsumeUiTickCount(void);
 void HideMouseCursorNested(void);
 void ShowMouseCursorNested(void);
 void NoopSetSpecialSprite(int unused_a, int unused_b, int unused_c);
-extern int g_ttsprite_special_sprite_b;
+extern void *g_ttsprite_special_sprite_b;
 #endif
 void set_duel_prompt_text(char *text);
 void process_damage_prevention(int player);
@@ -2128,13 +2128,13 @@ unsigned int choose_attackers_ai(int player)
   }
 
   setup_combat_damage_simulation(player);
-  memcpy(s.saved_attacker_damage, combat_damage_attacker_damage, 0x40);
-  memcpy(s.saved_attacker_toughness, combat_damage_attacker_toughness, 0x40);
-  memcpy(s.saved_attacker_abilities, combat_damage_attacker_abilities, 0x40);
-  memcpy(s.saved_attacker_scores, g_ai_attacker_cards, 0x40);
-  memcpy(s.blocker_toughness, g_ai_attacker_power, 0x40);
-  memcpy(g_ai_attacker_damage, g_ai_attacker_toughness, 0x40);
-  memcpy(g_ai_attacker_scores, g_ai_blocker_power, 0x40);
+  memcpy(s.saved_attacker_damage, combat_damage_attacker_damage, sizeof(s.saved_attacker_damage));
+  memcpy(s.saved_attacker_toughness, combat_damage_attacker_toughness, sizeof(s.saved_attacker_toughness));
+  memcpy(s.saved_attacker_abilities, combat_damage_attacker_abilities, sizeof(s.saved_attacker_abilities));
+  memcpy(s.saved_attacker_scores, g_ai_attacker_cards, sizeof(s.saved_attacker_scores));
+  memcpy(s.blocker_toughness, g_ai_attacker_power, sizeof(s.blocker_toughness));
+  memcpy(g_ai_attacker_damage, g_ai_attacker_toughness, sizeof(g_ai_attacker_damage));
+  memcpy(g_ai_attacker_scores, g_ai_blocker_power, sizeof(g_ai_attacker_scores));
 
   save_combat_simulation_state();
   g_duel_ai_mode_state = 1;
@@ -3021,8 +3021,8 @@ void setup_combat_damage_simulation(int player)
       }
     }
 
-    memset(g_ai_attacker_ability_counts, 0, 0x1c);
-    memset(g_ai_blocker_ability_counts, 0, 0x1c);
+    memset(g_ai_attacker_ability_counts, 0, sizeof(g_ai_attacker_ability_counts));
+    memset(g_ai_blocker_ability_counts, 0, sizeof(g_ai_blocker_ability_counts));
     for (s.card = 0; s.card < combat_damage_attacker_count; s.card++)
     {
       for (s.attacker_index = 0; s.attacker_index < ai_blocker_count; s.attacker_index++)

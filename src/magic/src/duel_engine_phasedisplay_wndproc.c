@@ -242,7 +242,9 @@ void copy_phase_stop_flags(int *phase_flags, int player)
 
   EnterCriticalSection(&g_duel_render_lock);
 
-  memcpy(phase_flags, player == 0 ? g_duel_cached_phase_stops_player_0 : g_duel_cached_phase_stops_player_1, 0x98);
+  memcpy(phase_flags,
+         player == 0 ? g_duel_cached_phase_stops_player_0 : g_duel_cached_phase_stops_player_1,
+         sizeof(g_duel_cached_phase_stops_player_0));
 
   LeaveCriticalSection(&g_duel_render_lock);
 }
