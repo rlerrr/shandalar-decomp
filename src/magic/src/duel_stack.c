@@ -1261,7 +1261,7 @@ int can_block_attacker_with_abilities(int blocker_player,
   g_attacking_card_controller = attacker_player;
   g_attacking_card = attacker_card;
   g_event_result = 0;
-  C_dispatch_event_raw(0x78);
+  C_dispatch_event_raw(EVENT_BLOCK_LEGALITY);
   if (g_event_result > 0)
   {
     s.result = 0;
@@ -4140,7 +4140,7 @@ after_setup:
     goto setup;
   }
 
-  C_dispatch_event_raw(0x25);
+  C_dispatch_event_raw(EVENT_DAMAGE_PREVENTION);
   if ((g_battlefield_extra_ability_flags & 0x00040000) != 0)
   {
     dispatch_trigger_twice_once_with_each_player_as_reason(g_current_player, TRIGGER_END_DAMAGE_PREV, gs_end_damage_prevention_00789740, 0);

@@ -144,7 +144,7 @@ GLOBAL_OTHERS_EXTERN int g_recorded_action_count;
 
 // GLOBAL: MAGIC 0x007abc78
 // GLOBAL: SHANDALAR 0x007bfe78
-GLOBAL_OTHERS_EXTERN int g_battlefield_extra_ability_flags;
+GLOBAL_OTHERS_EXTERN extra_abilities_t g_battlefield_extra_ability_flags;
 
 // GLOBAL: MAGIC 0x007abc80
 // GLOBAL: SHANDALAR 0x007bfe80

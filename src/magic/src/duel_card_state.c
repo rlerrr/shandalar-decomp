@@ -800,7 +800,7 @@ int process_killed_card(int player, int card)
       g_affected_card = card;
       g_attacking_card_controller = 1 - player;
       g_attacking_card = -1;
-      C_dispatch_event_raw(0x77);
+      C_dispatch_event_raw(EVENT_GRAVEYARD_FROM_PLAY);
       if (g_event_result > 0)
       {
         PLAYER_CARD_INSTANCE(player, card).token_status &= ~STATUS_DYING;

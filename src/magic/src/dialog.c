@@ -464,7 +464,7 @@ unsigned int get_displayed_card_display_pic_info(int *displayed_player_and_card,
     }
     return 0xffffffff;
   }
-  
+
   EnterCriticalSection(&g_duel_render_lock);
   if (displayed_player_and_card != NULL)
   {
@@ -702,8 +702,6 @@ int do_dialog(int who_chooses,
 {
   struct
   {
-    int dialog_mode;
-    int unused_padding;
     char displayed_options[600];
     int remaining_choice;
     int dialog_result;
@@ -739,9 +737,7 @@ int do_dialog(int who_chooses,
     {
       if (s.at_start_of_line != 0 && s.displayed_options[s.option_index] == ' ')
       {
-        s.unused_padding = s.remaining_choice;
-        --s.remaining_choice;
-        if (s.unused_padding == 0)
+        if (s.remaining_choice-- == 0)
         {
           s.displayed_options[s.option_index] = '>';
           break;
@@ -764,17 +760,8 @@ int do_dialog(int who_chooses,
     TENTATIVE_reassess_all_cards(1, 0xff);
   }
 
-  if (who_chooses == g_active_player && g_duel_network_state == 0)
-  {
-    s.dialog_mode = 1;
-  }
-  else
-  {
-    s.dialog_mode = 0;
-  }
-
   s.dialog_result =
-      raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, g_ui_message_buffer, s.dialog_mode);
+      raw_do_dialog(bigcard_player, bigcard_card, smallcard_player, smallcard_card, g_ui_message_buffer, who_chooses == g_active_player && g_duel_network_state == 0);
 
   if (who_chooses == g_active_player && (g_duel_network_flags & 2) != 0)
   {
@@ -1423,7 +1410,7 @@ void draw_special_effect_full_card(HDC dc, RECT *rect, card_id_t card_id, int pl
   s.card_data.power = 0;
   s.card_data.toughness = 0;
   s.card_data.sleight_color = 0;
-  *(int *)&s.card_data.currently_zero_for_all_cards = 0;
+  *(int *)&s.card_data.hack_colors = 0;
   DrawFullCard(dc, rect, &s.card_data, s.display_version, 2, g_duel_interface_options.expand_text_box_on_big_card, gs_illus_00789130);
 }
 

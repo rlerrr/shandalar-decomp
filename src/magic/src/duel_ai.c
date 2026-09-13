@@ -141,7 +141,7 @@ typedef struct
   int extra_turn_player;
   phase_t stop_phase_copy;
   int stop_phase_player_copy;
-  int battlefield_flags;
+  extra_abilities_t battlefield_flags;
   int lich_active_copy[2];
   int player_special_effect_flags_copy[2];
 } AiSearchBackup;
@@ -388,7 +388,7 @@ static phase_t combat_sim_saved_stop_phase;
 static int combat_sim_saved_stop_phase_player;
 // GLOBAL: MAGIC 0x006a25b8
 // GLOBAL: SHANDALAR 0x005ae8a0
-static int combat_sim_saved_battlefield_extra_ability_flags;
+static extra_abilities_t combat_sim_saved_battlefield_extra_ability_flags;
 // GLOBAL: MAGIC 0x006aa308
 // GLOBAL: SHANDALAR 0x005b65f0
 static int combat_sim_saved_unk_008b44d0[2];
@@ -1981,7 +1981,7 @@ unsigned int choose_attackers_ai(int player)
   {
     AI_CARD_STATE(player, s.card) &= ~STATE_ATTACKING;
   }
-  C_dispatch_event_raw(0x15);
+  C_dispatch_event_raw(EVENT_DECLARE_ATTACKERS);
 
   s.band_regeneration_ability = 0;
   s.band_candidate_power = s.band_regeneration_ability;
@@ -2138,7 +2138,7 @@ unsigned int choose_attackers_ai(int player)
 
   save_combat_simulation_state();
   g_duel_ai_mode_state = 1;
-  C_dispatch_event_raw(199);
+  C_dispatch_event_raw(EVENT_SHOULD_AI_PLAY);
   g_duel_ai_mode_state = s.saved_ai_mode;
 
   for (s.card = 0; s.card <= 7; s.card++)
@@ -2310,7 +2310,7 @@ unsigned int choose_attackers_ai(int player)
     choose_blockers_ai(player);
     save_combat_simulation_state();
     g_duel_ai_mode_state = 1;
-    C_dispatch_event_raw(199);
+    C_dispatch_event_raw(EVENT_SHOULD_AI_PLAY);
     g_duel_ai_mode_state = s.saved_ai_mode;
 
     s.expected_damage = 0;
@@ -2448,7 +2448,7 @@ unsigned int choose_attackers_ai(int player)
 
   if ((s.selected_mask != 0) && ((g_battlefield_extra_ability_flags & 0x2000000) != 0))
   {
-    C_dispatch_event_raw(0x92);
+    C_dispatch_event_raw(EVENT_BEFORE_COMBAT);
   }
 
   for (s.card = 0; s.candidate_count > s.card; s.card++)
@@ -2523,7 +2523,7 @@ int score_gamestate_after_simulated_card_death(int player, int card)
   g_ai_modifier = 0;
   AI_CARD(player, card).token_status |= 8;
   kill_card(player, card, KILL_DESTROY);
-  C_dispatch_event_raw(199);
+  C_dispatch_event_raw(EVENT_SHOULD_AI_PLAY);
   process_damage_prevention(player);
   score = g_ai_modifier + ai_opinion_of_gamestate(player);
   restore_combat_simulation_state();
@@ -2709,7 +2709,7 @@ void setup_combat_damage_simulation(int player)
     save_combat_simulation_state();
     s.saved_ai_modifier = g_ai_modifier;
     g_ai_modifier = 0;
-    C_dispatch_event_raw(199);
+    C_dispatch_event_raw(EVENT_SHOULD_AI_PLAY);
     process_damage_prevention(player);
     s.baseline_score = ai_opinion_of_gamestate(player);
     s.baseline_score += g_ai_modifier;
@@ -2959,7 +2959,7 @@ void setup_combat_damage_simulation(int player)
         g_ai_modifier = 0;
         AI_CARD(ai_blocker_player, s.card).token_status |= 8;
         kill_card(ai_blocker_player, s.card, KILL_DESTROY);
-        C_dispatch_event_raw(199);
+        C_dispatch_event_raw(EVENT_SHOULD_AI_PLAY);
         process_damage_prevention(player);
         s.cached_score = ai_opinion_of_gamestate(player);
         s.cached_score += g_ai_modifier;

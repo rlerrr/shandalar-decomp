@@ -635,7 +635,7 @@ restart_main_phase_action_loop:
         {
           if (g_battlefield_extra_ability_flags & 0x1000000)
           {
-            C_dispatch_event_raw(0x89);
+            C_dispatch_event_raw(EVENT_MUST_ATTACK);
           }
           resolve_mana_burn();
           if (check_duel_finished() != 0)
@@ -651,7 +651,7 @@ restart_main_phase_action_loop:
           {
             if ((g_battlefield_extra_ability_flags & 0x2000000) != 0)
             {
-              C_dispatch_event_raw(0x92);
+              C_dispatch_event_raw(EVENT_BEFORE_COMBAT);
             }
             if ((g_duel_network_flags & 2) != 0)
             {
@@ -1106,7 +1106,7 @@ restart_main_phase_action_loop:
   {
     if ((g_battlefield_extra_ability_flags & 0x1000000) != 0)
     {
-      C_dispatch_event_raw(0x89);
+      C_dispatch_event_raw(EVENT_MUST_ATTACK);
     }
     if (choose_attackers_ai(player) != 0)
     {
@@ -1171,7 +1171,7 @@ restart_main_phase_action_loop:
         return 1;
       }
       update_phase_display(player, g_current_phase);
-      C_dispatch_event_raw(0x15);
+      C_dispatch_event_raw(EVENT_DECLARE_ATTACKERS);
       update_phase_display(player, g_current_phase);
       g_current_phase = PHASE_BEFORE_BLOCKING;
       update_phase_display(player, g_current_phase);
@@ -1209,7 +1209,7 @@ restart_main_phase_action_loop:
         (human_has_phase_stop(PHASE_DECLARE_ATTACKERS) == 0) &&
         ((g_duel_network_flags & 2) == 0))
       goto advance_to_postcombat_main;
-    C_dispatch_event_raw(0x15);
+    C_dispatch_event_raw(EVENT_DECLARE_ATTACKERS);
     if ((g_duel_ai_mode_state == 1) && (g_current_phase < PHASE_DECLARE_ATTACKERS))
     {
       choose_attackers_ai(player);
@@ -1285,7 +1285,7 @@ restart_main_phase_action_loop:
   }
 
 resolve_combat_if_needed:
-  C_dispatch_event_raw(0x1a);
+  C_dispatch_event_raw(EVENT_DECLARE_BLOCKERS);
   mark_blocked_attackers(player);
   if (((((0 < g_attacking_creature_count) ||
          (((player == g_active_player) || ((g_duel_network_flags & 2) != 0)) &&
