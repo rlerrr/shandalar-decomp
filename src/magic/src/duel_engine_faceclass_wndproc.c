@@ -53,7 +53,7 @@ COLORREF g_face_name_shadow_color;
 
 // GLOBAL: MAGIC 0x00637b88
 // GLOBAL: SHANDALAR 0x005a81a0
-int g_face_directive_packet[3];
+target_selection_result_t g_face_directive_packet;
 
 // GLOBAL: MAGIC 0x00637b94
 int g_face_ui_opponent_life;
@@ -528,10 +528,10 @@ void set_player_directive_value(int player, int value)
 // FUNCTION: SHANDALAR 0x00426da0
 void post_face_directive_action(int player)
 {
-  g_face_directive_packet[0] = 0;
-  g_face_directive_packet[1] = player;
-  g_face_directive_packet[2] = -1;
-  PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_face_directive_packet);
+  g_face_directive_packet.selection_code = 0;
+  g_face_directive_packet.target_player = player;
+  g_face_directive_packet.target_card = -1;
+  PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_face_directive_packet);
 }
 
 // FUNCTION: MAGIC 0x004646b0

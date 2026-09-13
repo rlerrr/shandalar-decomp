@@ -65,11 +65,11 @@ int g_attack_phase_display_flags;
 
 // GLOBAL: MAGIC 0x00708828
 // GLOBAL: SHANDALAR 0x00669660
-int g_attack_phase_display_click_packet[3];
+target_selection_result_t g_attack_phase_display_click_packet;
 
 // GLOBAL: MAGIC 0x00708838
 // GLOBAL: SHANDALAR 0x00669670
-int g_attack_phase_display_menu_packet[3];
+target_selection_result_t g_attack_phase_display_menu_packet;
 
 extern HWND g_attack_ui_tooltip_window;
 extern char g_attack_ui_label_text[0x1c];
@@ -879,10 +879,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
         g_stop_phase_player = s.stop_player;
         g_stop_phase = s.stop_phase_code;
         g_recorded_action_player = 0;
-        g_attack_phase_display_menu_packet[0] = -2;
-        g_attack_phase_display_menu_packet[1] = -1;
-        g_attack_phase_display_menu_packet[2] = -1;
-        PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_attack_phase_display_menu_packet);
+        g_attack_phase_display_menu_packet.selection_code = -2;
+        g_attack_phase_display_menu_packet.target_player = -1;
+        g_attack_phase_display_menu_packet.target_card = -1;
+        PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_attack_phase_display_menu_packet);
         break;
 
       case ATTACK_PHASE_DISPLAY_COMMAND_TOGGLE_BASE:
@@ -959,10 +959,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_AttackPhaseDisplayClass(HWND hwnd, UINT msg, 
       g_stop_phase_player = s.click_player;
       g_stop_phase = s.click_phase;
       g_recorded_action_player = s.peek_result;
-      g_attack_phase_display_click_packet[0] = -2;
-      g_attack_phase_display_click_packet[1] = -1;
-      g_attack_phase_display_click_packet[2] = -1;
-      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_attack_phase_display_click_packet);
+      g_attack_phase_display_click_packet.selection_code = -2;
+      g_attack_phase_display_click_packet.target_player = -1;
+      g_attack_phase_display_click_packet.target_card = -1;
+      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_attack_phase_display_click_packet);
     }
     return 0;
 

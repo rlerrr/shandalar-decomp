@@ -81,7 +81,7 @@ HBRUSH g_tell_user_button_brush;
 
 // GLOBAL: MAGIC 0x006abe10
 // GLOBAL: SHANDALAR 0x005a9568
-int g_tell_user_command_packet[3];
+target_selection_result_t g_tell_user_command_packet;
 
 // GLOBAL: MAGIC 0x006abe20
 // GLOBAL: SHANDALAR 0x005a9578
@@ -245,10 +245,10 @@ LRESULT CALLBACK wndproc_MAGIC_TellUserClass(HWND hwnd, UINT msg, WPARAM wparam,
       g_stop_phase_player = -1;
       g_stop_phase = -1;
       g_recorded_action_player = 0;
-      g_tell_user_command_packet[0] = -2;
-      g_tell_user_command_packet[1] = -1;
-      g_tell_user_command_packet[2] = s.action_value;
-      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_tell_user_command_packet);
+      g_tell_user_command_packet.selection_code = -2;
+      g_tell_user_command_packet.target_player = -1;
+      g_tell_user_command_packet.target_card = s.action_value;
+      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_tell_user_command_packet);
     }
     return 0;
 

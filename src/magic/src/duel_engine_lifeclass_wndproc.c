@@ -85,7 +85,7 @@ char g_life_menu_directive_format[0x68];
 
 // GLOBAL: MAGIC 0x0069e360
 // GLOBAL: SHANDALAR 0x005b7d48
-int g_life_directive_packet[3];
+target_selection_result_t g_life_directive_packet;
 
 // GLOBAL: MAGIC 0x0069e370
 // GLOBAL: SHANDALAR 0x005b7d58
@@ -657,8 +657,8 @@ LRESULT CALLBACK wndproc_MAGICGAME_LifeClass(HWND hwnd, UINT msg, WPARAM wparam,
 // FUNCTION: SHANDALAR 0x004cdcdc
 void post_life_directive_action(int player)
 {
-  g_life_directive_packet[0] = 0;
-  g_life_directive_packet[1] = player;
-  g_life_directive_packet[2] = -1;
-  PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_life_directive_packet);
+  g_life_directive_packet.selection_code = 0;
+  g_life_directive_packet.target_player = player;
+  g_life_directive_packet.target_card = -1;
+  PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_life_directive_packet);
 }

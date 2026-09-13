@@ -170,7 +170,7 @@ HMENU g_territory_debug_menu_b;
 
 // GLOBAL: MAGIC 0x006ab680
 // GLOBAL: SHANDALAR 0x006032d0
-int g_territory_command_packet[3];
+target_selection_result_t g_territory_command_packet;
 
 // GLOBAL: MAGIC 0x00789720
 // GLOBAL: SHANDALAR 0x007a04b0
@@ -972,27 +972,27 @@ LRESULT CALLBACK wndproc_MAGICGAME_TerritoryClass(HWND hwnd, UINT msg, WPARAM wp
       g_stop_phase = -1;
       g_stop_phase_player = -1;
       g_recorded_action_player = 0;
-      g_territory_command_packet[0] = -2;
-      g_territory_command_packet[1] = -1;
-      g_territory_command_packet[2] = -2;
-      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
+      g_territory_command_packet.selection_code = -2;
+      g_territory_command_packet.target_player = -1;
+      g_territory_command_packet.target_card = -2;
+      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_territory_command_packet);
       break;
     case 0x65:
       g_stop_phase = -1;
       g_stop_phase_player = -1;
       g_recorded_action_player = 0;
-      g_territory_command_packet[0] = -2;
-      g_territory_command_packet[1] = -1;
-      g_territory_command_packet[2] = -1;
-      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
+      g_territory_command_packet.selection_code = -2;
+      g_territory_command_packet.target_player = -1;
+      g_territory_command_packet.target_card = -1;
+      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_territory_command_packet);
       break;
     case 0x64:
       get_next_phase_stop(&g_stop_phase_player, &g_stop_phase, NULL);
       g_recorded_action_player = 0;
-      g_territory_command_packet[0] = -2;
-      g_territory_command_packet[1] = -1;
-      g_territory_command_packet[2] = -1;
-      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_territory_command_packet);
+      g_territory_command_packet.selection_code = -2;
+      g_territory_command_packet.target_player = -1;
+      g_territory_command_packet.target_card = -1;
+      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_territory_command_packet);
       break;
     case 0x68:
       show_territory_options_dialog(g_duel_window_hwnd);

@@ -55,7 +55,7 @@ char g_phase_display_menu_toggle_text[0x38];
 
 // GLOBAL: MAGIC 0x007087e0
 // GLOBAL: SHANDALAR 0x00669618
-int g_phase_display_click_packet[3];
+target_selection_result_t g_phase_display_click_packet;
 
 // GLOBAL: MAGIC 0x007087f0
 // GLOBAL: SHANDALAR 0x00669628
@@ -71,7 +71,7 @@ HMENU g_phase_display_menu;
 
 // GLOBAL: MAGIC 0x00708818
 // GLOBAL: SHANDALAR 0x00669650
-int g_phase_display_menu_packet[3];
+target_selection_result_t g_phase_display_menu_packet;
 
 // GLOBAL: MAGIC 0x00708848
 // GLOBAL: SHANDALAR 0x00669680
@@ -636,10 +636,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
         g_stop_phase_player = s.stop_player;
         g_stop_phase = s.stop_phase_code;
         g_recorded_action_player = 0;
-        g_phase_display_menu_packet[0] = -2;
-        g_phase_display_menu_packet[1] = -1;
-        g_phase_display_menu_packet[2] = -1;
-        PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_phase_display_menu_packet);
+        g_phase_display_menu_packet.selection_code = -2;
+        g_phase_display_menu_packet.target_player = -1;
+        g_phase_display_menu_packet.target_card = -1;
+        PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_phase_display_menu_packet);
         break;
 
       case PHASE_DISPLAY_COMMAND_TOGGLE_BASE:
@@ -729,10 +729,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_PhaseDisplayClass(HWND hwnd, UINT msg, WPARAM
       g_stop_phase_player = s.click_hit_player;
       g_stop_phase = s.click_hit_phase;
       g_recorded_action_player = s.peek_result;
-      g_phase_display_click_packet[0] = -2;
-      g_phase_display_click_packet[1] = -1;
-      g_phase_display_click_packet[2] = -1;
-      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_phase_display_click_packet);
+      g_phase_display_click_packet.selection_code = -2;
+      g_phase_display_click_packet.target_player = -1;
+      g_phase_display_click_packet.target_card = -1;
+      PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_phase_display_click_packet);
     }
     return 0;
 

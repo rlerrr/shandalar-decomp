@@ -56,7 +56,7 @@ EncodedImage *g_opening_menu_unused_sprite_group_a[3];
 // GLOBAL: SHANDALAR 0x005aa408
 EncodedImage *g_opening_menu_unused_sprite_group_b[2];
 // GLOBAL: SHANDALAR 0x005aa410
-EncodedImage *g_opening_menu_sprite_blob_handle;
+EncodedImage *g_opening_menu_sprite_blob_handle[2];
 // GLOBAL: SHANDALAR 0x005aa424
 int g_opening_menu_strings_loaded;
 // GLOBAL: SHANDALAR 0x005aa430
@@ -260,7 +260,7 @@ int DrawOpeningMenuEntry(int entry_index, int visual_state)
   switch (entry_index)
   {
   case 0:
-    s.unused_button_sprite_group = &g_opening_menu_sprite_blob_handle;
+    s.unused_button_sprite_group = g_opening_menu_sprite_blob_handle;
     break;
   case 1:
     s.unused_button_sprite_group = g_opening_menu_unused_sprite_group_a;
@@ -410,7 +410,7 @@ loop:
   for (s.sprite_group_index = 0; s.sprite_group_index < 2;
        s.copied_entry_count = s.copied_entry_count + 1, s.sprite_group_index = s.sprite_group_index + 1)
   {
-    (&g_opening_menu_sprite_blob_handle)[s.sprite_group_index] = s.sprite_entry_pointers[s.sprite_entry_index];
+    g_opening_menu_sprite_blob_handle[s.sprite_group_index] = s.sprite_entry_pointers[s.sprite_entry_index];
     s.sprite_entry_index = s.sprite_entry_index + 1;
   }
   for (s.sprite_group_index = 0; s.sprite_group_index < 3;
@@ -489,7 +489,7 @@ loop:
 
   EndMenuContext();
   ResetMenuContext(s.menu_context);
-  FreeSpriteBlob((void *)g_opening_menu_sprite_blob_handle);
+  FreeSpriteBlob((void *)g_opening_menu_sprite_blob_handle[0]);
   g_page0_window_bounds->font_slot = 1;
 
   if (g_menu_selection_value == 4)

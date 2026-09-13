@@ -53,7 +53,7 @@ int g_magicgame_mana_summary_window_extra_bytes = 4;
 
 // GLOBAL: MAGIC 0x00708888
 // GLOBAL: SHANDALAR 0x00652fc0
-int g_mana_summary_click_packet[3];
+target_selection_result_t g_mana_summary_click_packet;
 
 // GLOBAL: MAGIC 0x00708898
 // GLOBAL: SHANDALAR 0x00652fd0
@@ -61,7 +61,7 @@ char g_mana_summary_menu_blue_text[0x48];
 
 // GLOBAL: MAGIC 0x007088d0
 // GLOBAL: SHANDALAR 0x00653008
-int g_mana_summary_menu_packet[3];
+target_selection_result_t g_mana_summary_menu_packet;
 
 // GLOBAL: MAGIC 0x007088e0
 // GLOBAL: SHANDALAR 0x00653018
@@ -319,10 +319,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
         g_recorded_action_controller = (int)(g_duel_active_popup_window != hwnd);
         g_recorded_action_phase = s.command_id - 0x65;
         g_recorded_action_player = 0;
-        g_mana_summary_menu_packet[0] = -3;
-        g_mana_summary_menu_packet[1] = -1;
-        g_mana_summary_menu_packet[2] = -1;
-        PostMessageA(DUEL_MAIN_WINDOW_HWND, 0x464, 0, (LPARAM)g_mana_summary_menu_packet);
+        g_mana_summary_menu_packet.selection_code = -3;
+        g_mana_summary_menu_packet.target_player = -1;
+        g_mana_summary_menu_packet.target_card = -1;
+        PostMessageA(DUEL_MAIN_WINDOW_HWND, 0x464, 0, (LPARAM)&g_mana_summary_menu_packet);
       }
       break;
     }
@@ -378,10 +378,10 @@ LRESULT CALLBACK wndproc_MAGICGAME_ManaSummaryClass(HWND hwnd, UINT msg, WPARAM 
           (g_duel_action_request_copy.zone_flags == -1 || (g_duel_action_request_copy.zone_flags & 1) != 0))
       {
         g_recorded_action_player = s.peek_result;
-        g_mana_summary_click_packet[0] = -3;
-        g_mana_summary_click_packet[1] = -1;
-        g_mana_summary_click_packet[2] = -1;
-        PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)g_mana_summary_click_packet);
+        g_mana_summary_click_packet.selection_code = -3;
+        g_mana_summary_click_packet.target_player = -1;
+        g_mana_summary_click_packet.target_card = -1;
+        PostMessageA(g_duel_window_hwnd, 0x464, 0, (LPARAM)&g_mana_summary_click_packet);
       }
     }
     return 0;
