@@ -64,6 +64,14 @@ targets:
     source-root: src/magsnd
     hash:
       sha256: 213b7dc2e1d0eed131d38485cba8004c1d7760f8ff0a94486b86bba5f3aeba9e
+  MAGVID:
+    filename: MAGVID.DLL
+    source-root: src
+    hash:
+      sha256: b686bd43bb7f9ba040fc7416d8d74e59e27c3b5b1bbccd76bfc16c5505bcf90a
+    data_sources:
+      - ghidra/magvid.csv
+      - ghidra/magvid-synthetic.csv
   STATWIN:
     filename: STATWIN.DLL
     source-root: src

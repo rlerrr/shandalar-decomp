@@ -19,6 +19,7 @@ option(SHANDALAR_BUILD_MAGIC "Build Magic.exe" ON)
 option(SHANDALAR_BUILD_SHANDALAR "Build Shandalar.exe" ON)
 option(SHANDALAR_BUILD_MANALINKINTERFACE "Build manalinkinterface.dll" ON)
 option(SHANDALAR_BUILD_MAGSND "Build magsnd.dll" ON)
+option(SHANDALAR_BUILD_MAGVID "Build magvid.dll" ON)
 option(SHANDALAR_BUILD_STATWIN "Build StatWin.dll" ON)
 set(SHANDALAR_MODERN_FIXES_DEFAULT OFF)
 
@@ -110,6 +111,7 @@ install(TARGETS
   shandalar
   manalinkinterface
   magsnd
+  magvid
   statwin
   # any other targets
   RUNTIME DESTINATION .

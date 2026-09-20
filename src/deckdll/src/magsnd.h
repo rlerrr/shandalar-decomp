@@ -20,12 +20,14 @@ int sound_unload_all(void);
 void sound_close();
 int sound_play(int num, Sound *snd);
 int sound_stop(int a1);
+int sound_get_time(int num, unsigned int *out_time);
 void clear_sound_imports_table(void);
 int init_sound_dll(HWND hwnd, int a2, int a3);
 int sound_load(const char *path, int num, Sound *snd);
 int set_sound_loop(int num, int num2);
 int sound_is_loaded(int sound_id, int *out_loaded_sound_num);
 int sound_get_lru(int *out_num, int start, int end);
+HWND get_sound_hwnd(void);
 int update_snd();
 
 #endif

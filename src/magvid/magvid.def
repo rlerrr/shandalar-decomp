@@ -1,0 +1,24 @@
+LIBRARY "magvid.dll" BASE=268435456
+
+; The original DLL has nineteen callable exports plus the _delay data export.
+EXPORTS
+InitVid @1
+ReleaseVid @2
+LoadAVI @3
+UnloadAVI @4
+PlayAVI @5
+StopAVI @6
+SetVidCallBack @7
+SetVidBackground @8
+SetVidBackgroundToBMP @9
+SetVidBackgroundToDIB @10
+DrawVidBackground @11
+PasteToVidBackground @12
+SetVidForeground @13
+PaintVid @14
+SetVidPos @15
+SetVidThreadPriority @18
+LinkVids @17
+VidStatus @16
+SetVidTransparency @19
+_delay @20 DATA

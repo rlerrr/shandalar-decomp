@@ -5,27 +5,32 @@
 #define SND_MAX 26
 
 // GLOBAL: DECKDLL 0x101054b8
+// GLOBAL: MAGVID 0x10028a40
 // GLOBAL: STATWIN 0x10017d94
 // GLOBAL: SHANDALAR 0x0073bf98
 static HMODULE global_hmodule_magsnd_dll;
 
 // GLOBAL: DECKDLL 0x1003a860
+// GLOBAL: MAGVID 0x1000c148
 // GLOBAL: STATWIN 0x1000d700
 // GLOBAL: SHANDALAR 0x005a0d40
 static bool global_sound_unk2 = false;
 
 // GLOBAL: DECKDLL 0x1003a864
+// GLOBAL: MAGVID 0x1000c14c
 // GLOBAL: STATWIN 0x1000d704
 // GLOBAL: MAGIC 0x00570f50
 // GLOBAL: SHANDALAR 0x005a0d44
 static int global_sound_status = 0; // 0 = not loaded, 1 = loaded and ok, 2 = loaded and error I think
 
 // GLOBAL: DECKDLL 0x1003a868
+// GLOBAL: MAGVID 0x1000c150
 // GLOBAL: STATWIN 0x1000d708
 // GLOBAL: SHANDALAR 0x005a0d48
 static bool global_sound_unk1 = false;
 
 // GLOBAL: DECKDLL 0x1003a86c
+// GLOBAL: MAGVID 0x1000c154
 // GLOBAL: STATWIN 0x1000d70c
 // GLOBAL: SHANDALAR 0x005a0d4c
 static char *PTR_s_magsnd_1003a86c = "magsnd";
@@ -99,6 +104,7 @@ typedef int(WINAPI *Int_fn_etc)();
 #define global_sound_fns ((Int_fn_etc *)(void *)&global_sound_vtable)
 
 // FUNCTION: DECKDLL 0x1002d4d3
+// FUNCTION: MAGVID 0x10008223
 // FUNCTION: MAGIC 0x004859f1
 // FUNCTION: STATWIN 0x10002fb3
 // FUNCTION: SHANDALAR 0x0056d133
@@ -125,6 +131,7 @@ int sound_unload_all(void)
 }
 
 // FUNCTION: DECKDLL 0x1002d421
+// FUNCTION: MAGVID 0x10008171
 // FUNCTION: MAGIC 0x0048593f
 // FUNCTION: STATWIN 0x10002f01
 // FUNCTION: SHANDALAR 0x0056d081
@@ -148,6 +155,7 @@ void sound_close()
 }
 
 // FUNCTION: DECKDLL 0x1002d534
+// FUNCTION: MAGVID 0x10008284
 // FUNCTION: MAGIC 0x00485a52
 // FUNCTION: STATWIN 0x10003014
 // FUNCTION: SHANDALAR 0x0056d194
@@ -162,6 +170,7 @@ int sound_play(int num, Sound *snd)
 }
 
 // FUNCTION: DECKDLL 0x1002d5c2
+// FUNCTION: MAGVID 0x10008312
 // FUNCTION: STATWIN 0x100030a2
 // FUNCTION: SHANDALAR 0x0056d222
 int sound_stop(int a1)
@@ -185,6 +194,7 @@ int sound_set_vol(int num, unsigned int vol)
 }
 
 // FUNCTION: DECKDLL 0x1002daee
+// FUNCTION: MAGVID 0x1000883e
 // FUNCTION: STATWIN 0x100035ce
 // FUNCTION: MAGIC 0x0048600c
 // FUNCTION: SHANDALAR 0x0056d74e
@@ -252,6 +262,7 @@ int init_sound_dll(HWND hwnd, int a2, int a3)
 }
 
 // FUNCTION: DECKDLL 0x1002d497
+// FUNCTION: MAGVID 0x100081E7
 // FUNCTION: MAGIC 0x004859b5
 // FUNCTION: STATWIN 0x10002f77
 // FUNCTION: SHANDALAR 0x0056d0f7
@@ -325,6 +336,7 @@ int sound_get_lru(int *out_num, int start, int end)
 }
 
 // FUNCTION: STATWIN 0x1000350c
+// FUNCTION: MAGVID 0x1000877C
 HWND get_sound_hwnd(void)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2))
@@ -337,6 +349,7 @@ HWND get_sound_hwnd(void)
 
 // FUNCTION: STATWIN 0x100032f6
 // FUNCTION: SHANDALAR 0x0056d476
+// FUNCTION: MAGVID 0x10008566
 int update_snd(void)
 {
   if (global_sound_status == 0 || global_sound_status == 2)
@@ -447,6 +460,7 @@ int sound_reset(int num)
 }
 
 // FUNCTION: STATWIN 0x100033fb
+// FUNCTION: MAGVID 0x1000866B
 int sound_get_time(int num, unsigned int *out_time)
 {
   if ((global_sound_status == 0) || (global_sound_status == 2))
