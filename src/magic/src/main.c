@@ -13,20 +13,13 @@
 #include "deckdll/src/shared_resources.h"
 #include "deckdll/src/card_db.h"
 #include "global_strings.h"
+#include "magic_shell.h"
 #include "shared_startup.h"
 
-#define STARTUP_DIALOG_COUNT 5
-#define STARTUP_DIALOG_ROW_STRIDE 0x8b8
-#define STARTUP_DIALOG_CHOICE_OFFSET 0x10c
-#define STARTUP_DIALOG_CHOICE_STRIDE 0xD8
-#define STARTUP_DIALOG_COUNT_OFFSET 0x8b4
-
-#define STARTUP_DIALOG_ROW(group_) \
-  (&g_startup_dialog_choices[(group_) * STARTUP_DIALOG_ROW_STRIDE])
 #define STARTUP_DIALOG_CHOICE_COUNT(group_) \
-  (*(int *)(STARTUP_DIALOG_ROW(group_) + STARTUP_DIALOG_COUNT_OFFSET))
+  (g_startup_dialog_choices[(group_)].choice_count)
 #define STARTUP_DIALOG_CHOICE_PRESENT(group_, choice_) \
-  (*(int *)(STARTUP_DIALOG_ROW(group_) + STARTUP_DIALOG_CHOICE_OFFSET + (choice_) * STARTUP_DIALOG_CHOICE_STRIDE))
+  (g_startup_dialog_choices[(group_)].choices[(choice_)].is_modeless)
 
 typedef struct
 {
@@ -54,6 +47,8 @@ typedef struct
   unsigned int unk_744;
 } screen_name_file_t;
 STATIC_ASSERT(sizeof(screen_name_file_t) == 0x748, screen_name_file_t_wrong_size);
+STATIC_ASSERT(sizeof(startup_dialog_choice_t) == 0xd8, startup_dialog_choice_t_wrong_size);
+STATIC_ASSERT(sizeof(startup_dialog_page_t) == 0x8b8, startup_dialog_page_t_wrong_size);
 
 // GLOBAL: MAGIC 0x0079141c
 HWND g_startup_modeless_dialog;
@@ -63,7 +58,7 @@ HWND g_startup_modeless_dialog;
 HANDLE global_mutex_UpdateLowerDialog;
 
 // GLOBAL: MAGIC 0x007a7d90
-unsigned char g_startup_dialog_choices[STARTUP_DIALOG_COUNT * STARTUP_DIALOG_ROW_STRIDE];
+startup_dialog_page_t g_startup_dialog_choices[STARTUP_DIALOG_PAGE_CAPACITY];
 
 // GLOBAL: MAGIC 0x0074b62c
 int g_startup_exit_requested;
@@ -136,13 +131,46 @@ static int should_launch_manalink(void);
 static int initialize_action_packets(void);
 static void free_action_packets(void);
 static void monitor_manalink_opponent_thread(void *window);
-static LRESULT CALLBACK magic_shell_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK magic_shell_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 int read_db_guts(char *cards_dat_filename);
 void InitBitmapInfo24bppTopDown(BITMAPINFO *bmi, int width, int height);
 void checked_DeleteDC_DeleteObject(HDC dc, HGDIOBJ obj);
 void DestroyCardArtPalette(void);
 
+
+/* A missing binary has no version resource; leave its display string empty. */
+#ifdef MODERN_FIXES
+static void load_binary_version_string(const char *filename, char *destination,
+                                       size_t destination_size)
+{
+  DWORD handle;
+  DWORD version_size;
+  UINT version_length;
+  void *version_info;
+  char *version_string;
+
+  destination[0] = '\0';
+  version_size = GetFileVersionInfoSizeA(filename, &handle);
+  if (version_size == 0)
+    return;
+
+  version_info = malloc(version_size);
+  if (version_info == NULL)
+    return;
+
+  if (GetFileVersionInfoA(filename, 0, version_size, version_info) &&
+      VerQueryValueA(version_info, "\\StringFileInfo\\040904b0\\FileVersion",
+                     (LPVOID *)&version_string, &version_length) &&
+      version_string != NULL)
+  {
+    strncpy(destination, version_string, destination_size - 1);
+    destination[destination_size - 1] = '\0';
+  }
+
+  free(version_info);
+}
+#endif
 
 // FUNCTION: MAGIC 0x005532e9
 void load_binary_version_strings(void)
@@ -158,6 +186,16 @@ void load_binary_version_strings(void)
   // GLOBAL: MAGIC 0x008ce540
   static binary_versions_t binary_versions;
 
+#ifdef MODERN_FIXES
+  load_binary_version_string("magic.exe", binary_versions.magic,
+                             sizeof(binary_versions.magic));
+  load_binary_version_string("manalink.exe", binary_versions.manalink,
+                             sizeof(binary_versions.manalink));
+  load_binary_version_string("manalinkInterface.dll", binary_versions.manalink_interface,
+                             sizeof(binary_versions.manalink_interface));
+  load_binary_version_string("deckdll.dll", binary_versions.deckdll,
+                             sizeof(binary_versions.deckdll));
+#else
   struct
   {
     DWORD handle;
@@ -198,6 +236,7 @@ void load_binary_version_strings(void)
                  &s.version_length);
   strcpy(binary_versions.deckdll, s.version_string);
   free(s.version_info);
+#endif
 }
 
 // FUNCTION: MAGIC 0x0055357b
@@ -563,12 +602,6 @@ static void monitor_manalink_opponent_thread(void *window)
   }
 
   _endthread();
-}
-
-// FUNCTION: MAGIC 0x005539c3
-static LRESULT CALLBACK magic_shell_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-  return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
 // FUNCTION: MAGIC 0x00552b90

@@ -1756,8 +1756,7 @@ INT_PTR CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, 
     HDC dc;
     HGDIOBJ font;
     RECT rect;
-    int player;
-    int card;
+    target_t target;
     HWND card_window;
     RECT client_rect;
   } s;
@@ -1769,13 +1768,13 @@ INT_PTR CALLBACK still_thinking_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam, 
     g_still_thinking_shadow_color = 0x100009a;
     g_still_thinking_text_color = 0x10000c9;
     SetDlgItemTextA(hwnd, 0x402, gs_still_thinking_0091bd10);
-    s.player = 1;
-    s.card = -1;
+    s.target.player = 1;
+    s.target.card = -1;
     GetClientRect(hwnd, &s.client_rect);
     s.card_window = CreateWindowExA(0, "MAGICGAME_CardClass", "StillThinking small card", WS_CHILD | WS_VISIBLE,
                                     (s.client_rect.right - g_showlist_smallcard_width) / 2,
                                     (s.client_rect.bottom - g_showlist_smallcard_height) - 10,
-                                    g_showlist_smallcard_width, g_showlist_smallcard_height, hwnd, (HMENU)1, g_app_instance, &s.player);
+                                    g_showlist_smallcard_width, g_showlist_smallcard_height, hwnd, (HMENU)1, g_app_instance, &s.target);
     SetTimer(hwnd, 1, 3000, (TIMERPROC)0);
     return TRUE;
 

@@ -23,6 +23,7 @@ set(deckdll_c_sources
 
 file(GLOB_RECURSE magic_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../magic/src/*.c")
 list(FILTER magic_c_sources EXCLUDE REGEX ".*main\\.c$")
+list(FILTER magic_c_sources EXCLUDE REGEX ".*magic_shell_wndproc\\.c$")
 
 file(GLOB facemaker_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../facemaker/src/*.c")
 list(FILTER facemaker_c_sources EXCLUDE REGEX ".*main\\.c$")
