@@ -21,31 +21,6 @@
 #define STARTUP_DIALOG_CHOICE_PRESENT(group_, choice_) \
   (g_startup_dialog_choices[(group_)].choices[(choice_)].is_modeless)
 
-typedef struct
-{
-  char playface_name[0x105];
-  char screen_name[0x0e];
-  char real_name[0x100];
-  char personal_quote[0x400];
-  char email[0x100];
-  char date_text[0x15];
-  unsigned short unk_728;
-  unsigned short unk_72a;
-  unsigned short unk_72c;
-  unsigned short dci_rank_display;
-  unsigned short dci_wins;
-  unsigned short dci_losses;
-  unsigned short dci_draws_or_unused;
-  unsigned short dci_rank_pending;
-  unsigned short mp_wins;
-  unsigned short mp_losses;
-  unsigned short mp_draws;
-  unsigned short concede_count;
-  unsigned short disconnect_count;
-  unsigned char has_profile_stats;
-  unsigned char unk_743;
-  unsigned int unk_744;
-} screen_name_file_t;
 STATIC_ASSERT(sizeof(screen_name_file_t) == 0x748, screen_name_file_t_wrong_size);
 STATIC_ASSERT(sizeof(startup_dialog_choice_t) == 0xd8, startup_dialog_choice_t_wrong_size);
 STATIC_ASSERT(sizeof(startup_dialog_page_t) == 0x8b8, startup_dialog_page_t_wrong_size);
@@ -126,7 +101,7 @@ char *CsvParseNextField(char **txt);
 static void save_active_screen_name_profile(void);
 static void initialize_screen_name_profile(screen_name_file_t *screen_name_data, int use_current_time);
 static int validate_deckbuilder_data_stub(void);
-static void load_active_screen_name_profile(void);
+void load_active_screen_name_profile(void);
 static int should_launch_manalink(void);
 static int initialize_action_packets(void);
 static void free_action_packets(void);
@@ -398,7 +373,7 @@ static int validate_deckbuilder_data_stub(void)
 }
 
 // FUNCTION: MAGIC 0x0048fcb5
-static void load_active_screen_name_profile(void)
+void load_active_screen_name_profile(void)
 {
   struct
   {

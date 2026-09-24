@@ -9,6 +9,7 @@
 #include "global_strings.h"
 #include "duel_engine.h"
 #include "magic_shell.h"
+#include "magic_shell_dialogs.h"
 #include "shared_startup.h"
 
 #define SHELL_PAGE(index) (&g_startup_dialog_choices[(index)])
@@ -117,106 +118,12 @@ static HWND shell_sealed_deck_dialog;
 // GLOBAL: MAGIC 0x005719f8
 static HWND shell_screen_name_dialog;
 
-typedef struct
-{
-  COLORREF button_text_color;
-  HBITMAP button_face;
-  HPEN light_pen;
-  HPEN dark_pen;
-  COLORREF regular_button_color;
-  COLORREF selected_button_color;
-  HBRUSH light_brush;
-  HBRUSH dark_brush;
-  COLORREF dark_color;
-  COLORREF panel_color;
-  HBRUSH panel_brush;
-  COLORREF background_color;
-} shell_draw_resources_t;
 // GLOBAL: MAGIC 0x007ab400
-static shell_draw_resources_t shell_draw_resources;
+shell_draw_resources_t shell_draw_resources;
 
 static void shell_set_map_mode(HDC dc, HWND hwnd, HBITMAP background);
 static void shell_invalidate_logical_rect(HWND hwnd, HBITMAP background, RECT *rect);
-static void shell_enable_animation(int enabled);
-
-/* Large dialog procedures are isolated as annotated recursion points. */
-// FUNCTION: MAGIC 0x00457296
-static BOOL CALLBACK shell_multi_duel_dialog_proc(HWND hwnd, UINT message,
-                                                  WPARAM wparam, LPARAM lparam)
-{
-  (void)hwnd;
-  (void)message;
-  (void)wparam;
-  (void)lparam;
-  return FALSE;
-}
-
-// FUNCTION: MAGIC 0x0045abc4
-static BOOL CALLBACK shell_single_duel_dialog_proc(HWND hwnd, UINT message,
-                                                   WPARAM wparam, LPARAM lparam)
-{
-  (void)hwnd;
-  (void)message;
-  (void)wparam;
-  (void)lparam;
-  return FALSE;
-}
-
-// FUNCTION: MAGIC 0x0045d89e
-static BOOL CALLBACK shell_gauntlet_dialog_proc(HWND hwnd, UINT message,
-                                                WPARAM wparam, LPARAM lparam)
-{
-  (void)hwnd;
-  (void)message;
-  (void)wparam;
-  (void)lparam;
-  return FALSE;
-}
-
-// FUNCTION: MAGIC 0x0045ff30
-static BOOL CALLBACK shell_blank_dialog_proc(HWND hwnd, UINT message,
-                                             WPARAM wparam, LPARAM lparam)
-{
-  (void)hwnd;
-  (void)message;
-  (void)wparam;
-  (void)lparam;
-  return FALSE;
-}
-
-// FUNCTION: MAGIC 0x0046032a
-static BOOL CALLBACK shell_sealed_deck_dialog_proc(HWND hwnd, UINT message,
-                                                   WPARAM wparam, LPARAM lparam)
-{
-  (void)hwnd;
-  (void)message;
-  (void)wparam;
-  (void)lparam;
-  return FALSE;
-}
-
-// FUNCTION: MAGIC 0x0048c879
-static BOOL CALLBACK shell_screen_name_dialog_proc(HWND hwnd, UINT message,
-                                                   WPARAM wparam, LPARAM lparam)
-{
-  (void)hwnd;
-  (void)message;
-  (void)wparam;
-  (void)lparam;
-  return FALSE;
-}
-
-/* Movie playback recursively depends on the MagVid interface and CD search. */
-// FUNCTION: MAGIC 0x004554b0
-static int shell_play_movie(HWND hwnd, const char *movie_name, int directory,
-                            RECT *rect)
-{
-  (void)hwnd;
-  (void)movie_name;
-  (void)directory;
-  (void)rect;
-  return 1;
-}
+void shell_enable_animation(int enabled);
 
 // FUNCTION: MAGIC 0x005565b3
 static void shell_layout_choices(void)
@@ -524,8 +431,6 @@ static void shell_open_tutorial(RECT *rect)
   SetCurrentDirectoryA(s.current_directory);
   init_sound_dll(global_main_hwnd, 0, 0);
 }
-static void shell_show_credits(HWND hwnd, void *text, RECT *rect);
-
 // FUNCTION: MAGIC 0x00455e9a
 static void shell_open_credits(RECT *rect)
 {
@@ -569,14 +474,6 @@ static void shell_open_credits(RECT *rect)
   shell_enable_animation(1);
 }
 
-/* Credits UI is a separate dialog helper, pending recursive decompilation. */
-// FUNCTION: MAGIC 0x00552260
-static void shell_show_credits(HWND hwnd, void *text, RECT *rect)
-{
-  (void)hwnd;
-  (void)text;
-  (void)rect;
-}
 // FUNCTION: MAGIC 0x00455fb8
 static void shell_open_readme(RECT *rect)
 {
@@ -787,7 +684,7 @@ static void shell_invalidate_logical_rect(HWND hwnd, HBITMAP background, RECT *r
 }
 
 // FUNCTION: MAGIC 0x00557556
-static void shell_enable_animation(int enabled)
+void shell_enable_animation(int enabled)
 {
   if (*(int *)(gs_phasebar_your_draw_0091b110 + 52) != 0)
     KillTimer(global_main_hwnd, 1);
@@ -910,7 +807,7 @@ static HBITMAP shell_create_dib_section(BITMAPINFO *info, void *copy_info, int u
 }
 
 // FUNCTION: MAGIC 0x004944ac
-static HBITMAP shell_load_bitmap_file(const char *path, void *copy_info, int unused)
+HBITMAP shell_load_bitmap_file(const char *path, void *copy_info, int unused)
 {
   struct
   {
@@ -1231,9 +1128,9 @@ static void shell_play_choice_sound(int page, int choice)
 }
 
 // FUNCTION: MAGIC 0x0049560c
-static void shell_draw_bitmap_button(DRAWITEMSTRUCT *item, HBITMAP background,
-                                     HPEN light_pen, HPEN dark_pen,
-                                     COLORREF color, int draw_focus)
+void shell_draw_bitmap_button(DRAWITEMSTRUCT *item, HBITMAP background,
+                              HPEN light_pen, HPEN dark_pen,
+                              COLORREF color, int draw_focus)
 {
   draw_item(item, NULL, background, light_pen, dark_pen, color, draw_focus, 0x25);
 }

@@ -28,7 +28,35 @@ typedef struct
   int choice_count;
 } startup_dialog_page_t;
 
+typedef struct
+{
+  char playface_name[0x105];
+  char screen_name[0x0e];
+  char real_name[0x100];
+  char personal_quote[0x400];
+  char email[0x100];
+  char date_text[0x15];
+  unsigned short unk_728;
+  unsigned short unk_72a;
+  unsigned short unk_72c;
+  unsigned short dci_rank_display;
+  unsigned short dci_wins;
+  unsigned short dci_losses;
+  unsigned short dci_draws_or_unused;
+  unsigned short dci_rank_pending;
+  unsigned short mp_wins;
+  unsigned short mp_losses;
+  unsigned short mp_draws;
+  unsigned short concede_count;
+  unsigned short disconnect_count;
+  unsigned char has_profile_stats;
+  unsigned char unk_743;
+  unsigned int unk_744;
+} screen_name_file_t;
+
 extern startup_dialog_page_t
     g_startup_dialog_choices[STARTUP_DIALOG_PAGE_CAPACITY];
+extern screen_name_file_t g_screen_name_profile;
+void load_active_screen_name_profile(void);
 
 #endif

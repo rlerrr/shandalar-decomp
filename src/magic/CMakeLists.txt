@@ -45,6 +45,10 @@ if (TARGET deckdll)
   target_link_libraries(magic PRIVATE deckdll)
 endif()
 
+if (TARGET cdtools)
+  target_link_libraries(magic PRIVATE cdtools)
+endif()
+
 if (TARGET manalinkinterface)
   target_link_libraries(magic PRIVATE manalinkinterface)
 endif()
