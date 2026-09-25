@@ -43,7 +43,13 @@ void shell_prepare_save_game_dialog(int file_type);
 int shell_parse_duel_deck(char *filename, void *library,
                           unsigned int flags, int mode);
 int shell_load_gauntlet_decks(char *player_deck, char *opponent_deck);
+DWORD shell_format_gauntlet_match_text(char *buffer, DWORD capacity,
+                                      const char *format, ...);
 int shell_run_gauntlet(int resume, int match_count, HWND opponent_deck_list);
+int shell_execute_gauntlet_match(int resume, int best_of,
+                                int allow_sideboarding, int ante_enabled,
+                                int match_limit, int minimum_deck_size,
+                                void (*ante_callback)(void), int ranked);
 void shell_show_gauntlet_matchup(HWND owner, const char *title,
                                 const char *player_name,
                                 const char *player_deck,

@@ -2769,22 +2769,22 @@ idk:
   {
     if (g_duel_run_mode == 1)
     {
-      load_duel_run_mode_1_save(g_duel_prompt_text_pointer);
+      load_duel_run_mode_1_save(g_duel_save_game_openfilename.lpstrFile);
     }
     else if (g_duel_run_mode == 2)
     {
-      load_duel_run_mode_2_save(g_duel_prompt_text_pointer);
+      load_duel_run_mode_2_save(g_duel_save_game_openfilename.lpstrFile);
     }
     else if (g_duel_run_mode == 3)
     {
-      load_duel_run_mode_3_save(g_duel_prompt_text_pointer);
+      load_duel_run_mode_3_save(g_duel_save_game_openfilename.lpstrFile);
     }
     TENTATIVE_reassess_all_cards(0, 0xff);
     s.next_player = g_current_player;
   }
   else if (g_duel_ai_mode_state == -10)
   {
-    load_gametype0(g_duel_prompt_text_pointer);
+    load_gametype0(g_duel_save_game_openfilename.lpstrFile);
     TENTATIVE_reassess_all_cards(0, 0xff);
     s.next_player = g_current_player;
   }

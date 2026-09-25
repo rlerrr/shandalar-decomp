@@ -16,7 +16,6 @@ extern HWND global_main_hwnd;
 extern HINSTANCE g_app_instance;
 extern char global_base_directory[];
 extern void *g_duel_player_face_pic;
-extern OPENFILENAMEA g_duel_save_game_openfilename;
 void __stdcall LoadGauntletRegistryOptions(void);
 void save_gauntlet_options_to_registry(void);
 int IsCardAvailable(int card_id, int expansion);
@@ -60,38 +59,37 @@ static int shell_deck_is_available(const char *deck_path, int allow_ante)
   s.deck_file = fopen(deck_path, "rt");
   if (s.deck_file == NULL)
     return 0;
-  else
+
+  s.scan_result = fscanf(s.deck_file, "%[^\n]", s.line);
+  s.scan_result = fscanf(s.deck_file, "%[\n]", s.line);
+  s.total_cards = 0;
+  s.quantity = -1;
+  s.card_id = s.quantity;
+  do
   {
     s.scan_result = fscanf(s.deck_file, "%[^\n]", s.line);
-    s.scan_result = fscanf(s.deck_file, "%[\n]", s.line);
-    s.total_cards = 0;
-    s.quantity = -1;
-    s.card_id = s.quantity;
-    do
+    if (s.line[0] == '.')
     {
-      s.scan_result = fscanf(s.deck_file, "%[^\n]", s.line);
-      if (s.line[0] == '.')
+      if (s.line[1] != 'v')
       {
-        if (s.line[1] != 'v')
-        {
-          sscanf(s.line + 1, "%d %d", &s.card_id, &s.quantity);
-          if (IsCardAvailable(s.card_id, 0) == 0 &&
-              IsCardAvailable(s.card_id, 1) == 0 &&
-              IsCardAvailable(s.card_id, 2) == 0)
-            s.result = 0;
-          if (allow_ante == 0 && check_ante(s.card_id) != 0)
-            s.result = 0;
-          s.total_cards += s.quantity;
-        }
-        ++s.lines_seen;
+        sscanf(s.line + 1, "%d %d", &s.card_id, &s.quantity);
+        if (IsCardAvailable(s.card_id, 0) == 0 &&
+            IsCardAvailable(s.card_id, 1) == 0 &&
+            IsCardAvailable(s.card_id, 2) == 0)
+          s.result = 0;
+        if (allow_ante == 0 && check_ante(s.card_id) != 0)
+          s.result = 0;
+        s.total_cards += s.quantity;
       }
-      s.scan_result = fscanf(s.deck_file, "%[\n]", s.line);
-    } while (s.lines_seen < 200 && s.scan_result != -1 &&
-             (s.card_id != 0 || s.quantity != 0));
-    fclose(s.deck_file);
-    if (s.total_cards < 40)
-      s.result = 0;
-  }
+      ++s.lines_seen;
+    }
+    s.scan_result = fscanf(s.deck_file, "%[\n]", s.line);
+  } while (s.lines_seen < 200 && s.scan_result != -1 &&
+           (s.card_id != 0 || s.quantity != 0));
+  fclose(s.deck_file);
+  if (s.total_cards < 40)
+    s.result = 0;
+
   return s.result;
 }
 
@@ -371,7 +369,7 @@ static void shell_layout_gauntlet_controls(HWND hwnd)
 
 // FUNCTION: MAGIC 0x0045d89e
 BOOL CALLBACK shell_gauntlet_dialog_proc(HWND hwnd, UINT message,
-                                        WPARAM wparam, LPARAM lparam)
+                                         WPARAM wparam, LPARAM lparam)
 {
   struct
   {
@@ -519,13 +517,13 @@ BOOL CALLBACK shell_gauntlet_dialog_proc(HWND hwnd, UINT message,
 
   case WM_DESTROY:
     s.destroy_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6a5,
-                                               WM_GETFONT, 0, 0);
+                                                WM_GETFONT, 0, 0);
     SendDlgItemMessageA(hwnd, 0x6a5, WM_SETFONT, 0, 0);
     SendDlgItemMessageA(hwnd, 0x6a4, WM_SETFONT, 0, 0);
     SendDlgItemMessageA(hwnd, 0x6af, WM_SETFONT, 0, 0);
     DeleteObject(s.destroy_font);
     s.destroy_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6a6,
-                                               WM_GETFONT, 0, 0);
+                                                WM_GETFONT, 0, 0);
     SendDlgItemMessageA(hwnd, 0x6a6, WM_SETFONT, 0, 0);
     SendDlgItemMessageA(hwnd, 0x6a7, WM_SETFONT, 0, 0);
     SendDlgItemMessageA(hwnd, 0x6a9, WM_SETFONT, 0, 0);
@@ -587,7 +585,7 @@ BOOL CALLBACK shell_gauntlet_dialog_proc(HWND hwnd, UINT message,
       }
       shell_enable_animation(0);
       if (shell_load_gauntlet_decks(shell_gauntlet_player_deck_path,
-                                   NULL) != 0)
+                                    NULL) != 0)
         shell_run_gauntlet(0, g_gauntlet_options.gauntlet_length,
                            GetDlgItem(hwnd, 0x6b4));
       if (s.random_selection != 0)
@@ -766,7 +764,6 @@ BOOL CALLBACK shell_gauntlet_dialog_proc(HWND hwnd, UINT message,
         }
       }
       break;
-
     }
     return TRUE;
 
@@ -937,7 +934,7 @@ BOOL CALLBACK shell_gauntlet_dialog_proc(HWND hwnd, UINT message,
     shell_layout_gauntlet_controls(hwnd);
     LockWindowUpdate(NULL);
     return TRUE;
-
+  default:
+    return FALSE;
   }
-  return FALSE;
 }

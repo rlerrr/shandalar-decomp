@@ -3,11 +3,11 @@
 #include <string.h>
 #include <commdlg.h>
 #include "duel_engine.h"
+#include "global_other.h"
 #include "global_state.h"
 #include "global_strings.h"
 #include "shared_startup.h"
 
-extern OPENFILENAMEA g_duel_save_game_openfilename;
 extern char g_duel_run_save_extensions[4][10];
 extern char g_duel_save_extension[0x10];
 

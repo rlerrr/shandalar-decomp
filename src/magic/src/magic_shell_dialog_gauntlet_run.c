@@ -17,8 +17,8 @@ void shutdown_duel_engine_window(void);
 static char shell_gauntlet_opponent_deck_path[264];
 
 // FUNCTION: MAGIC 0x00497b23
-static DWORD shell_format_gauntlet_match_text(char *buffer, DWORD capacity,
-                                              const char *format, ...)
+DWORD shell_format_gauntlet_match_text(char *buffer, DWORD capacity,
+                                      const char *format, ...)
 {
   struct
   {
@@ -34,23 +34,6 @@ static DWORD shell_format_gauntlet_match_text(char *buffer, DWORD capacity,
     strcpy(s.carriage_return, s.carriage_return + 1);
   va_end(s.arguments);
   return s.length;
-}
-
-// FUNCTION: MAGIC 0x0050ade6
-static int shell_execute_gauntlet_match(int resume, int best_of,
-                                         int allow_sideboarding, int arg4,
-                                         int arg5, int arg6, void *arg7,
-                                         int arg8)
-{
-  (void)resume;
-  (void)best_of;
-  (void)allow_sideboarding;
-  (void)arg4;
-  (void)arg5;
-  (void)arg6;
-  (void)arg7;
-  (void)arg8;
-  return -2;
 }
 
 // FUNCTION: MAGIC 0x004647fe

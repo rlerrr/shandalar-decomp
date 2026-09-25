@@ -2,6 +2,7 @@
 #define __GLOBALS_OTHERS_H__
 
 #include <windows.h>
+#include <commdlg.h>
 #include "defs.h"
 #include "duel_engine.h"
 #include "global_duel_ui_ids.h"
@@ -229,9 +230,9 @@ GLOBAL_OTHERS_EXTERN int g_phase_was_skipped;
 // GLOBAL: SHANDALAR 0x009300f0
 GLOBAL_OTHERS_EXTERN int g_adventure_world_exit_requested;
 
-// GLOBAL: MAGIC 0x008a915c
-// GLOBAL: SHANDALAR 0x008bd35c
-GLOBAL_OTHERS_EXTERN char *g_duel_prompt_text_pointer;
+// GLOBAL: MAGIC 0x008a9140
+// GLOBAL: SHANDALAR 0x008bd340
+GLOBAL_OTHERS_EXTERN OPENFILENAMEA g_duel_save_game_openfilename;
 
 // GLOBAL: MAGIC 0x0074636c
 // GLOBAL: SHANDALAR 0x0078df88

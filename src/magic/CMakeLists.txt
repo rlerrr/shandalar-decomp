@@ -35,7 +35,7 @@ target_include_directories(magic PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_link_libraries(magic PRIVATE comctl32 gdi32 user32 version vfw32)
+target_link_libraries(magic PRIVATE comctl32 gdi32 user32 version vfw32 winmm)
 
 if (TARGET drawcardlib)
   target_link_libraries(magic PRIVATE drawcardlib)

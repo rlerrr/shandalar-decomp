@@ -121,7 +121,7 @@ static HWND shell_screen_name_dialog;
 // GLOBAL: MAGIC 0x007ab400
 shell_draw_resources_t shell_draw_resources;
 
-static void shell_set_map_mode(HDC dc, HWND hwnd, HBITMAP background);
+void shell_set_map_mode(HDC dc, HWND hwnd, HBITMAP background);
 static void shell_invalidate_logical_rect(HWND hwnd, HBITMAP background, RECT *rect);
 void shell_enable_animation(int enabled);
 
@@ -551,6 +551,7 @@ static void shell_initialize_page(int page, const char *name)
     char *line;
     char *description;
   } s;
+
   s.page_data = SHELL_PAGE(page);
   s.page_data->choice_count = load_text(global_ui_strings_filename, name) - 1;
   strcpy(s.page_data->title, g_text_lines[0]);
@@ -593,6 +594,14 @@ static void shell_initialize_page(int page, const char *name)
     s.choice->action =
         shell_action_callbacks[page][s.callback_index];
   }
+
+  if (s.page_data->choice_count > s.index)
+  {
+  }
+  else
+  {
+  }
+
   for (; s.index < 10; ++s.index)
   {
     s.choice = &s.page_data->choices[s.index];
@@ -633,7 +642,7 @@ static int shell_initialize_pages(void)
 }
 
 // FUNCTION: MAGIC 0x00557409
-static void shell_set_map_mode(HDC dc, HWND hwnd, HBITMAP background)
+void shell_set_map_mode(HDC dc, HWND hwnd, HBITMAP background)
 {
   struct
   {

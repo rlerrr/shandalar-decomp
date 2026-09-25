@@ -109,8 +109,8 @@ static RECT shell_matchup_player_rect;
 
 // FUNCTION: MAGIC 0x0050da81
 static BOOL CALLBACK shell_gauntlet_matchup_dialog_proc(HWND hwnd, UINT message,
-                                                         WPARAM wparam,
-                                                         LPARAM lparam)
+                                                        WPARAM wparam,
+                                                        LPARAM lparam)
 {
   struct
   {
@@ -148,212 +148,214 @@ static BOOL CALLBACK shell_gauntlet_matchup_dialog_proc(HWND hwnd, UINT message,
 
   switch (message)
   {
-    case WM_INITDIALOG:
-      shell_matchup_context = (shell_gauntlet_matchup_context_t *)lparam;
-      shell_matchup_deferred_close = 0;
-      shell_initialize_matchup_resources(
-          &shell_matchup_background, &shell_matchup_background_color,
-          &shell_matchup_text_color, &shell_matchup_button_brush,
-          &shell_matchup_light_pen, &shell_matchup_dark_pen,
-          &shell_matchup_button_text_color);
-      shell_matchup_player_face = load_pic(
-          (char *)shell_matchup_context->player_face);
-      shell_matchup_opponent_face = load_pic(
-          (char *)shell_matchup_context->opponent_face);
-      SetRect(&shell_matchup_player_rect, 0x3e, 0x48, 200, 0xf2);
-      SetRect(&shell_matchup_opponent_rect, 0x126, 0x48, 0x1b0, 0xf2);
-      if (shell_matchup_background != NULL)
+  case WM_INITDIALOG:
+    shell_matchup_context = (shell_gauntlet_matchup_context_t *)lparam;
+    shell_matchup_deferred_close = 0;
+    shell_initialize_matchup_resources(
+        &shell_matchup_background, &shell_matchup_background_color,
+        &shell_matchup_text_color, &shell_matchup_button_brush,
+        &shell_matchup_light_pen, &shell_matchup_dark_pen,
+        &shell_matchup_button_text_color);
+    shell_matchup_player_face = load_pic(
+        (char *)shell_matchup_context->player_face);
+    shell_matchup_opponent_face = load_pic(
+        (char *)shell_matchup_context->opponent_face);
+    SetRect(&shell_matchup_player_rect, 0x3e, 0x48, 200, 0xf2);
+    SetRect(&shell_matchup_opponent_rect, 0x126, 0x48, 0x1b0, 0xf2);
+    if (shell_matchup_background != NULL)
+    {
+      GetObjectA(shell_matchup_background, sizeof(s.bitmap), &s.bitmap);
+      SetWindowPos(hwnd, NULL, 0, 0, s.bitmap.bmWidth, s.bitmap.bmHeight, 6);
+    }
+    load_text(global_ui_strings_filename, "DIALOG_STARTEXP1MATCH");
+    SetDlgItemTextA(hwnd, 0x71a, g_text_lines[0]);
+    SetDlgItemTextA(hwnd, 0x71f, shell_matchup_context->title);
+    SetDlgItemTextA(hwnd, 0x71b, shell_matchup_context->player_name);
+    SetDlgItemTextA(hwnd, 0x71e,
+                    shell_matchup_context->player_deck_label);
+    SetDlgItemTextA(hwnd, 0x71c, shell_matchup_context->opponent_name);
+    SetDlgItemTextA(hwnd, 0x71d,
+                    shell_matchup_context->opponent_deck_label);
+    GetWindowRect(hwnd, &s.window_rect);
+    SetWindowPos(hwnd, NULL, s.window_rect.left,
+                 (GetSystemMetrics(SM_CYSCREEN) -
+                  (s.window_rect.bottom - s.window_rect.top)) /
+                     2,
+                 0, 0, 5);
+    GetClientRect(hwnd, &s.client_rect);
+    s.client_rect.left += 10;
+    s.client_rect.right -= 10;
+    s.client_rect.top += 10;
+    s.client_rect.bottom -= 10;
+    s.init_dc = GetDC(hwnd);
+    s.font = (HFONT)SendDlgItemMessageA(hwnd, 0x71f, WM_GETFONT, 0, 0);
+    SelectObject(s.init_dc, s.font);
+    GetTextExtentPoint32A(s.init_dc, "fun", 3, &s.text_size);
+    s.double_line_height = s.text_size.cy * 2;
+    s.line_height = s.text_size.cy;
+    s.half_triple_line_height = (s.text_size.cy * 3) / 2;
+    s.control = GetDlgItem(hwnd, 0x71f);
+    SetWindowPos(s.control, NULL, s.client_rect.left, s.client_rect.top,
+                 s.client_rect.right - s.client_rect.left, s.line_height, 4);
+    s.control = GetDlgItem(hwnd, 0x71a);
+    GetWindowTextA(s.control, s.button_text, 100);
+    GetTextExtentPoint32A(s.init_dc, s.button_text, strlen(s.button_text), &s.text_size);
+    s.label_width = s.text_size.cx + s.half_triple_line_height;
+    SetWindowPos(s.control, NULL,
+                 s.client_rect.left + (s.client_rect.right - s.client_rect.left) / 2 -
+                     s.label_width / 2,
+                 s.client_rect.top + (s.client_rect.bottom - s.client_rect.top) / 2 -
+                     s.line_height / 2,
+                 s.label_width, s.line_height, 4);
+    CopyRect(&s.face_rect, &shell_matchup_player_rect);
+    s.vertical_position = s.face_rect.bottom + s.line_height;
+    s.control = GetDlgItem(hwnd, 0x71b);
+    SetWindowPos(s.control, NULL, s.face_rect.left, s.vertical_position,
+                 s.face_rect.right - s.face_rect.left, s.line_height * 5 / 2, 4);
+    s.vertical_position = s.face_rect.bottom + s.line_height * 3;
+    s.control = GetDlgItem(hwnd, 0x71e);
+    SetWindowPos(s.control, NULL, s.face_rect.left, s.vertical_position,
+                 s.client_rect.left + (s.client_rect.right - s.client_rect.left) / 2 -
+                     s.face_rect.left,
+                 s.client_rect.bottom - s.vertical_position, 4);
+    CopyRect(&s.face_rect, &shell_matchup_opponent_rect);
+    s.vertical_position = s.face_rect.bottom + s.line_height;
+    s.control = GetDlgItem(hwnd, 0x71c);
+    SetWindowPos(s.control, NULL, s.face_rect.left, s.vertical_position,
+                 s.face_rect.right - s.face_rect.left, s.line_height * 5 / 2, 4);
+    s.vertical_position = s.face_rect.bottom + s.line_height * 3;
+    s.control = GetDlgItem(hwnd, 0x71d);
+    SetWindowPos(s.control, NULL, s.face_rect.left, s.vertical_position,
+                 s.client_rect.right - s.face_rect.left,
+                 s.client_rect.bottom - s.vertical_position, 4);
+    ReleaseDC(hwnd, s.init_dc);
+    SetFocus(GetDlgItem(hwnd, IDOK));
+    SendMessageA(hwnd, 0x401, 1, 0);
+    change_buttonclass_wndproc(hwnd);
+    SetFocus(hwnd);
+    SetTimer(hwnd, 1, 8000, NULL);
+    return FALSE;
+  case WM_DESTROY:
+    shell_release_matchup_resources(
+        shell_matchup_background, shell_matchup_button_brush,
+        shell_matchup_light_pen, shell_matchup_dark_pen);
+    if (shell_matchup_player_face != NULL)
+      delete_and_close_object(shell_matchup_player_face);
+    if (shell_matchup_opponent_face != NULL)
+      delete_and_close_object(shell_matchup_opponent_face);
+    KillTimer(hwnd, 1);
+    return FALSE;
+  case WM_TIMER:
+    if (shell_matchup_context->thread != NULL &&
+        GetExitCodeThread(shell_matchup_context->thread,
+                          &s.timer_exit_code) &&
+        s.timer_exit_code == STILL_ACTIVE)
+      SetTimer(hwnd, wparam, 200, NULL);
+    else
+    {
+      if (shell_matchup_deferred_close != 0)
+        EndDialog(hwnd, 0);
+      else
       {
-        GetObjectA(shell_matchup_background, sizeof(s.bitmap), &s.bitmap);
-        SetWindowPos(hwnd, NULL, 0, 0, s.bitmap.bmWidth, s.bitmap.bmHeight, 6);
+        GetCursorPos(&s.cursor);
+        ScreenToClient(hwnd, &s.cursor);
+        GetClientRect(hwnd, &s.cursor_rect);
+        if (shell_matchup_context->flags == 0 ||
+            !PtInRect(&s.cursor_rect, s.cursor))
+          EndDialog(hwnd, 0);
       }
-      load_text(global_ui_strings_filename, "DIALOG_STARTEXP1MATCH");
-      SetDlgItemTextA(hwnd, 0x71a, g_text_lines[0]);
-      SetDlgItemTextA(hwnd, 0x71f, shell_matchup_context->title);
-      SetDlgItemTextA(hwnd, 0x71b, shell_matchup_context->player_name);
-      SetDlgItemTextA(hwnd, 0x71e,
-                      shell_matchup_context->player_deck_label);
-      SetDlgItemTextA(hwnd, 0x71c, shell_matchup_context->opponent_name);
-      SetDlgItemTextA(hwnd, 0x71d,
-                      shell_matchup_context->opponent_deck_label);
-      GetWindowRect(hwnd, &s.window_rect);
-      SetWindowPos(hwnd, NULL, s.window_rect.left,
-                   (GetSystemMetrics(SM_CYSCREEN) -
-                    (s.window_rect.bottom - s.window_rect.top)) / 2,
-                   0, 0, 5);
-      GetClientRect(hwnd, &s.client_rect);
-      s.client_rect.left += 10;
-      s.client_rect.right -= 10;
-      s.client_rect.top += 10;
-      s.client_rect.bottom -= 10;
-      s.init_dc = GetDC(hwnd);
-      s.font = (HFONT)SendDlgItemMessageA(hwnd, 0x71f, WM_GETFONT, 0, 0);
-      SelectObject(s.init_dc, s.font);
-      GetTextExtentPoint32A(s.init_dc, "fun", 3, &s.text_size);
-      s.double_line_height = s.text_size.cy * 2;
-      s.line_height = s.text_size.cy;
-      s.half_triple_line_height = (s.text_size.cy * 3) / 2;
-      s.control = GetDlgItem(hwnd, 0x71f);
-      SetWindowPos(s.control, NULL, s.client_rect.left, s.client_rect.top,
-                   s.client_rect.right - s.client_rect.left, s.line_height, 4);
-      s.control = GetDlgItem(hwnd, 0x71a);
-      GetWindowTextA(s.control, s.button_text, 100);
-      GetTextExtentPoint32A(s.init_dc, s.button_text, strlen(s.button_text), &s.text_size);
-      s.label_width = s.text_size.cx + s.half_triple_line_height;
-      SetWindowPos(s.control, NULL,
-                   s.client_rect.left + (s.client_rect.right - s.client_rect.left) / 2 -
-                       s.label_width / 2,
-                   s.client_rect.top + (s.client_rect.bottom - s.client_rect.top) / 2 -
-                       s.line_height / 2,
-                   s.label_width, s.line_height, 4);
-      CopyRect(&s.face_rect, &shell_matchup_player_rect);
-      s.vertical_position = s.face_rect.bottom + s.line_height;
-      s.control = GetDlgItem(hwnd, 0x71b);
-      SetWindowPos(s.control, NULL, s.face_rect.left, s.vertical_position,
-                   s.face_rect.right - s.face_rect.left, s.line_height * 5 / 2, 4);
-      s.vertical_position = s.face_rect.bottom + s.line_height * 3;
-      s.control = GetDlgItem(hwnd, 0x71e);
-      SetWindowPos(s.control, NULL, s.face_rect.left, s.vertical_position,
-                   s.client_rect.left + (s.client_rect.right - s.client_rect.left) / 2 -
-                       s.face_rect.left,
-                   s.client_rect.bottom - s.vertical_position, 4);
-      CopyRect(&s.face_rect, &shell_matchup_opponent_rect);
-      s.vertical_position = s.face_rect.bottom + s.line_height;
-      s.control = GetDlgItem(hwnd, 0x71c);
-      SetWindowPos(s.control, NULL, s.face_rect.left, s.vertical_position,
-                   s.face_rect.right - s.face_rect.left, s.line_height * 5 / 2, 4);
-      s.vertical_position = s.face_rect.bottom + s.line_height * 3;
-      s.control = GetDlgItem(hwnd, 0x71d);
-      SetWindowPos(s.control, NULL, s.face_rect.left, s.vertical_position,
-                   s.client_rect.right - s.face_rect.left,
-                   s.client_rect.bottom - s.vertical_position, 4);
-      ReleaseDC(hwnd, s.init_dc);
-      SetFocus(GetDlgItem(hwnd, IDOK));
-      SendMessageA(hwnd, 0x401, 1, 0);
-      change_buttonclass_wndproc(hwnd);
-      SetFocus(hwnd);
-      SetTimer(hwnd, 1, 8000, NULL);
-      return FALSE;
-    case WM_DESTROY:
-      shell_release_matchup_resources(
-          shell_matchup_background, shell_matchup_button_brush,
-          shell_matchup_light_pen, shell_matchup_dark_pen);
-      if (shell_matchup_player_face != NULL)
-        delete_and_close_object(shell_matchup_player_face);
-      if (shell_matchup_opponent_face != NULL)
-        delete_and_close_object(shell_matchup_opponent_face);
-      KillTimer(hwnd, 1);
-      return FALSE;
-    case WM_TIMER:
+    }
+    return TRUE;
+  case WM_KEYDOWN:
+  case WM_LBUTTONDOWN:
+    SendMessageA(hwnd, WM_COMMAND, IDOK, 0);
+    return TRUE;
+  case WM_COMMAND:
+    s.command_id = wparam & 0xffff;
+    if (s.command_id == IDOK)
+    {
       if (shell_matchup_context->thread != NULL &&
           GetExitCodeThread(shell_matchup_context->thread,
-                            &s.timer_exit_code) &&
-          s.timer_exit_code == STILL_ACTIVE)
-        SetTimer(hwnd, wparam, 200, NULL);
-      else
+                            &s.command_exit_code) &&
+          s.command_exit_code == STILL_ACTIVE)
       {
-        if (shell_matchup_deferred_close != 0)
-          EndDialog(hwnd, 0);
-        else
-        {
-          GetCursorPos(&s.cursor);
-          ScreenToClient(hwnd, &s.cursor);
-          GetClientRect(hwnd, &s.cursor_rect);
-          if (shell_matchup_context->flags == 0 ||
-              !PtInRect(&s.cursor_rect, s.cursor))
-            EndDialog(hwnd, 0);
-        }
+        SetTimer(hwnd, 1, 100, NULL);
+        shell_matchup_deferred_close = 1;
       }
-      return TRUE;
-    case WM_KEYDOWN:
-    case WM_LBUTTONDOWN:
-      SendMessageA(hwnd, WM_COMMAND, IDOK, 0);
-      return TRUE;
-    case WM_COMMAND:
-      s.command_id = wparam & 0xffff;
-      if (s.command_id == IDOK)
-      {
-        if (shell_matchup_context->thread != NULL &&
-            GetExitCodeThread(shell_matchup_context->thread,
-                              &s.command_exit_code) &&
-            s.command_exit_code == STILL_ACTIVE)
-        {
-          SetTimer(hwnd, 1, 100, NULL);
-          shell_matchup_deferred_close = 1;
-        }
-        else
-          EndDialog(hwnd, 0);
-      }
-      return TRUE;
-    case 0x4c8:
-      s.update_first = (HWND)wparam;
-      s.update_second = (HWND)lparam;
-      if (s.update_first != NULL)
-        SendMessageA(hwnd, 0x401, (WPARAM)s.update_first, 0);
-      if (s.update_first != NULL)
-        InvalidateRect(s.update_first, NULL, TRUE);
-      if (s.update_second != NULL)
-        InvalidateRect(s.update_second, NULL, TRUE);
-      return FALSE;
-    case WM_CTLCOLORBTN:
-    case WM_CTLCOLORSTATIC:
-      s.color_dc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.color_dc);
-      s.color_control = (HWND)lparam;
-      s.control_id = GetDlgCtrlID(s.color_control);
-      if (s.control_id == 0x71b || s.control_id == 0x71c)
-        SetTextColor(s.color_dc, shell_matchup_background_color);
       else
-        SetTextColor(s.color_dc, shell_matchup_text_color);
-      SetBkMode(s.color_dc, TRANSPARENT);
-      s.color_brush = GetStockObject(NULL_BRUSH);
-      return (BOOL)(int)s.color_brush;
-    case WM_DRAWITEM:
-      s.draw_item = (DRAWITEMSTRUCT *)lparam;
-      draw_owner_draw_button_centered(s.draw_item,
-                                      shell_matchup_button_brush,
-                                      shell_matchup_light_pen,
-                                      shell_matchup_dark_pen,
-                                      shell_matchup_button_text_color, 0);
-      return TRUE;
-    case 0x30f:
-    case 0x310:
-    case 0x311:
-      return handle_button_palette_message((int)hwnd, message,
-                                           (int)wparam, lparam);
-    case WM_ERASEBKGND:
-      s.erase_dc = (HDC)wparam;
-      ApplyCardArtPaletteToDc(s.erase_dc);
-      GetClientRect(hwnd, &s.erase_rect);
-      if (shell_matchup_background != NULL)
-        DrawBitmapToRect(s.erase_dc, &s.erase_rect, shell_matchup_background);
-      else
-        FillRect(s.erase_dc, &s.erase_rect, GetStockObject(GRAY_BRUSH));
-      return TRUE;
-    case WM_PAINT:
-      s.paint_dc = BeginPaint(hwnd, &s.paint);
-      ApplyCardArtPaletteToDc(s.paint_dc);
-      if (shell_matchup_player_face != NULL)
-        draw_masked_bitmap_left_half_to_rect(
-            s.paint_dc, &shell_matchup_player_rect, shell_matchup_player_face);
-      if (shell_matchup_opponent_face != NULL)
-        draw_masked_bitmap_left_half_to_rect(
-            s.paint_dc, &shell_matchup_opponent_rect, shell_matchup_opponent_face);
-      EndPaint(hwnd, &s.paint);
-      return TRUE;
+        EndDialog(hwnd, 0);
+    }
+    return TRUE;
+  case 0x4c8:
+    s.update_first = (HWND)wparam;
+    s.update_second = (HWND)lparam;
+    if (s.update_first != NULL)
+      SendMessageA(hwnd, 0x401, (WPARAM)s.update_first, 0);
+    if (s.update_first != NULL)
+      InvalidateRect(s.update_first, NULL, TRUE);
+    if (s.update_second != NULL)
+      InvalidateRect(s.update_second, NULL, TRUE);
+    return FALSE;
+  case WM_CTLCOLORBTN:
+  case WM_CTLCOLORSTATIC:
+    s.color_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.color_dc);
+    s.color_control = (HWND)lparam;
+    s.control_id = GetDlgCtrlID(s.color_control);
+    if (s.control_id == 0x71b || s.control_id == 0x71c)
+      SetTextColor(s.color_dc, shell_matchup_background_color);
+    else
+      SetTextColor(s.color_dc, shell_matchup_text_color);
+    SetBkMode(s.color_dc, TRANSPARENT);
+    s.color_brush = GetStockObject(NULL_BRUSH);
+    return (BOOL)(int)s.color_brush;
+  case WM_DRAWITEM:
+    s.draw_item = (DRAWITEMSTRUCT *)lparam;
+    draw_owner_draw_button_centered(s.draw_item,
+                                    shell_matchup_button_brush,
+                                    shell_matchup_light_pen,
+                                    shell_matchup_dark_pen,
+                                    shell_matchup_button_text_color, 0);
+    return TRUE;
+  case 0x30f:
+  case 0x310:
+  case 0x311:
+    return handle_button_palette_message((int)hwnd, message,
+                                         (int)wparam, lparam);
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.erase_rect);
+    if (shell_matchup_background != NULL)
+      DrawBitmapToRect(s.erase_dc, &s.erase_rect, shell_matchup_background);
+    else
+      FillRect(s.erase_dc, &s.erase_rect, GetStockObject(GRAY_BRUSH));
+    return TRUE;
+  case WM_PAINT:
+    s.paint_dc = BeginPaint(hwnd, &s.paint);
+    ApplyCardArtPaletteToDc(s.paint_dc);
+    if (shell_matchup_player_face != NULL)
+      draw_masked_bitmap_left_half_to_rect(
+          s.paint_dc, &shell_matchup_player_rect, shell_matchup_player_face);
+    if (shell_matchup_opponent_face != NULL)
+      draw_masked_bitmap_left_half_to_rect(
+          s.paint_dc, &shell_matchup_opponent_rect, shell_matchup_opponent_face);
+    EndPaint(hwnd, &s.paint);
+    return TRUE;
+  default:
+    return FALSE;
   }
-  return FALSE;
 }
 
 // FUNCTION: MAGIC 0x0050d8af
 void shell_show_gauntlet_matchup(HWND owner, const char *title,
-                                const char *player_name,
-                                const char *player_deck,
-                                const char *player_face,
-                                const char *opponent_name,
-                                const char *opponent_deck,
-                                const char *opponent_face,
-                                HANDLE match_thread)
+                                 const char *player_name,
+                                 const char *player_deck,
+                                 const char *player_face,
+                                 const char *opponent_name,
+                                 const char *opponent_deck,
+                                 const char *opponent_face,
+                                 HANDLE match_thread)
 {
   struct
   {
