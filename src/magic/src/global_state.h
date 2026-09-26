@@ -808,9 +808,6 @@ GLOBAL_STATE_EXTERN int g_duel_options_state;
 // GLOBAL: SHANDALAR 0x00931384
 GLOBAL_STATE_EXTERN int g_last_duel_enemy_primary_color;
 
-// GLOBAL: MAGIC 0x0092636c
-GLOBAL_STATE_EXTERN int g_sealed_deck_state;
-
 // GLOBAL: MAGIC 0x00926340
 // GLOBAL: SHANDALAR 0x0093a470
 GLOBAL_STATE_EXTERN SealedDeckOptions g_sealed_deck_options;

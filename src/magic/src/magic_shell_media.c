@@ -61,7 +61,7 @@ static void shell_movie_cleanup(void)
 
 // FUNCTION: MAGIC 0x004eaa6a
 static LRESULT CALLBACK shell_movie_window_proc(HWND hwnd, UINT message,
-                                                 WPARAM wparam, LPARAM lparam)
+                                                WPARAM wparam, LPARAM lparam)
 {
   switch (message)
   {
@@ -103,9 +103,8 @@ static int shell_movie_create_windows(HWND parent)
                       s.style, 0, 0, 0, 0, g_shell_movie_backdrop, NULL,
                       g_app_instance, NULL);
   ShowWindow(g_shell_movie_window, SW_SHOW);
-  if (g_shell_movie_window != NULL)
-    return 0;
-  return 1;
+
+  return (g_shell_movie_window != NULL) ? 0 : 1;
 }
 
 // FUNCTION: MAGIC 0x004eaa0d
@@ -167,7 +166,7 @@ static int shell_movie_open(HWND hwnd, const char *path)
   s.flags = 0x40002;
   s.where_callback = 0;
   s.error = mciSendCommandA(g_shell_movie_device, MCI_WHERE, s.flags,
-                           (DWORD)&s.where_callback);
+                            (DWORD)&s.where_callback);
   if (s.error != 0)
   {
     shell_movie_cleanup();
@@ -237,7 +236,7 @@ static int shell_movie_play(int position, int flags)
     s.break_window = g_shell_movie_window;
     s.command_flags = 0x302;
     s.error = mciSendCommandA(g_shell_movie_device, 0x811, s.command_flags,
-                             (DWORD)&s.break_callback);
+                              (DWORD)&s.break_callback);
     if (s.error != 0)
     {
       shell_movie_cleanup();
@@ -252,7 +251,7 @@ static int shell_movie_play(int position, int flags)
   if ((flags & 1) != 0)
     s.command_flags |= 0x2000000;
   s.error = mciSendCommandA(g_shell_movie_device, MCI_PLAY, s.command_flags,
-                           (DWORD)s.play_params);
+                            (DWORD)s.play_params);
   if (s.error != 0)
   {
     shell_movie_cleanup();
@@ -267,7 +266,7 @@ static int shell_movie_play(int position, int flags)
   {
     Sleep(350);
     s.error = mciSendCommandA(g_shell_movie_device, MCI_STATUS, s.command_flags,
-                             (DWORD)&s.status_callback);
+                              (DWORD)&s.status_callback);
     if (s.error != 0)
     {
       shell_movie_cleanup();

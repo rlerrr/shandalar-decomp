@@ -29,7 +29,7 @@ int LoadGameFromPath(char *save_file_path);
 
 // GLOBAL: MAGIC 0x005710f8
 // GLOBAL: SHANDALAR 0x00588114
-static char *s_sealed_deck_registry_path_005710e0 = "Software\\MicroProse\\Magic: The Gathering\\SealedDeckOptions";
+char *s_sealed_deck_registry_path_005710e0 = "Software\\MicroProse\\Magic: The Gathering\\SealedDeckOptions";
 // GLOBAL: MAGIC 0x005710ec
 // GLOBAL: SHANDALAR 0x00588108
 static char *s_solo_options_registry_path_00571284 = "Software\\MicroProse\\Magic: The Gathering\\SoloOptions";

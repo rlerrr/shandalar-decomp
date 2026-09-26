@@ -30,7 +30,7 @@ static HFONT shell_gauntlet_dialog_low_resolution_font;
 char shell_gauntlet_player_deck_path[264];
 
 // FUNCTION: MAGIC 0x00489556
-static void shell_open_duel_interface_options(HWND hwnd)
+void shell_open_duel_interface_options(HWND hwnd)
 {
   if (DialogBoxParamA(g_app_instance, (LPCSTR)0xe1, hwnd,
                       dlgproc_duel_interface_options, 0) != 0)
@@ -43,7 +43,7 @@ static int shell_deck_is_available(const char *deck_path, int allow_ante)
   struct
   {
     int lines_seen;
-    int padding;
+    int ignored_lines;
     int card_id;
     int quantity;
     int total_cards;
@@ -54,8 +54,7 @@ static int shell_deck_is_available(const char *deck_path, int allow_ante)
   } s;
 
   s.result = 1;
-  s.padding = 0;
-  s.lines_seen = s.padding;
+  s.lines_seen = s.ignored_lines = 0;
   s.deck_file = fopen(deck_path, "rt");
   if (s.deck_file == NULL)
     return 0;
@@ -82,6 +81,12 @@ static int shell_deck_is_available(const char *deck_path, int allow_ante)
         s.total_cards += s.quantity;
       }
       ++s.lines_seen;
+    }
+    else if (++s.ignored_lines == 5)
+    {
+    }
+    else if (s.ignored_lines == 6)
+    {
     }
     s.scan_result = fscanf(s.deck_file, "%[\n]", s.line);
   } while (s.lines_seen < 200 && s.scan_result != -1 &&
@@ -934,6 +939,10 @@ BOOL CALLBACK shell_gauntlet_dialog_proc(HWND hwnd, UINT message,
     shell_layout_gauntlet_controls(hwnd);
     LockWindowUpdate(NULL);
     return TRUE;
+
+  case 0x499:
+    return FALSE;
+
   default:
     return FALSE;
   }
