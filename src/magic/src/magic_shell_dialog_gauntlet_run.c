@@ -14,7 +14,7 @@ int initialize_duel_engine_window(void);
 void shutdown_duel_engine_window(void);
 
 // GLOBAL: MAGIC 0x008ce910
-static char shell_gauntlet_opponent_deck_path[264];
+char shell_gauntlet_opponent_deck_path[264];
 
 // FUNCTION: MAGIC 0x00497b23
 DWORD shell_format_gauntlet_match_text(char *buffer, DWORD capacity,

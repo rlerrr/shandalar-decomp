@@ -122,7 +122,7 @@ static HWND shell_screen_name_dialog;
 shell_draw_resources_t shell_draw_resources;
 
 void shell_set_map_mode(HDC dc, HWND hwnd, HBITMAP background);
-static void shell_invalidate_logical_rect(HWND hwnd, HBITMAP background, RECT *rect);
+void shell_invalidate_logical_rect(HWND hwnd, HBITMAP background, RECT *rect);
 void shell_enable_animation(int enabled);
 
 // FUNCTION: MAGIC 0x005565b3
@@ -663,7 +663,7 @@ void shell_set_map_mode(HDC dc, HWND hwnd, HBITMAP background)
 }
 
 // FUNCTION: MAGIC 0x0055748c
-static void shell_logical_rect_to_device(HWND hwnd, HBITMAP background, RECT *source, RECT *result)
+void shell_logical_rect_to_device(HWND hwnd, HBITMAP background, RECT *source, RECT *result)
 {
   struct
   {
@@ -683,7 +683,7 @@ static void shell_logical_rect_to_device(HWND hwnd, HBITMAP background, RECT *so
 }
 
 // FUNCTION: MAGIC 0x00557512
-static void shell_invalidate_logical_rect(HWND hwnd, HBITMAP background, RECT *rect)
+void shell_invalidate_logical_rect(HWND hwnd, HBITMAP background, RECT *rect)
 {
   RECT device_rect;
 

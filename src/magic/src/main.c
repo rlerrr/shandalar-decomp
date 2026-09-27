@@ -14,6 +14,7 @@
 #include "deckdll/src/card_db.h"
 #include "global_strings.h"
 #include "magic_shell.h"
+#include "magic_sealed_build.h"
 #include "shared_startup.h"
 
 #define STARTUP_DIALOG_CHOICE_COUNT(group_) \
@@ -34,9 +35,6 @@ HANDLE global_mutex_UpdateLowerDialog;
 
 // GLOBAL: MAGIC 0x007a7d90
 startup_dialog_page_t g_startup_dialog_choices[STARTUP_DIALOG_PAGE_CAPACITY];
-
-// GLOBAL: MAGIC 0x0074b62c
-int g_startup_exit_requested;
 
 extern int g_manalink_is_host;
 
@@ -611,7 +609,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance, PSTR cmdLine, in
   g_startup_duel_active = 0;
   g_duel_message_loop_active = g_startup_duel_active;
   g_duel_active = g_duel_message_loop_active;
-  g_startup_exit_requested = 0;
+  g_sealed_deck_report = NULL;
 
   load_binary_version_strings();
   if (InitLicenseSecretsFromRegistry() != 0)

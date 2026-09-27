@@ -59,4 +59,8 @@ extern startup_dialog_page_t
 extern screen_name_file_t g_screen_name_profile;
 void load_active_screen_name_profile(void);
 
+void shell_logical_rect_to_device(HWND hwnd, HBITMAP background,
+                                  RECT *source, RECT *result);
+void shell_invalidate_logical_rect(HWND hwnd, HBITMAP background, RECT *rect);
+
 #endif

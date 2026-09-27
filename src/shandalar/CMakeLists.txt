@@ -27,6 +27,7 @@ list(FILTER magic_c_sources EXCLUDE REGEX ".*magic_shell_wndproc\\.c$")
 list(FILTER magic_c_sources EXCLUDE REGEX ".*magic_shell_dialog_.*\\.c$")
 list(FILTER magic_c_sources EXCLUDE REGEX ".*magic_shell_media\\.c$")
 list(FILTER magic_c_sources EXCLUDE REGEX ".*magic_shell_credits\\.c$")
+list(FILTER magic_c_sources EXCLUDE REGEX ".*magic_sealed_deck\\.c$")
 
 file(GLOB facemaker_c_sources "${CMAKE_CURRENT_SOURCE_DIR}/../facemaker/src/*.c")
 list(FILTER facemaker_c_sources EXCLUDE REGEX ".*main\\.c$")

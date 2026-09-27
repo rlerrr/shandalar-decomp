@@ -1,4 +1,5 @@
 #include "magic_shell_dialogs.h"
+#include "magic_sealed_tournament.h"
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,18 +40,6 @@ WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1,
 void prepare_duel_video_mode_transition(void);
 void finish_duel_video_mode_transition(void);
 
-typedef struct shell_sealed_deck_editor_state_t
-{
-  unsigned char reserved_0000[0x300];
-  int generator_option_300;
-  int generator_option_304;
-  unsigned char reserved_0308[0x93c - 0x308];
-  int card_pool[300];
-  int card_pool_count;
-  int selected_cards[300];
-  int selected_count;
-} shell_sealed_deck_editor_state_t;
-
 // FUNCTION: MAGIC 0x0048fadd
 void shell_save_match_screen_name_profile(void)
 {
@@ -86,7 +75,7 @@ void shell_show_gauntlet_sideboard_notice(void)
 }
 
 // FUNCTION: MAGIC 0x004c5991
-void shell_edit_sealed_deck(HWND owner, shell_sealed_deck_editor_state_t *state)
+void shell_edit_sealed_deck(HWND owner, sealed_deck_player_t *state)
 {
   struct
   {
@@ -97,9 +86,9 @@ void shell_edit_sealed_deck(HWND owner, shell_sealed_deck_editor_state_t *state)
     int found;
   } s;
 
-  for (s.pool_index = 0; s.pool_index < state->selected_count; ++s.pool_index)
-    s.selected_cards[s.pool_index] = state->selected_cards[s.pool_index];
-  s.selected_count = state->selected_count;
+  for (s.pool_index = 0; s.pool_index < state->deck_count; ++s.pool_index)
+    s.selected_cards[s.pool_index] = state->deck[s.pool_index];
+  s.selected_count = state->deck_count;
   for (s.pool_index = 0; s.pool_index < state->card_pool_count; ++s.pool_index)
   {
     deck[s.pool_index] = CardTypeFromID(state->card_pool[s.pool_index]);
@@ -121,14 +110,14 @@ void shell_edit_sealed_deck(HWND owner, shell_sealed_deck_editor_state_t *state)
   deck[s.pool_index] = -1;
   _currentDeck = 0;
   DeckBuilderMain(owner, 0x40, 1);
-  state->selected_count = 0;
+  state->deck_count = 0;
   for (s.pool_index = 0; s.pool_index < state->card_pool_count; ++s.pool_index)
   {
     if ((deck[s.pool_index] & 0x10000) != 0)
     {
-      state->selected_cards[state->selected_count] =
+      state->deck[state->deck_count] =
           CardIDFromType(deck[s.pool_index]);
-      ++state->selected_count;
+      ++state->deck_count;
     }
   }
 }
@@ -136,10 +125,10 @@ void shell_edit_sealed_deck(HWND owner, shell_sealed_deck_editor_state_t *state)
 // FUNCTION: MAGIC 0x0050aac6
 void shell_edit_sealed_sideboard(HWND owner)
 {
-  shell_sealed_deck_editor_state_t *state;
+  sealed_deck_player_t *state;
   int card_index;
 
-  state = (shell_sealed_deck_editor_state_t *)g_savegame_data_pointer;
+  state = (sealed_deck_player_t *)g_savegame_data_pointer;
   prepare_duel_video_mode_transition();
   sound_close();
   shell_edit_sealed_deck(owner, state);
@@ -148,10 +137,10 @@ void shell_edit_sealed_sideboard(HWND owner)
   g_selected_wizard_color = 0;
   for (card_index = 0; card_index < 200; ++card_index)
   {
-    if (card_index < state->selected_count)
+    if (card_index < state->deck_count)
     {
       ((csvid_and_numcards *)g_opponent_deck_cards)[card_index].csvid =
-          state->selected_cards[card_index];
+          state->deck[card_index];
       g_initial_library[g_selected_wizard_color][card_index].csvid =
           ((csvid_and_numcards *)g_opponent_deck_cards)[card_index].csvid;
       ((csvid_and_numcards *)g_opponent_deck_cards)[card_index].numcards = 1;
