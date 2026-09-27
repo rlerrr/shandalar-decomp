@@ -98,50 +98,61 @@ typedef struct shell_duel_result_dialog_params_struct
   void (*save_callback)(HWND);
 } shell_duel_result_dialog_params_t;
 
-// TODO: Refine the dialog's stack layout and message dispatch to match assembly.
 // FUNCTION: MAGIC 0x0049c22c
 INT_PTR CALLBACK shell_duel_result_dialog_proc(HWND hwnd, UINT msg, WPARAM wparam,
-                                                LPARAM lparam)
+                                              LPARAM lparam)
 {
-  shell_duel_result_dialog_params_t *dialog;
-  LOGFONTA button_font;
-  RECT window_rect;
-  HWND control;
-  HFONT old_font;
-  char opponent_text[200];
-  int command;
-  HDC dc;
-  RECT rect;
-  DRAWITEMSTRUCT *draw_item;
-  HWND colored_control;
-  int colored_control_id;
-  COLORREF draw_color;
-  int selected_player;
-  int card_id;
-  int card_control_id;
-  PAINTSTRUCT paint;
-  POINT mouse_point;
-  RECT opponent_card_rect;
-  RECT player_card_rect;
-  RECT layout_rect;
-  RECT control_rect;
-  SIZE text_extent;
-  HDC layout_dc;
-  HWND text_window;
-  char control_text[100];
-  int button_height;
-  int button_horizontal_padding;
-  int button_spacing;
-  int wrapped_text_height;
-  int widest_button;
-  int button_x;
-  int button_y;
+  struct
+  {
+    HDC paint_dc;
+    PAINTSTRUCT paint;
+    int card_control_id;
+    RECT card_rect;
+    int selected_player;
+    int card_id;
+    int opponent_hover_card;
+    POINT mouse_point;
+    RECT player_card_rect;
+    RECT opponent_card_rect;
+    int player_hover_card;
+    HDC erase_dc;
+    RECT erase_rect;
+    COLORREF draw_color;
+    DRAWITEMSTRUCT *draw_item;
+    HWND colored_control;
+    int colored_control_id;
+    HDC color_dc;
+    HBRUSH color_brush;
+    HWND old_focus;
+    HWND new_focus;
+    int command;
+    HFONT destroy_font;
+    char control_text[100];
+    HWND text_window;
+    RECT control_rect;
+    HDC layout_dc;
+    int wrapped_text_height;
+    int button_spacing;
+    int widest_button;
+    int button_y;
+    int button_x;
+    HFONT layout_font;
+    RECT layout_rect;
+    SIZE text_extent;
+    int button_height;
+    int button_horizontal_padding;
+    char opponent_text[200];
+    LOGFONTA button_font;
+    HFONT initial_font;
+    RECT window_rect;
+    shell_duel_result_dialog_params_t *dialog;
+  } s;
 
   switch (msg)
   {
   case WM_INITDIALOG:
-    dialog = (shell_duel_result_dialog_params_t *)lparam;
-    SetWindowLongA(hwnd, DWL_USER, (LONG)dialog);
+    s.dialog = (shell_duel_result_dialog_params_t *)lparam;
+    SetWindowLongA(hwnd, DWL_USER, (LONG)s.dialog);
     setup_shell_duel_result_dialog_resources(
         &g_shell_duel_result_background,
         &g_shell_duel_result_text_color,
@@ -151,234 +162,239 @@ INT_PTR CALLBACK shell_duel_result_dialog_proc(HWND hwnd, UINT msg, WPARAM wpara
         &g_shell_duel_result_button_pen2,
         &g_shell_duel_result_button_unfocus_color,
         &g_shell_duel_result_button_focus_color);
-    old_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6d1, WM_GETFONT, 0, 0);
-    GetObjectA(old_font, sizeof(button_font), &button_font);
-    if (button_font.lfHeight < 1)
-      button_font.lfHeight += 2;
+    s.initial_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6d1, WM_GETFONT, 0, 0);
+    GetObjectA(s.initial_font, sizeof(s.button_font), &s.button_font);
+    if (s.button_font.lfHeight > 0)
+      s.button_font.lfHeight -= 2;
     else
-      button_font.lfHeight -= 2;
-    g_shell_duel_result_button_font = CreateFontIndirectA(&button_font);
+      s.button_font.lfHeight += 2;
+    g_shell_duel_result_button_font = CreateFontIndirectA(&s.button_font);
     SendDlgItemMessageA(hwnd, 0x6d2, WM_SETFONT,
                         (WPARAM)g_shell_duel_result_button_font, 0);
     SendDlgItemMessageA(hwnd, 0x6d5, WM_SETFONT,
                         (WPARAM)g_shell_duel_result_button_font, 0);
-    GetWindowRect(hwnd, &window_rect);
-    SetWindowPos(hwnd, (HWND)0, window_rect.left,
+    GetWindowRect(hwnd, &s.window_rect);
+    SetWindowPos(hwnd, (HWND)0, s.window_rect.left,
                  (GetSystemMetrics(SM_CYSCREEN) -
-                  (window_rect.bottom - window_rect.top)) / 2,
+                  (s.window_rect.bottom - s.window_rect.top)) / 2,
                  0, 0, SWP_NOSIZE | SWP_NOZORDER);
     ShowWindow(GetDlgItem(hwnd, 0x6cd), SW_HIDE);
     ShowWindow(GetDlgItem(hwnd, 0x6cf), SW_HIDE);
-    if (dialog->opponent_top_card == -1)
+    if (s.dialog->opponent_top_card == -1)
       ShowWindow(GetDlgItem(hwnd, 0x6cc), SW_HIDE);
-    if (dialog->player_top_card == -1)
+    if (s.dialog->player_top_card == -1)
       ShowWindow(GetDlgItem(hwnd, 0x6ce), SW_HIDE);
     SetDlgItemTextA(hwnd, IDOK, gs_ok_00924800);
     load_text(global_ui_strings_filename, "DIALOG_ENDEXP1DUEL");
-    sprintf(opponent_text, g_text_lines[0], g_saved_player_name);
-    SetDlgItemTextA(hwnd, 0x6cc, opponent_text);
+    sprintf(s.opponent_text, g_text_lines[0], g_saved_player_name);
+    SetDlgItemTextA(hwnd, 0x6cc, s.opponent_text);
     SetDlgItemTextA(hwnd, 0x6ce, g_text_lines[1]);
-    SetDlgItemTextA(hwnd, 0x6d3, dialog->outcome_text);
-    SetDlgItemTextA(hwnd, 0x6d4, dialog->match_progress_text);
-    SetDlgItemTextA(hwnd, 0x6d2, dialog->sideboard_button_text);
-    if (dialog->sideboard_callback == 0)
+    SetDlgItemTextA(hwnd, 0x6d3, s.dialog->outcome_text);
+    SetDlgItemTextA(hwnd, 0x6d4, s.dialog->match_progress_text);
+    SetDlgItemTextA(hwnd, 0x6d2, s.dialog->sideboard_button_text);
+    if (s.dialog->sideboard_callback == 0)
       ShowWindow(GetDlgItem(hwnd, 0x6d2), SW_HIDE);
-    SetDlgItemTextA(hwnd, 0x6d5, dialog->save_button_text);
-    if (dialog->save_callback == 0)
+    SetDlgItemTextA(hwnd, 0x6d5, s.dialog->save_button_text);
+    if (s.dialog->save_callback == 0)
       ShowWindow(GetDlgItem(hwnd, 0x6d5), SW_HIDE);
-    if (dialog->match_finished == 0)
-    {
-      SetDlgItemTextA(hwnd, 0x6d0, g_text_lines[2]);
-      SetDlgItemTextA(hwnd, 0x6d1, g_text_lines[3]);
-    }
-    else
+    if (s.dialog->match_finished != 0)
     {
       SetDlgItemTextA(hwnd, 0x6d0, g_text_lines[4]);
       ShowWindow(GetDlgItem(hwnd, 0x6d1), SW_HIDE);
       ShowWindow(GetDlgItem(hwnd, 0x6d2), SW_HIDE);
       ShowWindow(GetDlgItem(hwnd, 0x6d5), SW_HIDE);
     }
+    else
+    {
+      SetDlgItemTextA(hwnd, 0x6d0, g_text_lines[2]);
+      SetDlgItemTextA(hwnd, 0x6d1, g_text_lines[3]);
+    }
 
-    GetClientRect(hwnd, &layout_rect);
-    layout_rect.left += 0x14;
-    layout_rect.right -= 0x14;
-    layout_rect.top += 0x14;
-    layout_rect.bottom -= 0x14;
-    old_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6d1, WM_GETFONT, 0, 0);
-    layout_dc = GetDC(hwnd);
-    SelectObject(layout_dc, old_font);
-    GetTextExtentPoint32A(layout_dc, "fun", 3, &text_extent);
-    button_height = text_extent.cy * 2;
-    button_horizontal_padding = (text_extent.cy * 3) / 2;
-    button_spacing = (button_height + (button_height >> 31 & 3)) >> 2;
-    text_window = GetDlgItem(hwnd, 0x6d3);
-    GetWindowTextA(text_window, control_text, 100);
-    GetClientRect(text_window, &control_rect);
-    wrapped_text_height = DrawTextA(layout_dc, control_text, -1,
-                                    &control_rect, DT_WORDBREAK | DT_CALCRECT);
-    GetWindowRect(text_window, &control_rect);
-    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&control_rect, 2);
-    SetWindowPos(text_window, (HWND)0, 0, 0,
-                 control_rect.right - control_rect.left,
-                 button_height + wrapped_text_height, 6);
-    text_window = GetDlgItem(hwnd, 0x6d4);
-    SetWindowPos(text_window, (HWND)0, control_rect.left,
-                 control_rect.top + button_height * 2 + wrapped_text_height,
-                 control_rect.right - control_rect.left,
-                 wrapped_text_height, 4);
-    text_window = GetDlgItem(hwnd, 0x6d4);
-    GetWindowTextA(text_window, control_text, 100);
-    GetClientRect(text_window, &control_rect);
-    wrapped_text_height = DrawTextA(layout_dc, control_text, -1,
-                                    &control_rect, DT_WORDBREAK | DT_CALCRECT);
-    GetWindowRect(text_window, &control_rect);
-    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&control_rect, 2);
-    SetWindowPos(text_window, (HWND)0, 0, 0,
-                 control_rect.right - control_rect.left,
-                 button_height + wrapped_text_height, 6);
+    GetClientRect(hwnd, &s.layout_rect);
+    s.layout_rect.left += 0x14;
+    s.layout_rect.right -= 0x14;
+    s.layout_rect.top += 0x14;
+    s.layout_rect.bottom -= 0x14;
+    s.layout_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6d1, WM_GETFONT, 0, 0);
+    s.layout_dc = GetDC(hwnd);
+    SelectObject(s.layout_dc, s.layout_font);
+    GetTextExtentPoint32A(s.layout_dc, "fun", 3, &s.text_extent);
+    s.button_height = s.text_extent.cy * 2;
+    s.button_horizontal_padding = (s.text_extent.cy * 3) / 2;
+    s.button_spacing = s.button_height / 4;
+    s.text_window = GetDlgItem(hwnd, 0x6d3);
+    GetWindowTextA(s.text_window, s.control_text, 100);
+    GetClientRect(s.text_window, &s.control_rect);
+    s.wrapped_text_height = DrawTextA(s.layout_dc, s.control_text, -1,
+                                    &s.control_rect, DT_WORDBREAK | DT_CALCRECT);
+    GetWindowRect(s.text_window, &s.control_rect);
+    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.control_rect, 2);
+    SetWindowPos(s.text_window, (HWND)0, 0, 0,
+                 s.control_rect.right - s.control_rect.left,
+                 s.button_height + s.wrapped_text_height, 6);
+    s.text_window = GetDlgItem(hwnd, 0x6d4);
+    SetWindowPos(s.text_window, (HWND)0, s.control_rect.left,
+                 s.control_rect.top + s.button_height + s.button_height +
+                     s.wrapped_text_height,
+                 s.control_rect.right - s.control_rect.left,
+                 s.wrapped_text_height, 4);
+    s.text_window = GetDlgItem(hwnd, 0x6d4);
+    GetWindowTextA(s.text_window, s.control_text, 100);
+    GetClientRect(s.text_window, &s.control_rect);
+    s.wrapped_text_height = DrawTextA(s.layout_dc, s.control_text, -1,
+                                    &s.control_rect, DT_WORDBREAK | DT_CALCRECT);
+    GetWindowRect(s.text_window, &s.control_rect);
+    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.control_rect, 2);
+    SetWindowPos(s.text_window, (HWND)0, 0, 0,
+                 s.control_rect.right - s.control_rect.left,
+                 s.button_height + s.wrapped_text_height, 6);
 
-    widest_button = 0;
-    text_window = GetDlgItem(hwnd, 0x6d0);
-    GetWindowTextA(text_window, control_text, 100);
-    GetTextExtentPoint32A(layout_dc, control_text, strlen(control_text),
-                          &text_extent);
-    if (widest_button < text_extent.cx)
-      widest_button = text_extent.cx;
-    text_window = GetDlgItem(hwnd, 0x6d1);
-    GetWindowTextA(text_window, control_text, 100);
-    GetTextExtentPoint32A(layout_dc, control_text, strlen(control_text),
-                          &text_extent);
-    if (widest_button < text_extent.cx)
-      widest_button = text_extent.cx;
-    button_x = layout_rect.left + 10;
-    button_y = layout_rect.bottom - button_spacing - button_height;
-    text_window = GetDlgItem(hwnd, 0x6d1);
-    SetWindowPos(text_window, (HWND)0, button_x, button_y,
-                 button_horizontal_padding + widest_button, button_height, 4);
-    button_y -= button_spacing + button_height;
-    text_window = GetDlgItem(hwnd, 0x6d0);
-    SetWindowPos(text_window, (HWND)0, button_x, button_y,
-                 button_horizontal_padding + widest_button, button_height, 4);
-    button_y -= button_spacing * 2 + button_height;
+    s.widest_button = 0;
+    s.text_window = GetDlgItem(hwnd, 0x6d0);
+    GetWindowTextA(s.text_window, s.control_text, 100);
+    GetTextExtentPoint32A(s.layout_dc, s.control_text, strlen(s.control_text),
+                          &s.text_extent);
+    if (s.widest_button < s.text_extent.cx)
+      s.widest_button = s.text_extent.cx;
+    s.text_window = GetDlgItem(hwnd, 0x6d1);
+    GetWindowTextA(s.text_window, s.control_text, 100);
+    GetTextExtentPoint32A(s.layout_dc, s.control_text, strlen(s.control_text),
+                          &s.text_extent);
+    if (s.widest_button < s.text_extent.cx)
+      s.widest_button = s.text_extent.cx;
+    s.button_x = s.layout_rect.left + 10;
+    s.button_y = s.layout_rect.bottom - s.button_spacing - s.button_height;
+    s.text_window = GetDlgItem(hwnd, 0x6d1);
+    SetWindowPos(s.text_window, (HWND)0, s.button_x, s.button_y,
+                 s.button_horizontal_padding + s.widest_button, s.button_height, 4);
+    s.button_y -= s.button_spacing + s.button_height;
+    s.text_window = GetDlgItem(hwnd, 0x6d0);
+    SetWindowPos(s.text_window, (HWND)0, s.button_x, s.button_y,
+                 s.button_horizontal_padding + s.widest_button, s.button_height, 4);
+    s.button_y -= s.button_spacing + s.button_spacing + s.button_height;
 
-    old_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6d2, WM_GETFONT, 0, 0);
-    SelectObject(layout_dc, old_font);
-    GetTextExtentPoint32A(layout_dc, "fun", 3, &text_extent);
-    button_height = text_extent.cy * 2;
-    button_horizontal_padding = (text_extent.cy * 3) / 2;
-    button_spacing = (button_height + (button_height >> 31 & 3)) >> 2;
-    widest_button = 0;
-    text_window = GetDlgItem(hwnd, 0x6d2);
-    GetWindowTextA(text_window, control_text, 100);
-    GetTextExtentPoint32A(layout_dc, control_text, strlen(control_text),
-                          &text_extent);
-    if (widest_button < text_extent.cx)
-      widest_button = text_extent.cx;
-    text_window = GetDlgItem(hwnd, 0x6d5);
-    GetWindowTextA(text_window, control_text, 100);
-    GetTextExtentPoint32A(layout_dc, control_text, strlen(control_text),
-                          &text_extent);
-    if (widest_button < text_extent.cx)
-      widest_button = text_extent.cx;
-    text_window = GetDlgItem(hwnd, 0x6d0);
-    GetWindowRect(text_window, &control_rect);
-    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&control_rect, 2);
-    button_x = control_rect.left +
-               (control_rect.right - control_rect.left) / 2 -
-               (button_horizontal_padding + widest_button) / 2;
-    text_window = GetDlgItem(hwnd, 0x6d5);
-    SetWindowPos(text_window, (HWND)0, button_x, button_y,
-                 button_horizontal_padding + widest_button, button_height, 4);
-    button_y -= button_spacing + button_height;
-    text_window = GetDlgItem(hwnd, 0x6d2);
-    SetWindowPos(text_window, (HWND)0, button_x, button_y,
-                 button_horizontal_padding + widest_button, button_height, 4);
-    ReleaseDC(hwnd, layout_dc);
-    control = GetDlgItem(hwnd, 0x6d0);
-    SetFocus(control);
+    s.layout_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6d2, WM_GETFONT, 0, 0);
+    SelectObject(s.layout_dc, s.layout_font);
+    GetTextExtentPoint32A(s.layout_dc, "fun", 3, &s.text_extent);
+    s.button_height = s.text_extent.cy * 2;
+    s.button_horizontal_padding = (s.text_extent.cy * 3) / 2;
+    s.button_spacing = s.button_height / 4;
+    s.widest_button = 0;
+    s.text_window = GetDlgItem(hwnd, 0x6d2);
+    GetWindowTextA(s.text_window, s.control_text, 100);
+    GetTextExtentPoint32A(s.layout_dc, s.control_text, strlen(s.control_text),
+                          &s.text_extent);
+    if (s.widest_button < s.text_extent.cx)
+      s.widest_button = s.text_extent.cx;
+    s.text_window = GetDlgItem(hwnd, 0x6d5);
+    GetWindowTextA(s.text_window, s.control_text, 100);
+    GetTextExtentPoint32A(s.layout_dc, s.control_text, strlen(s.control_text),
+                          &s.text_extent);
+    if (s.widest_button < s.text_extent.cx)
+      s.widest_button = s.text_extent.cx;
+    GetWindowRect(GetDlgItem(hwnd, 0x6d0), &s.control_rect);
+    MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.control_rect, 2);
+    s.button_x = s.control_rect.left +
+               (s.control_rect.right - s.control_rect.left) / 2 -
+               (s.button_horizontal_padding + s.widest_button) / 2;
+    s.text_window = GetDlgItem(hwnd, 0x6d5);
+    SetWindowPos(s.text_window, (HWND)0, s.button_x, s.button_y,
+                 s.button_horizontal_padding + s.widest_button, s.button_height, 4);
+    s.button_y -= s.button_spacing + s.button_height;
+    s.text_window = GetDlgItem(hwnd, 0x6d2);
+    SetWindowPos(s.text_window, (HWND)0, s.button_x, s.button_y,
+                 s.button_horizontal_padding + s.widest_button, s.button_height, 4);
+    ReleaseDC(hwnd, s.layout_dc);
+    SetFocus(GetDlgItem(hwnd, 0x6d0));
     SendMessageA(hwnd, 0x401, 0x6d0, 0);
     change_buttonclass_wndproc(hwnd);
     return FALSE;
-
-  case WM_COMMAND:
-    command = LOWORD(wparam);
-    dialog = (shell_duel_result_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
-    if (command == 0x6d0 || command == IDOK)
-    {
-      EndDialog(hwnd, 1);
-      return TRUE;
-    }
-    if (command == 0x6d2)
-    {
-      if (dialog->sideboard_callback != 0)
-        dialog->sideboard_callback(hwnd);
-      return TRUE;
-    }
-    if (command == 0x6d5)
-    {
-      if (dialog->save_callback != 0)
-        dialog->save_callback(hwnd);
-      return TRUE;
-    }
-    if (command == 0x6d1 || command == IDCANCEL)
-    {
-      EndDialog(hwnd, dialog->match_finished != 0);
-      return TRUE;
-    }
-    return TRUE;
 
   case WM_DESTROY:
     cleanup_shell_duel_result_dialog_resources(
         g_shell_duel_result_background, g_shell_duel_result_button_brush,
         g_shell_duel_result_button_pen1, g_shell_duel_result_button_pen2);
-    old_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6d2, WM_GETFONT, 0, 0);
+    s.destroy_font = (HFONT)SendDlgItemMessageA(hwnd, 0x6d2, WM_GETFONT, 0, 0);
     SendDlgItemMessageA(hwnd, 0x6d2, WM_SETFONT, 0, 0);
     SendDlgItemMessageA(hwnd, 0x6d5, WM_SETFONT, 0, 0);
-    DeleteObject(old_font);
+    DeleteObject(s.destroy_font);
     return FALSE;
 
-  case WM_ERASEBKGND:
-    dc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(dc);
-    GetClientRect(hwnd, &rect);
-    if (g_shell_duel_result_background == (HBITMAP)0)
-      FillRect(dc, &rect, GetStockObject(GRAY_BRUSH));
-    else
-      DrawBitmapToRect(dc, &rect, g_shell_duel_result_background);
+  case WM_COMMAND:
+    s.command = wparam & 0xffff;
+    s.dialog = (shell_duel_result_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
+    switch (s.command)
+    {
+    case 0x6d0:
+    case IDOK:
+      EndDialog(hwnd, 1);
+      break;
+    case 0x6d1:
+    case IDCANCEL:
+      if (s.dialog->match_finished != 0)
+        EndDialog(hwnd, 1);
+      else
+        EndDialog(hwnd, 0);
+      break;
+    case 0x6d2:
+      if (s.dialog->sideboard_callback != 0)
+        s.dialog->sideboard_callback(hwnd);
+      break;
+    case 0x6d5:
+      if (s.dialog->save_callback != 0)
+        s.dialog->save_callback(hwnd);
+      break;
+    }
     return TRUE;
+
+  case 0x4c8:
+    s.new_focus = (HWND)wparam;
+    s.old_focus = (HWND)lparam;
+    if (s.new_focus != 0)
+      SendMessageA(hwnd, 0x401, (WPARAM)s.new_focus, 0);
+    if (s.new_focus != 0)
+      InvalidateRect(s.new_focus, (RECT *)0, TRUE);
+    if (s.old_focus != 0)
+      InvalidateRect(s.old_focus, (RECT *)0, TRUE);
+    return FALSE;
 
   case WM_CTLCOLORBTN:
   case WM_CTLCOLORSTATIC:
-    dc = (HDC)wparam;
-    ApplyCardArtPaletteToDc(dc);
-    colored_control = (HWND)lparam;
-    colored_control_id = GetDlgCtrlID(colored_control);
-    if (colored_control_id == 0x6d0 || colored_control_id == 0x6d1 ||
-        colored_control_id == 0x6d2 || colored_control_id == 0x6d5)
+    s.color_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.color_dc);
+    s.colored_control = (HWND)lparam;
+    s.colored_control_id = GetDlgCtrlID(s.colored_control);
+    if (s.colored_control_id == 0x6d0 || s.colored_control_id == 0x6d1 ||
+        s.colored_control_id == 0x6d2 || s.colored_control_id == 0x6d5)
     {
-      if (GetFocus() == colored_control)
-        SetTextColor(dc, g_shell_duel_result_button_focus_color);
+      if (GetFocus() == s.colored_control)
+        SetTextColor(s.color_dc, g_shell_duel_result_button_focus_color);
       else
-        SetTextColor(dc, g_shell_duel_result_button_text_color);
+        SetTextColor(s.color_dc, g_shell_duel_result_button_text_color);
+      SetBkMode(s.color_dc, TRANSPARENT);
+      s.color_brush = (HBRUSH)GetStockObject(NULL_BRUSH);
     }
     else
-      SetTextColor(dc, g_shell_duel_result_text_color);
-    SetBkMode(dc, TRANSPARENT);
-    return (INT_PTR)GetStockObject(NULL_BRUSH);
+    {
+      SetTextColor(s.color_dc, g_shell_duel_result_text_color);
+      SetBkMode(s.color_dc, TRANSPARENT);
+      s.color_brush = (HBRUSH)GetStockObject(NULL_BRUSH);
+    }
+    return (INT_PTR)s.color_brush;
 
   case WM_DRAWITEM:
-    draw_item = (DRAWITEMSTRUCT *)lparam;
-    if (GetFocus() == draw_item->hwndItem)
-      draw_color = g_shell_duel_result_button_focus_color;
+    s.draw_item = (DRAWITEMSTRUCT *)lparam;
+    if (GetFocus() == s.draw_item->hwndItem)
+      s.draw_color = g_shell_duel_result_button_focus_color;
     else
-      draw_color = g_shell_duel_result_button_unfocus_color;
+      s.draw_color = g_shell_duel_result_button_unfocus_color;
     if (*(int *)&gs_window_title_your_hand_00777bf0[20] == 0)
-      draw_color = g_shell_duel_result_button_unfocus_color;
-    draw_owner_draw_button_centered(draw_item,
+      s.draw_color = g_shell_duel_result_button_unfocus_color;
+    draw_owner_draw_button_centered(s.draw_item,
                                     g_shell_duel_result_button_brush,
                                     g_shell_duel_result_button_pen1,
                                     g_shell_duel_result_button_pen2,
-                                    draw_color, 0);
+                                    s.draw_color, 0);
     return TRUE;
 
   case WM_QUERYNEWPALETTE:
@@ -387,93 +403,94 @@ INT_PTR CALLBACK shell_duel_result_dialog_proc(HWND hwnd, UINT msg, WPARAM wpara
     return handle_button_palette_message((int)hwnd, msg, (int)wparam,
                                          (int)lparam);
 
-  case 0x4c8:
-    if (wparam != 0)
-      SendMessageA(hwnd, 0x401, wparam, 0);
-    if (wparam != 0)
-      InvalidateRect((HWND)wparam, (RECT *)0, TRUE);
-    if (lparam != 0)
-      InvalidateRect((HWND)lparam, (RECT *)0, TRUE);
-    return FALSE;
-
-  case WM_PAINT:
-    dialog = (shell_duel_result_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
-    UpdateWindow(GetDlgItem(hwnd, 0x6d3));
-    get_current_duel_selection(&selected_player, (int *)0);
-    if (selected_player == 0)
-      UpdateWindow(GetDlgItem(hwnd, 0x6ce));
+  case WM_ERASEBKGND:
+    s.erase_dc = (HDC)wparam;
+    ApplyCardArtPaletteToDc(s.erase_dc);
+    GetClientRect(hwnd, &s.erase_rect);
+    if (g_shell_duel_result_background != (HBITMAP)0)
+      DrawBitmapToRect(s.erase_dc, &s.erase_rect, g_shell_duel_result_background);
     else
-      UpdateWindow(GetDlgItem(hwnd, 0x6cc));
-    dc = BeginPaint(hwnd, &paint);
-    if (dc != (HDC)0)
-    {
-      ApplyCardArtPaletteToDc(dc);
-      if (selected_player == 0)
-      {
-        card_id = dialog->player_top_card;
-        card_control_id = 0x6cf;
-      }
-      else
-      {
-        card_id = dialog->opponent_top_card;
-        card_control_id = 0x6cd;
-      }
-      if (card_id != -1)
-      {
-        GetWindowRect(GetDlgItem(hwnd, card_control_id), &rect);
-        MapWindowPoints((HWND)0, hwnd, (LPPOINT)&rect, 2);
-        DrawFullCard(dc, &rect, global_raw_cards_storage + card_id,
-                     0, 0x12, 0, gs_illus_00789130);
-      }
-      if (selected_player == 0)
-      {
-        card_id = dialog->opponent_top_card;
-        card_control_id = 0x6cd;
-      }
-      else
-      {
-        card_id = dialog->player_top_card;
-        card_control_id = 0x6cf;
-      }
-      if (card_id != -1)
-      {
-        GetWindowRect(GetDlgItem(hwnd, card_control_id), &rect);
-        MapWindowPoints((HWND)0, hwnd, (LPPOINT)&rect, 2);
-        DrawFullCard(dc, &rect, global_raw_cards_storage + card_id,
-                     0, 0x12, 0, gs_illus_00789130);
-      }
-      EndPaint(hwnd, &paint);
-    }
+      FillRect(s.erase_dc, &s.erase_rect, GetStockObject(GRAY_BRUSH));
     return TRUE;
-
-  case WM_MOUSEMOVE:
-  case WM_RBUTTONDOWN:
-    mouse_point.x = LOWORD(lparam);
-    mouse_point.y = HIWORD(lparam);
-    dialog = (shell_duel_result_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
-    if ((msg == WM_MOUSEMOVE && g_duel_interface_options.layout != 2) ||
-        (msg == WM_RBUTTONDOWN && g_duel_interface_options.layout == 2))
-    {
-      GetWindowRect(GetDlgItem(hwnd, 0x6cf), &player_card_rect);
-      MapWindowPoints((HWND)0, hwnd, (LPPOINT)&player_card_rect, 2);
-      GetWindowRect(GetDlgItem(hwnd, 0x6cd), &opponent_card_rect);
-      MapWindowPoints((HWND)0, hwnd, (LPPOINT)&opponent_card_rect, 2);
-      if (dialog->player_top_card != -1 &&
-          PtInRect(&player_card_rect, mouse_point) != 0)
-        SendMessageA(g_duel_card_preview_window_hwnd, 0x401,
-                     dialog->player_top_card, 0);
-      else if (dialog->opponent_top_card != -1 &&
-               PtInRect(&opponent_card_rect, mouse_point) != 0)
-        SendMessageA(g_duel_card_preview_window_hwnd, 0x401,
-                     dialog->opponent_top_card, 0);
-    }
-    return FALSE;
 
   case WM_LBUTTONDOWN:
     SendMessageA(hwnd, WM_SYSCOMMAND, 0xf012, 0);
     return TRUE;
+
+  case WM_MOUSEMOVE:
+  case WM_RBUTTONDOWN:
+    s.mouse_point.x = lparam & 0xffff;
+    s.mouse_point.y = HIWORD(lparam);
+    s.dialog = (shell_duel_result_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
+    if ((msg == WM_MOUSEMOVE && g_duel_interface_options.layout != 2) ||
+        (msg == WM_RBUTTONDOWN && g_duel_interface_options.layout == 2))
+    {
+      s.player_hover_card = s.dialog->player_top_card;
+      GetWindowRect(GetDlgItem(hwnd, 0x6cf), &s.player_card_rect);
+      MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.player_card_rect, 2);
+      s.opponent_hover_card = s.dialog->opponent_top_card;
+      GetWindowRect(GetDlgItem(hwnd, 0x6cd), &s.opponent_card_rect);
+      MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.opponent_card_rect, 2);
+      if (s.player_hover_card != -1 &&
+          PtInRect(&s.player_card_rect, s.mouse_point) != 0)
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401,
+                     s.player_hover_card, 0);
+      else if (s.opponent_hover_card != -1 &&
+               PtInRect(&s.opponent_card_rect, s.mouse_point) != 0)
+        SendMessageA(g_duel_card_preview_window_hwnd, 0x401,
+                     s.opponent_hover_card, 0);
+    }
+    return FALSE;
+
+  case WM_PAINT:
+    s.dialog = (shell_duel_result_dialog_params_t *)GetWindowLongA(hwnd, DWL_USER);
+    UpdateWindow(GetDlgItem(hwnd, 0x6d3));
+    get_current_duel_selection(&s.selected_player, (int *)0);
+    if (s.selected_player == 0)
+      UpdateWindow(GetDlgItem(hwnd, 0x6ce));
+    else
+      UpdateWindow(GetDlgItem(hwnd, 0x6cc));
+    s.paint_dc = BeginPaint(hwnd, &s.paint);
+    if (s.paint_dc != (HDC)0)
+    {
+      ApplyCardArtPaletteToDc(s.paint_dc);
+      if (s.selected_player == 0)
+        s.card_id = s.dialog->player_top_card;
+      else
+        s.card_id = s.dialog->opponent_top_card;
+      if (s.selected_player == 0)
+        s.card_control_id = 0x6cf;
+      else
+        s.card_control_id = 0x6cd;
+      if (s.card_id != -1)
+      {
+        GetWindowRect(GetDlgItem(hwnd, s.card_control_id), &s.card_rect);
+        MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.card_rect, 2);
+        DrawFullCard(s.paint_dc, &s.card_rect, global_raw_cards_storage + s.card_id,
+                     0, 0x12, 0, gs_illus_00789130);
+      }
+      if (s.selected_player == 0)
+        s.card_id = s.dialog->opponent_top_card;
+      else
+        s.card_id = s.dialog->player_top_card;
+      if (s.selected_player == 0)
+        s.card_control_id = 0x6cd;
+      else
+        s.card_control_id = 0x6cf;
+      if (s.card_id != -1)
+      {
+        GetWindowRect(GetDlgItem(hwnd, s.card_control_id), &s.card_rect);
+        MapWindowPoints((HWND)0, hwnd, (LPPOINT)&s.card_rect, 2);
+        DrawFullCard(s.paint_dc, &s.card_rect, global_raw_cards_storage + s.card_id,
+                     0, 0x12, 0, gs_illus_00789130);
+      }
+      EndPaint(hwnd, &s.paint);
+    }
+    return TRUE;
+
+  default:
+    return FALSE;
   }
-  return FALSE;
 }
 
 // FUNCTION: MAGIC 0x0049be8d
