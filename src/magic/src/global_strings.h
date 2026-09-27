@@ -242,7 +242,11 @@ GLOBAL_STRINGS_EXTERN char gs_cuecard_summoning_sickness_008a8e00[0x40];
 
 // GLOBAL: MAGIC 0x008a8e40
 // GLOBAL: SHANDALAR 0x008bd040
+#ifdef SHANDALAR
 GLOBAL_STRINGS_EXTERN char gs_cuecard_not_controlled_by_owner_008a8e40[0x90];
+#else
+GLOBAL_STRINGS_EXTERN char gs_cuecard_not_controlled_by_owner_008a8e40[0x40];
+#endif
 
 // GLOBAL: MAGIC 0x008a9010
 // GLOBAL: SHANDALAR 0x008bd210

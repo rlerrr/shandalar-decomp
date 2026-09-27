@@ -1,3 +1,4 @@
+#include "magic_shell_screen_name.h"
 #include <direct.h>
 #include <process.h>
 #include <stdio.h>
@@ -76,15 +77,6 @@ HANDLE global_mutex_WritePacket;
 // GLOBAL: MAGIC 0x00939560
 int g_manalink_opponent_status_dirty;
 
-// GLOBAL: MAGIC 0x006381c0
-char g_default_screen_name[0x358];
-
-// GLOBAL: MAGIC 0x00638518
-char g_screen_name_date_format[0xd0];
-
-// GLOBAL: MAGIC 0x006385e8
-char g_screen_name_unknown_date_text[0x40];
-
 // GLOBAL: MAGIC 0x007ab2c0
 int g_manalink_current_opponent_present;
 
@@ -97,7 +89,7 @@ HWND g_manalink_lower_dialog_hwnd = (HWND)0;
 int InitLicenseSecretsFromRegistry(void);
 char *CsvParseNextField(char **txt);
 static void save_active_screen_name_profile(void);
-static void initialize_screen_name_profile(screen_name_file_t *screen_name_data, int use_current_time);
+void initialize_screen_name_profile(screen_name_file_t *screen_name_data, int use_current_time);
 static int validate_deckbuilder_data_stub(void);
 void load_active_screen_name_profile(void);
 static int should_launch_manalink(void);
@@ -405,18 +397,18 @@ void load_active_screen_name_profile(void)
 }
 
 // FUNCTION: MAGIC 0x0048fd9f
-static void initialize_screen_name_profile(screen_name_file_t *screen_name_data, int use_current_time)
+void initialize_screen_name_profile(screen_name_file_t *screen_name_data, int use_current_time)
 {
   time_t current_time;
 
-  if (strlen(g_default_screen_name) == 0)
+  if (strlen(g_screen_name_playface_resources.default_name) == 0)
   {
     load_text("MP_UIStrings.txt", "SHELLPAGE_SCREENNAME");
-    strcpy(g_default_screen_name, g_text_lines[2]);
-    strcpy(g_screen_name_unknown_date_text, g_text_lines[0x11]);
+    strcpy(g_screen_name_playface_resources.default_name, g_text_lines[2]);
+    strcpy(g_screen_name_unknown_resources.unknown_date, g_text_lines[0x11]);
   }
 
-  strcpy(screen_name_data->screen_name, g_default_screen_name);
+  strcpy(screen_name_data->screen_name, g_screen_name_playface_resources.default_name);
   strcpy(screen_name_data->playface_name, "0001");
   strcpy(screen_name_data->real_name, "");
   strcpy(screen_name_data->personal_quote, "");
@@ -428,11 +420,11 @@ static void initialize_screen_name_profile(screen_name_file_t *screen_name_data,
     _tzset();
     time(&current_time);
     current_tm = localtime(&current_time);
-    strftime(screen_name_data->date_text, 0x80, g_screen_name_date_format, current_tm);
+    strftime(screen_name_data->date_text, 0x80, g_screen_name_text_resources.date_format, current_tm);
   }
   else
   {
-    strcpy(screen_name_data->date_text, g_screen_name_unknown_date_text);
+    strcpy(screen_name_data->date_text, g_screen_name_unknown_resources.unknown_date);
   }
 
   screen_name_data->disconnect_count = 0;

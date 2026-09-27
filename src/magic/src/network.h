@@ -42,7 +42,13 @@ typedef struct
   char packet_type;
   char pad_1;
   short packet_number;
-  unsigned char payload[0x1c];
+  int minimum_deck_size;
+  int deck_type;
+  int ante;
+  int free_play;
+  int best_of;
+  int allow_sideboarding;
+  int resume_requested;
 } duel_parameters_network_packet_t;
 STATIC_ASSERT(sizeof(duel_parameters_network_packet_t) == 0x20, duel_parameters_network_packet_t_wrong_size);
 

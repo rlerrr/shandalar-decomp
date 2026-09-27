@@ -12,6 +12,7 @@
 #include "magic_shell.h"
 #include "magic_sealed_tournament.h"
 #include "magic_sealed_build.h"
+#include "magic_sealed_report.h"
 #include "shared_startup.h"
 
 extern HWND global_main_hwnd;
@@ -429,13 +430,6 @@ static void shell_save_sealed_deck_registry_options(void)
     RegFlushKey(s.options_key);
     RegCloseKey(s.options_key);
   }
-}
-
-// FUNCTION: MAGIC 0x004cce74
-static int shell_write_sealed_deck_build_report(void)
-{
-  /* TODO: build the sealed deck report and launch the text viewer. */
-  return 0;
 }
 
 // FUNCTION: MAGIC 0x00462bde

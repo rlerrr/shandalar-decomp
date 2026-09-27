@@ -1,5 +1,10 @@
+#include "magic_shell_screen_name.h"
 #include "magic_shell_dialogs.h"
 #include "magic_sealed_tournament.h"
+#include "magic_sealed_duel.h"
+#include "magic_sealed_player.h"
+#include "magic_shell_network_match.h"
+#include <process.h>
 #include <commdlg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +20,6 @@
 #include "deckdll/src/magsnd.h"
 
 extern HWND global_main_hwnd;
-extern char g_default_screen_name[0x358];
 extern void *g_duel_player_face_pic;
 extern int g_duel_main_window_closing;
 extern HANDLE global_mutex_GameInit;
@@ -39,28 +43,6 @@ WPARAM WINAPI DeckBuilderMain(HWND parent_hwnd, int db_flags_1,
                               int db_flags_2);
 void prepare_duel_video_mode_transition(void);
 void finish_duel_video_mode_transition(void);
-
-// FUNCTION: MAGIC 0x0048fadd
-void shell_save_match_screen_name_profile(void)
-{
-  struct
-  {
-    FILE *file;
-    char filename[100];
-  } s;
-
-  if (strcmp(g_screen_name_profile.screen_name, g_default_screen_name) == 0)
-    return;
-  sprintf(s.filename, "ScreenNames\\%s.scn", g_screen_name_profile.screen_name);
-  SetFileAttributesA(s.filename, FILE_ATTRIBUTE_NORMAL);
-  s.file = fopen(s.filename, "wb");
-  fwrite(&g_screen_name_profile, 0x748, 1, s.file);
-  fclose(s.file);
-  SetFileAttributesA("ScreenNames\\ActiveName.dat", FILE_ATTRIBUTE_NORMAL);
-  s.file = fopen("ScreenNames\\ActiveName.dat", "wb");
-  fwrite(g_screen_name_profile.screen_name, 0xe, 1, s.file);
-  fclose(s.file);
-}
 
 // FUNCTION: MAGIC 0x0050aa80
 void shell_show_solo_sideboard_notice(void)
@@ -203,12 +185,7 @@ int shell_execute_gauntlet_match(int resume, int best_of,
 {
   struct
   {
-    int sealed_dialog_card_count;
-    char *sealed_dialog_text;
-    int sealed_dialog_state;
-    int sealed_dialog_card_limit;
-    HANDLE sealed_dialog_thread;
-    int sealed_dialog_reserved;
+    sealed_player_dialog_context_t sealed_dialog;
     char sealed_editing_text[200];
     int sealed_editing_line_count;
     unsigned int sealed_thread_id;
@@ -265,9 +242,7 @@ int shell_execute_gauntlet_match(int resume, int best_of,
     }
     if (s.has_dop != 0)
     {
-      if (s.cd_found == 0)
-        s.cd_result_dop = 0;
-      else
+      if (s.cd_found != 0)
       {
         s.cd_tries = 1;
         s.cd_result_dop = CheckDoPCD(0, &s.cd_tries, (int)s.cd_path);
@@ -290,6 +265,8 @@ int shell_execute_gauntlet_match(int resume, int best_of,
           Autoplay_Restore();
         }
       }
+      else
+        s.cd_result_dop = 0;
       if (s.cd_result_dop == 0)
       {
         if ((g_duel_network_flags & 2) != 0)
@@ -302,9 +279,7 @@ int shell_execute_gauntlet_match(int resume, int best_of,
     }
     else if (s.has_sota != 0)
     {
-      if (s.cd_found == 0)
-        s.cd_result_sota = 0;
-      else
+      if (s.cd_found != 0)
       {
         s.cd_tries = 1;
         s.cd_result_sota = CheckSotaCD(0, &s.cd_tries, (int)s.cd_path);
@@ -327,6 +302,8 @@ int shell_execute_gauntlet_match(int resume, int best_of,
           Autoplay_Restore();
         }
       }
+      else
+        s.cd_result_sota = 0;
       if (s.cd_result_sota == 0)
       {
         if ((g_duel_network_flags & 2) != 0)
@@ -346,31 +323,37 @@ int shell_execute_gauntlet_match(int resume, int best_of,
   g_duel_network_state = 0;
   if (best_of < 1)
   {
-    if ((g_duel_network_flags & 2) == 0)
+    if ((g_duel_network_flags & 2) != 0)
     {
-      g_duel_player_face_pic = NULL;
-      g_main_window_hwnd = NULL;
-      g_duel_creature_type = -1;
-      g_duel_mode_flags = 4;
-      g_duel_network_state = 0;
+      g_shell_multiplayer_options.minimum_deck_size = 40;
+      g_shell_multiplayer_options.free_play = 0;
+      g_shell_multiplayer_options.best_of = 1;
+      g_shell_multiplayer_options.deck_type = 0;
+      g_shell_multiplayer_options.player_random = 1;
+      g_shell_multiplayer_options.ante = 1;
+      g_shell_multiplayer_options.allow_sideboarding = 0;
+      shell_save_multiplayer_options();
     }
-    /* TODO: decompile network match setup at MAGIC 0x0048c5a1. */
-    return -2;
+    else
+      return -2;
   }
 
   if (resume == 0)
   {
-    g_opponent_starting_card_id_1 = -1;
-    g_opponent_starting_card_id_2 = -1;
+    g_opponent_starting_card_id_2 = g_opponent_starting_card_id_1 = -1;
     g_duel_extra_turn_player = -1;
     g_duel_state_008cee6c = 0;
     g_ante_card_count = 0;
     g_creature_count_total = 0;
     g_opponent_deck_color_filter_count = -1;
+    load_active_screen_name_profile();
+    s.profile = &g_screen_name_profile;
   }
-  load_active_screen_name_profile();
-
-  s.profile = &g_screen_name_profile;
+  else
+  {
+    load_active_screen_name_profile();
+    s.profile = &g_screen_name_profile;
+  }
   s.sideboard_callback = NULL;
   if (allow_sideboarding != 0)
   {
@@ -389,29 +372,31 @@ int shell_execute_gauntlet_match(int resume, int best_of,
   else if (g_duel_run_mode == 3)
     s.save_callback = shell_save_sealed_duel;
 
-  s.match_finished = 0;
   s.match_quit = 0;
-  do
+  s.match_finished = 0;
+  while (s.match_finished == 0 && s.match_quit == 0)
   {
-    if (s.match_finished != 0 || s.match_quit != 0)
+    if (resume != 0 && g_duel_active == 0)
     {
-      if (s.duel_result == -2)
-        return -2;
-      if (s.match_quit != 0 && s.match_finished == 0)
-        return 0;
-      if (g_ante_card_count < g_duel_state_008cee6c)
-        return 1;
-      if (g_duel_state_008cee6c < g_ante_card_count)
-        return 0;
-      return -1;
+      strcpy(s.progress_text, "");
+      s.duel_result = -2;
+      resume = 0;
+      s.player_deck_valid = 1;
+      s.opponent_deck_valid = 1;
     }
-
-    if (resume == 0 || g_duel_active != 0)
+    else
     {
-      if (resume == 0 || g_duel_active == 0)
+      if (resume != 0 && g_duel_active != 0)
       {
-        g_life[1] = 20;
-        g_life[0] = 20;
+        g_duel_ai_mode_state = -10;
+        g_duel_use_previous_backdrop_colors = 1;
+        resume = 0;
+        s.player_deck_valid = 1;
+        s.opponent_deck_valid = 1;
+      }
+      else
+      {
+        g_life[0] = g_life[1] = 20;
         deck[0] = -1;
         g_selected_wizard_color = 0;
         g_opponent_initial_library_index = 1;
@@ -442,14 +427,6 @@ int shell_execute_gauntlet_match(int resume, int best_of,
                 ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].numcards;
         s.opponent_deck_valid = minimum_deck_size <= s.deck_count;
       }
-      else
-      {
-        g_duel_ai_mode_state = -10;
-        g_duel_use_previous_backdrop_colors = 1;
-        resume = 0;
-        s.player_deck_valid = 1;
-        s.opponent_deck_valid = 1;
-      }
       if (s.player_deck_valid != 0 && s.opponent_deck_valid != 0)
         s.duel_result = run_duel_engine_message_loop();
       if (s.duel_result == 3)
@@ -457,26 +434,20 @@ int shell_execute_gauntlet_match(int resume, int best_of,
         FamInterface_PostDuelResult(4);
         return 3;
       }
-      if (s.player_deck_valid == 0)
-      {
-        if (s.opponent_deck_valid != 0)
-          s.duel_result = 0;
-        else
-          s.duel_result = -1;
-      }
-      else if (s.opponent_deck_valid == 0)
+      else if (s.player_deck_valid != 0 && s.opponent_deck_valid == 0)
         s.duel_result = 1;
-      if (g_duel_main_window_closing == 0)
-      {
-        if (s.duel_result == 1)
-          FamInterface_PostDuelResult(0);
-        else if (s.duel_result == 0)
-          FamInterface_PostDuelResult(1);
-        else
-          FamInterface_PostDuelResult(2);
-      }
-      else
+      else if (s.player_deck_valid == 0 && s.opponent_deck_valid != 0)
+        s.duel_result = 0;
+      else if (s.player_deck_valid == 0 && s.opponent_deck_valid == 0)
+        s.duel_result = -1;
+      if (g_duel_main_window_closing != 0)
         FamInterface_PostDuelResult(3);
+      else if (s.duel_result == 1)
+        FamInterface_PostDuelResult(0);
+      else if (s.duel_result == 0)
+        FamInterface_PostDuelResult(1);
+      else
+        FamInterface_PostDuelResult(2);
       ++g_creature_count_total;
       if (s.duel_result == 1)
         ++g_duel_state_008cee6c;
@@ -495,7 +466,10 @@ int shell_execute_gauntlet_match(int resume, int best_of,
         g_opponent_deck_color_filter_count = 0;
       if (s.profile != NULL)
       {
-        /* TODO: compute network DCI rank at MAGIC 0x00497b9a. */
+        if ((g_duel_network_flags & 2) != 0 && ranked != 0)
+          s.profile->dci_rank_pending = shell_update_dci_rank(
+              s.profile->dci_rank_pending, g_multiplayer_opponent_profile.dci_rank_pending,
+              s.duel_result);
         if (s.duel_result == 1)
         {
           if (ranked != 0)
@@ -509,19 +483,16 @@ int shell_execute_gauntlet_match(int resume, int best_of,
           ++s.profile->mp_losses;
         }
         else
+        {
+          if (ranked != 0)
+          {
+            /* The original tests ranked without updating DCI draws. */
+          }
           ++s.profile->mp_draws;
+        }
         shell_save_match_screen_name_profile();
       }
     }
-    else
-    {
-      strcpy(s.progress_text, "");
-      s.duel_result = -2;
-      resume = 0;
-      s.player_deck_valid = 1;
-      s.opponent_deck_valid = 1;
-    }
-
     if (ante_enabled != 0 && g_duel_state_00789104 != 0)
     {
       if (s.duel_result == 0)
@@ -544,7 +515,8 @@ int shell_execute_gauntlet_match(int resume, int best_of,
           {
             s.ante_card_index = 0;
             s.ante_card_found = 0;
-            while (s.ante_card_index < 200 && s.ante_card_found == 0)
+            for (; s.ante_card_index < 200 && s.ante_card_found == 0;
+                 ++s.ante_card_index)
             {
               if (((csvid_and_numcards *)s.ante_winning_deck)[s.ante_card_index].csvid == -1 ||
                   ((csvid_and_numcards *)s.ante_winning_deck)[s.ante_card_index].numcards == 0)
@@ -554,11 +526,11 @@ int shell_execute_gauntlet_match(int resume, int best_of,
                 ((csvid_and_numcards *)s.ante_winning_deck)[s.ante_card_index].numcards = 1;
                 s.ante_card_found = 1;
               }
-              ++s.ante_card_index;
             }
             s.ante_card_index = 0;
             s.ante_card_found = 0;
-            while (s.ante_card_index < 200 && s.ante_card_found == 0)
+            for (; s.ante_card_index < 200 && s.ante_card_found == 0;
+                 ++s.ante_card_index)
             {
               if (CardIDFromType((*s.ante_card_list)[s.ante_slot]) ==
                   ((csvid_and_numcards *)s.ante_losing_deck)[s.ante_card_index].csvid)
@@ -566,7 +538,6 @@ int shell_execute_gauntlet_match(int resume, int best_of,
                 --((csvid_and_numcards *)s.ante_losing_deck)[s.ante_card_index].numcards;
                 s.ante_card_found = 1;
               }
-              ++s.ante_card_index;
             }
           }
         }
@@ -582,19 +553,28 @@ int shell_execute_gauntlet_match(int resume, int best_of,
     if (s.opponent_deck_valid == 0)
       strcat(s.progress_text, g_text_lines[1]);
     if (best_of == 1)
-      strcat(s.progress_text, g_text_lines[2]);
+      strcpy(&s.progress_text[strlen(s.progress_text)], g_text_lines[2]);
     else if (best_of == 3)
-      shell_format_gauntlet_match_text(s.progress_text + strlen(s.progress_text),
-                                      300, g_text_lines[3]);
+      shell_format_gauntlet_match_text(&s.progress_text[strlen(s.progress_text)],
+                                      300, g_text_lines[3],
+                                      g_creature_count_total, g_duel_state_008cee6c,
+                                      g_ante_card_count, g_creature_count_total -
+                                      g_duel_state_008cee6c - g_ante_card_count);
     else if (best_of == 5)
-      shell_format_gauntlet_match_text(s.progress_text + strlen(s.progress_text),
-                                      300, g_text_lines[4]);
+      shell_format_gauntlet_match_text(&s.progress_text[strlen(s.progress_text)],
+                                      300, g_text_lines[4],
+                                      g_creature_count_total, g_duel_state_008cee6c,
+                                      g_ante_card_count, g_creature_count_total -
+                                      g_duel_state_008cee6c - g_ante_card_count);
     else if (best_of == 99)
     {
       LoadTextSectionLines("MP_UIStrings.txt",
                            "DIALOG_ENDEXP1DUEL_MATCHPROGRESS");
-      shell_format_gauntlet_match_text(s.progress_text + strlen(s.progress_text),
-                                      300, g_text_lines[0]);
+      shell_format_gauntlet_match_text(&s.progress_text[strlen(s.progress_text)],
+                                      300, g_text_lines[0],
+                                      g_creature_count_total, g_duel_state_008cee6c,
+                                      g_ante_card_count, g_creature_count_total -
+                                      g_duel_state_008cee6c - g_ante_card_count);
     }
     LoadTextSectionLines(global_ui_strings_filename,
                          "DIALOG_ENDEXP1DUEL_MATCHPROGRESS");
@@ -647,13 +627,72 @@ int shell_execute_gauntlet_match(int resume, int best_of,
         if (s.player_deck_valid == 0 && s.match_finished == 0)
         {
           load_text(global_ui_strings_filename, "DIALOG_ENDEXP1DUEL");
-          shell_format_gauntlet_match_text(s.warning_text, 300, g_text_lines[5]);
+          shell_format_gauntlet_match_text(s.warning_text, 300, g_text_lines[5],
+                                          s.deck_count, minimum_deck_size);
           MessageBoxA(g_duel_window_hwnd, s.warning_text,
                       gs_magic_the_gathering_title_00789460, MB_ICONERROR);
         }
       }
     } while (s.match_quit == 0 && s.match_finished == 0 &&
              s.player_deck_valid == 0);
-    /* TODO: sealed opponent deck editing at MAGIC 0x0050cb6c. */
-  } while (1);
+    if (g_duel_run_mode == 3 && s.match_quit == 0 && s.match_finished == 0)
+    {
+      g_sealed_match_minimum_deck_size = minimum_deck_size;
+      g_sealed_match_maximum_deck_size = g_sealed_deck_extra_card_limit + minimum_deck_size;
+      s.sealed_thread = (HANDLE)_beginthreadex(NULL, 0,
+          (unsigned int (__stdcall *)(void *))shell_build_sealed_match_opponent,
+          g_sealed_match_opponent, 0, &s.sealed_thread_id);
+      SetThreadPriority(s.sealed_thread, THREAD_PRIORITY_BELOW_NORMAL);
+      s.sealed_editing_line_count = load_text(global_ui_strings_filename, "SEALDECK_OPPONEDITING");
+      if (s.sealed_editing_line_count > 0)
+      {
+        s.sealed_editing_line_count = rand() % s.sealed_editing_line_count;
+        strcpy(s.sealed_editing_text, g_text_lines[s.sealed_editing_line_count]);
+      }
+      else
+        strcpy(s.sealed_editing_text, "Editing deck...");
+      s.sealed_dialog.name = g_sealed_match_opponent->name;
+      s.sealed_dialog.description = s.sealed_editing_text;
+      s.sealed_dialog.face = NULL;
+      s.sealed_dialog.face_path = g_sealed_match_opponent->face_path;
+      s.sealed_dialog.build_thread = s.sealed_thread;
+      s.sealed_dialog.keep_open_under_cursor = 0;
+      DialogBoxParamA(g_app_instance, "Rogue", GetFocus(), shell_sealed_player_dialog_proc,
+          (LPARAM)&s.sealed_dialog);
+      CloseHandle(s.sealed_thread);
+      g_opponent_initial_library_index = 1;
+      for (s.card_index = 0; s.card_index < 200; ++s.card_index)
+      {
+        if (s.card_index < g_sealed_match_opponent->deck_count)
+        {
+          ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].csvid =
+              g_sealed_match_opponent->deck[s.card_index];
+          g_initial_library[g_opponent_initial_library_index][s.card_index].csvid =
+              ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].csvid;
+          ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].numcards = 1;
+          g_initial_library[g_opponent_initial_library_index][s.card_index].numcards =
+              ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].numcards;
+        }
+        else
+        {
+          ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].csvid = -1;
+          g_initial_library[g_opponent_initial_library_index][s.card_index].csvid =
+              ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].csvid;
+          ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].numcards = 0;
+          g_initial_library[g_opponent_initial_library_index][s.card_index].numcards =
+              ((csvid_and_numcards *)g_player_deck_cards)[s.card_index].numcards;
+        }
+      }
+    }
+  }
+  if (s.duel_result == -2)
+    return -2;
+  else if (s.match_quit != 0 && s.match_finished == 0)
+    return 0;
+  else if (g_ante_card_count < g_duel_state_008cee6c)
+    return 1;
+  else if (g_duel_state_008cee6c < g_ante_card_count)
+    return 0;
+  else
+    return -1;
 }

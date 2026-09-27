@@ -12,15 +12,14 @@ int initialize_duel_engine_window(void);
 void shutdown_duel_engine_window(void);
 
 // GLOBAL: MAGIC 0x00707bac
-static int g_sealed_match_minimum_deck_size;
+int g_sealed_match_minimum_deck_size;
 // GLOBAL: MAGIC 0x00707bb4
-static int g_sealed_match_maximum_deck_size;
+int g_sealed_match_maximum_deck_size;
 // GLOBAL: MAGIC 0x00707bbc
 static sealed_deck_player_t *g_sealed_match_player;
 // GLOBAL: MAGIC 0x00707be0
-static sealed_deck_player_t *g_sealed_match_opponent;
+sealed_deck_player_t *g_sealed_match_opponent;
 
-static unsigned int __stdcall shell_build_sealed_match_opponent(sealed_deck_player_t *opponent);
 static void shell_update_sealed_ante_cards(void);
 
 // FUNCTION: MAGIC 0x0050c743
@@ -134,7 +133,7 @@ int shell_run_sealed_player_match(int resume, HWND owner, sealed_deck_player_t *
 
 
 // FUNCTION: MAGIC 0x0050cb6c
-static unsigned int __stdcall shell_build_sealed_match_opponent(sealed_deck_player_t *opponent)
+unsigned int __stdcall shell_build_sealed_match_opponent(sealed_deck_player_t *opponent)
 {
   shell_build_sealed_deck(opponent->card_pool, opponent->card_pool_count, 0,
       opponent->difficulty, opponent->reserved_0304, g_sealed_match_minimum_deck_size,

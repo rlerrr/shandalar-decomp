@@ -99,7 +99,7 @@ static int shell_deck_is_available(const char *deck_path, int allow_ante)
 }
 
 // FUNCTION: MAGIC 0x004dff64
-static LRESULT shell_populate_deck_choices(HWND hwnd, int first_control,
+LRESULT shell_populate_deck_choices(HWND hwnd, int first_control,
                                            int second_control, int allow_ante)
 {
   struct

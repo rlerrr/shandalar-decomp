@@ -57,6 +57,7 @@ typedef struct
 extern startup_dialog_page_t
     g_startup_dialog_choices[STARTUP_DIALOG_PAGE_CAPACITY];
 extern screen_name_file_t g_screen_name_profile;
+extern screen_name_file_t g_multiplayer_opponent_profile;
 void load_active_screen_name_profile(void);
 
 void shell_logical_rect_to_device(HWND hwnd, HBITMAP background,

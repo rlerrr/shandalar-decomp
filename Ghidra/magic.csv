@@ -1278,7 +1278,7 @@ address,orig_size,type
 004e0291,101,function
 004e02f6,101,function
 004e035b,101,function
-004e03c0,1067,function
+004e03c0,1072,function
 004e07f0,585,function
 004e0a39,137,function
 004e0ac2,157,function
@@ -1533,6 +1533,7 @@ address,orig_size,type
 00501fd8,332,function
 502124,114,function
 502196,260,function
+00502196,265,function
 005022a0,3492,function
 503044,749,function
 503331,1622,function
